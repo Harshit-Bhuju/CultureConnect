@@ -1,25 +1,55 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "../../context/AuthContext";
+
 
 const Password_Settings = () => {
+  const { user } = useAuth(); // get logged-in user
+  if (!user) return null; // or redirect to login
+
+  const userEmail = user.email; // email from context
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState("current"); // "current" | "otp" | "new"
   const [isOTPSent, setIsOTPSent] = useState(false);
-  
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
-  
+
   const popupRef = useRef(null);
   const otpInputRefs = useRef([]);
 
-  // Reset all states
+  // ------------------- Backend Helper -------------------
+  const callBackend = async (data) => {
+    try {
+      const formData = new URLSearchParams(data);
+
+      const response = await fetch(
+        "http://localhost/CultureConnect/backend/settingPassword.php",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          credentials: "include",
+          body: formData.toString(),
+        }
+      );
+
+      const result = await response.json();
+      return result;
+    } catch (err) {
+      console.error("Server error:", err);
+      return { status: "error", message: "Server error. Try again later." };
+    }
+  };
+
+  // ------------------- Reset / Modal -------------------
   const resetStates = () => {
     setCurrentPassword("");
     setNewPassword("");
@@ -32,61 +62,63 @@ const Password_Settings = () => {
     setResendTimer(0);
   };
 
-  // Open modal
   const openModal = () => {
     resetStates();
     setIsModalOpen(true);
   };
 
-  // Close modal
   const closeModal = () => {
     setIsModalOpen(false);
     resetStates();
   };
 
-  // Handle current password next
+  // ------------------- Current Password -------------------
   const handleCurrentPasswordNext = async () => {
     setError("");
-    
     if (!currentPassword.trim()) {
       setError("Please enter your current password");
       return;
     }
 
     setLoading(true);
-    
-    // Simulate API call to verify current password
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      // If successful, move to new password step
+
+    const result = await callBackend({
+      email: userEmail,
+      action: "verify_current",
+      currentPassword,
+    });
+
+    if (result.status === "success") {
       setCurrentStep("new");
-      setLoading(false);
-    } catch (err) {
-      setError("Current password is incorrect");
-      setLoading(false);
+    } else {
+      setError(result.message || "Current password is incorrect");
     }
+
+    setLoading(false);
   };
 
-  // Handle forgot password - send OTP
   const handleForgotPassword = async () => {
     setError("");
     setLoading(true);
 
-    // Simulate API call to send OTP
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+    const result = await callBackend({
+      email: userEmail,
+      action: "send_otp",
+    });
+
+    if (result.status === "otp_sent") {
       toast.success("OTP sent to your email!");
       setIsOTPSent(true);
       setCurrentStep("otp");
       setResendTimer(60);
-      setLoading(false);
-    } catch (err) {
-      setError("Failed to send OTP");
-      setLoading(false);
+    } else {
+      setError(result.message || "Failed to send OTP");
     }
+
+    setLoading(false);
   };
 
-  // Handle OTP input change
+  // ------------------- OTP -------------------
   const handleOTPChange = (index, value) => {
     if (value.length > 1) value = value[0];
     if (!/^\d*$/.test(value)) return;
@@ -96,92 +128,77 @@ const Password_Settings = () => {
     setOtp(newOtp);
     setError("");
 
-    // Auto-focus next input
     if (value && index < 5) {
       otpInputRefs.current[index + 1]?.focus();
     }
 
-    // Auto-verify when all fields are filled
     if (value && index === 5) {
-      const completeOtp = [...newOtp];
-      completeOtp[index] = value;
-      const otpString = completeOtp.join("");
+      const otpString = newOtp.join("");
       if (otpString.length === 6) {
         verifyOTP(otpString);
       }
     }
   };
 
-  // Handle OTP backspace
   const handleOTPKeyDown = (index, e) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       otpInputRefs.current[index - 1]?.focus();
     }
   };
 
-  // Verify OTP helper function
   const verifyOTP = async (otpString) => {
     setLoading(true);
     setError("");
 
-    // Simulate API call to verify OTP
-    try {
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          if (otpString === "123456") { // Demo OTP
-            resolve();
-          } else {
-            reject(new Error("Invalid OTP"));
-          }
-        }, 1000);
-      });
-      
+    const result = await callBackend({
+      email: userEmail,
+      action: "verify_otp",
+      otp: otpString,
+    });
+
+    if (result.status === "success") {
       toast.success("OTP verified successfully!");
       setCurrentStep("new");
-      setLoading(false);
-    } catch (err) {
-      setError("Invalid OTP. Please try again.");
-      setOtp(["", "", "", "", "", ""]); // Clear all OTP inputs
-      setLoading(false);
-      // Focus first input after state update
-      setTimeout(() => {
-        otpInputRefs.current[0]?.focus();
-      }, 0);
+    } else {
+      setError(result.message || "Invalid OTP. Please try again.");
+      setOtp(["", "", "", "", "", ""]);
+      setTimeout(() => otpInputRefs.current[0]?.focus(), 0);
     }
+
+    setLoading(false);
   };
 
-  // Handle OTP verification
   const handleVerifyOTP = async () => {
     const otpString = otp.join("");
-    
     if (otpString.length !== 6) {
       setError("Please enter all 6 digits");
       return;
     }
-
     await verifyOTP(otpString);
   };
 
-  // Handle resend OTP
   const handleResendOTP = async () => {
     if (resendTimer > 0) return;
-    
     setLoading(true);
     setOtp(["", "", "", "", "", ""]);
     setError("");
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+    const result = await callBackend({
+      email: userEmail,
+      action: "resend_otp",
+    });
+
+    if (result.status === "otp_sent") {
       toast.success("OTP resent successfully!");
       setResendTimer(60);
-      setLoading(false);
-    } catch (err) {
-      setError("Failed to resend OTP");
-      setLoading(false);
+    } else {
+      setError(result.message || "Failed to resend OTP");
     }
+
+    setLoading(false);
   };
 
-  // Handle save new password
+  // ------------------- Change Password -------------------
   const handleSaveNewPassword = async () => {
     setError("");
 
@@ -190,8 +207,8 @@ const Password_Settings = () => {
       return;
     }
 
-    // Password validation regex
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,16}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,16}$/;
 
     if (!passwordRegex.test(newPassword)) {
       setError(
@@ -207,80 +224,73 @@ const Password_Settings = () => {
 
     setLoading(true);
 
-    // Simulate API call to update password
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+    const result = await callBackend({
+      email: userEmail,
+      action: "change_password",
+      newPassword,
+    });
+
+    if (result.status === "password_changed") {
       toast.success("Password changed successfully!");
       closeModal();
-    } catch (err) {
-      setError("Failed to update password");
-      setLoading(false);
+    } else {
+      setError(result.message || "Failed to update password");
     }
+
+    setLoading(false);
   };
 
-  // Handle back button
+  // ------------------- Back Button -------------------
   const handleBack = () => {
     setError("");
-    if (currentStep === "new" && isOTPSent) {
-      setCurrentStep("otp");
-    } else if (currentStep === "new") {
-      setCurrentStep("current");
-    } else if (currentStep === "otp") {
+    if (currentStep === "new" && isOTPSent) setCurrentStep("otp");
+    else if (currentStep === "new") setCurrentStep("current");
+    else if (currentStep === "otp") {
       setCurrentStep("current");
       setIsOTPSent(false);
       setOtp(["", "", "", "", "", ""]);
     }
   };
 
-  // Click outside to close
+  // ------------------- Effects -------------------
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (popupRef.current && !popupRef.current.contains(event.target)) {
         closeModal();
       }
     };
-    
     if (isModalOpen) {
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isModalOpen]);
 
-  // Resend OTP timer countdown
   useEffect(() => {
     if (resendTimer > 0) {
-      const timer = setTimeout(() => {
-        setResendTimer(resendTimer - 1);
-      }, 1000);
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
       return () => clearTimeout(timer);
     }
   }, [resendTimer]);
 
-  // Get modal title
   const getTitle = () => {
     if (currentStep === "current") return "Verify Current Password";
     if (currentStep === "otp") return "Verify OTP";
     return "Set New Password";
   };
 
-  // Get button text
   const getButtonText = () => {
     if (currentStep === "current") return "Next";
     if (currentStep === "otp") return "Verify OTP";
     return "Save Changes";
   };
 
-  // Handle primary action
   const handlePrimaryAction = () => {
-    if (currentStep === "current") {
-      handleCurrentPasswordNext();
-    } else if (currentStep === "otp") {
-      handleVerifyOTP();
-    } else {
-      handleSaveNewPassword();
-    }
+    if (currentStep === "current") handleCurrentPasswordNext();
+    else if (currentStep === "otp") handleVerifyOTP();
+    else handleSaveNewPassword();
   };
 
+  // ------------------- JSX -------------------
   return (
     <div className="max-w-full sm:max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Header */}
@@ -361,7 +371,8 @@ const Password_Settings = () => {
                       placeholder="Enter your current password"
                       autoFocus
                       onKeyDown={(e) => {
-                        if (e.key === "Enter" && !loading) handleCurrentPasswordNext();
+                        if (e.key === "Enter" && !loading)
+                          handleCurrentPasswordNext();
                       }}
                     />
                   </div>
@@ -406,7 +417,9 @@ const Password_Settings = () => {
                       className="text-blue-600 text-sm hover:underline font-medium disabled:opacity-50"
                       disabled={loading || resendTimer > 0}
                     >
-                      {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : "Resend OTP"}
+                      {resendTimer > 0
+                        ? `Resend OTP in ${resendTimer}s`
+                        : "Resend OTP"}
                     </button>
                   </div>
                 </>
@@ -445,17 +458,15 @@ const Password_Settings = () => {
                       className="border-2 border-gray-200 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                       placeholder="Confirm new password"
                       onKeyDown={(e) => {
-                        if (e.key === "Enter" && !loading) handleSaveNewPassword();
+                        if (e.key === "Enter" && !loading)
+                          handleSaveNewPassword();
                       }}
                     />
                   </div>
                 </>
               )}
 
-              {/* Error Message */}
-              {error && (
-                <p className="text-red-500 text-sm">{error}</p>
-              )}
+              {error && <p className="text-red-500 text-sm">{error}</p>}
             </div>
 
             {/* Buttons */}

@@ -1,10 +1,5 @@
 <?php
-include("dbconnect.php");
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Credentials: true");
-header("Content-Type: application/json");
+include("header.php");
 
 // Get email first to identify user
 $email = strtolower(trim(filter_input(INPUT_POST, "email", FILTER_SANITIZE_EMAIL)));
@@ -40,29 +35,38 @@ $gender = in_array($gender, $allowedGenders) ? $gender : $existingUser['gender']
 
 $picture = $existingUser['profile_pic']; // keep old avatar by default
 
+$file = $_FILES['avatar'];
 
+if (isset($file) && $file['error'] === 0) {
 
-if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
-    // isset($_FILES['avatar']) - Check if an avatar file was uploaded successfully in frontend
-    //like this <input type="file" name="avatar" />.
-
-    //$_FILES['avatar']['error'] === UPLOAD_ERR_OK – ensures there were no errors during the upload.
-    //Only if a file exists and was uploaded successfully, we proceed.
-
-    // Set the upload directory (create if it doesn't exist)
     $uploadDir = __DIR__ . '/uploads/';
-    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
     //  __DIR__ = current directory of this PHP file.
     ///uploads/ = folder where avatars will be stored.
     //is_dir() checks if the folder exists.
     //If not, mkdir() creates it with permissions 0755 (read/write/execute for owner, read/execute for others).
     //true allows nested folder creation, just in case.
 
-    $fileTmpPath = $_FILES['avatar']['tmp_name'];
-    $fileName = basename($_FILES['avatar']['name']);
-    $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-
+    $fileTmpPath = $file['tmp_name'];
     //$fileTmpPath – temporary location of uploaded file (stored by PHP).
+
+    $info = pathinfo($file['name']);
+    $fileName = $info['basename'];
+    $fileExt = strtolower($info['extension']);
+    //pathinfo()
+    // var/www/html/uploads/profilePic_harshit_1734876234.jpg
+    // we take only wxtension
+    // Array
+    // (
+    //     [dirname] => /var/www/html/uploads
+    //     [basename] => profilePic_harshit_1734876234.jpg
+    //     [extension] => jpg
+    //     [filename] => profilePic_harshit_1734876234
+    // )
+
     //$fileName – original filename uploaded by the user.
     //$fileExt – file extension (jpg, png, etc.) converted to lowercase.
 
@@ -72,6 +76,10 @@ if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
         echo json_encode(['status' => 'error', 'message' => 'Invalid file type.']);
         exit;
     }
+    // Allow only certain file types (images)
+    //Ensures only allowed image types are accepted.
+    //If the uploaded file is not an allowed type, return an error and stop execution.
+
 
     // Delete old avatar if it exists and is not the default
     if (!empty($existingUser['profile_pic']) && file_exists(__DIR__ . '/uploads/' . $existingUser['profile_pic'])) {
@@ -79,16 +87,9 @@ if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
         //unlink() is the PHP function to delete a file from the server.
     }
 
-    // Allow only certain file types (images)
-    //Ensures only allowed image types are accepted.
-    //If the uploaded file is not an allowed type, return an error and stop execution.
-
     // Generate a unique, safe filename using email + timestamp
     $emailSafe = preg_replace('/[^a-z]/', '', explode('@', $email)[0]); // replace special chars
-    $newFileName = 'profilePic_' . $emailSafe . '_' . time() . '.' . $fileExt;
-    // avatar_harshit_1734876234.jpg
-    // here time() is in seconds since January 1, 1970 (UTC).
-
+    $newFileName = 'profilePic_' . $emailSafe . '_' . bin2hex(random_bytes(16)) . '.' . $fileExt;
 
     // Full destination path
     $destPath = $uploadDir . $newFileName;
@@ -106,10 +107,54 @@ if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
     }
 }
 
+$updates = [];
+$params = [];
+$types = "";
 
-// Update user in DB
-$stmt = $conn->prepare("UPDATE users SET username=?, location=?, gender=?, profile_pic=? WHERE email=?");
-$stmt->bind_param("sssss", $username, $location, $gender, $picture, $email);
+// Compare each field to check if changed
+if ($username !== $existingUser['username']) {
+    $updates[] = "username=?";
+    $params[] = $username;
+    $types = $types . "s";
+}
+
+if ($location !== $existingUser['location']) {
+    $updates[] = "location=?";
+    $params[] = $location;
+    $types = $types . "s";
+}
+
+if ($gender !== $existingUser['gender']) {
+    $updates[] = "gender=?";
+    $params[] = $gender;
+    $types = $types . "s";
+}
+
+if ($picture !== $existingUser['profile_pic']) {
+    $updates[] = "profile_pic=?";
+    $params[] = $picture;
+    $types = $types . "s";
+}
+
+// If nothing changed
+if (empty($updates)) {
+    echo json_encode(["status" => "success", "message" => "No changes detected."]);
+    exit;
+}
+
+
+$query = "UPDATE users SET " . implode(", ", $updates) . " WHERE email=?";
+//implode(", ", $updates) => username=?, location=?, gender=?, picture=? 
+//its in string form
+$params[] = $email;
+$types = $types . "s";
+
+$stmt = $conn->prepare($query);
+$stmt->bind_param($types, ...$params);
+//$params = [$username, $location, $gender, $email];
+//so ...$params spreads the array so each element becomes a separate argument.
+//now it will be like $stmt->bind_param($types, $username, $location, $gender, $picture, $email);
+// we cant do implode as it converts into string so if $username then it will be harman like that
 
 if ($stmt->execute()) {
     echo json_encode([
@@ -125,3 +170,4 @@ if ($stmt->execute()) {
 
 $stmt->close();
 $conn->close();
+exit;
