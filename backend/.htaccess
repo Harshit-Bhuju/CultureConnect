@@ -1,0 +1,6 @@
+# .htaccess
+
+# Define environment variables
+SetEnv SMTP_USER cultureconnect0701@gmail.com
+SetEnv SMTP_PASS eqexqfkfsglajpbi
+SetEnv DB_PASS Manshit$123.cultureConnect
