@@ -91,7 +91,7 @@ const Delete_Accounts = () => {
       {/* Content */}
       <div className="space-y-3">
         <div
-          className="flex justify-between items-center bg-red-50 rounded-xl p-4 sm:p-5 shadow-sm cursor-pointer hover:shadow-md hover:scale-[1.01] transition-all duration-200"
+          className="flex justify-between items-center  rounded-xl p-4 sm:p-5 shadow-sm cursor-pointer hover:shadow-md hover:scale-[1.01] transition-all duration-200"
           onClick={openConfirmModal}>
           <div className="flex-1">
             <p className="text-red-600 text-xs font-medium uppercase tracking-wide mb-1">
