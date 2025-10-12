@@ -38,7 +38,7 @@ export default function AppSidebar({ children, ...props }) {
   const avatarUrl = user?.picture
     ? user.picture.startsWith("http")
       ? user.picture // External URL, e.g. Google
-      : `http://localhost/CultureConnect/${user.picture}` // Local uploads
+      : `http://localhost/CultureConnect/backend/uploads/${user.picture}` // Local uploads
     : default_logo; // fallback
 
   console.log(user?.name); // First name from Google
