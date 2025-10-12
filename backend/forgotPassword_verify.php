@@ -1,15 +1,7 @@
 <?php
 session_start();
-include("dbconnect.php");
 include("mail.php");
-
-// Headers
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Credentials: true");
-header("Content-Type: application/json");
-
+include("header.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -95,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Keep forgot_email in session for changePassword.php
     echo json_encode(["status" => "success"]);
   } else {
-    echo json_encode(["status" => "error", "message" => "Incorrect code. Please enter the correct one!"]);
+    echo json_encode(["status" => "error", "message" => "Incorrect OTP. Please enter the correct one!"]);
   }
 }
 $conn->close();

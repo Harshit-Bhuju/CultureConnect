@@ -12,13 +12,13 @@ function generateSignupUsername($email, $conn)
     do {
         $attempts++;
    
-        $candidate = $base . random_int(1000, 9999);
+        $candidate = $base . '_' . random_int(100, 99999);
         $available = isUsernameAvailable($candidate, $conn);
     } while (!$available && $attempts < $maxAttempts);
 
     // if somehow all attempts fail (extremely unlikely), keep increasing the number
     while (!$available) {
-        $candidate = $base . (random_int(10000, 99999)); // larger number
+        $candidate = $base . (random_int(100000, 999999)); // larger number
         $available = isUsernameAvailable($candidate, $conn);
     }
 

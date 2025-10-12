@@ -1,12 +1,8 @@
 <?php
 session_start();
-include("dbconnect.php");
 include("mail.php");
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Credentials: true");
-header("Content-Type: application/json");
+include("header.php");
+
 
 $email = $_SESSION['user_email'] ?? '';
 $password = trim($_POST['password'] ?? "");
@@ -18,16 +14,16 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 0) {
-    echo json_encode(["success" => false, "message" => "User not found"]);
-    exit;
+  echo json_encode(["success" => false, "message" => "User not found"]);
+  exit;
 }
 
 $user = $result->fetch_assoc();
 
 // Verify password
 if (!password_verify($password, $user['password'])) {
-    echo json_encode(["success" => false, "message" => "Incorrect password"]);
-    exit;
+  echo json_encode(["success" => false, "message" => "Incorrect password"]);
+  exit;
 }
 
 // Delete account
@@ -35,18 +31,18 @@ $delete = $conn->prepare("DELETE FROM users WHERE email = ?");
 $delete->bind_param("s", $email);
 
 if ($delete->execute()) {
-    session_unset();
-    session_destroy();
-    date_default_timezone_set('Asia/Kathmandu');
-    $deleted_at = date('F j, Y, g:i A');
-    // F → Full month name (October)
-    //j → Day of the month (11)
-    //Y → 4-digit year (2025)
-    //g → Hour (1–12)
-    //i → Minutes (25)
-    //A → AM/PM
-    $subject = 'Your CultureConnect Account is Deleted';
-    $custom_template = "
+  session_unset();
+  session_destroy();
+  date_default_timezone_set('Asia/Kathmandu');
+  $deleted_at = date('F j, Y, g:i A');
+  // F → Full month name (October)
+  //j → Day of the month (11)
+  //Y → 4-digit year (2025)
+  //g → Hour (1–12)
+  //i → Minutes (25)
+  //A → AM/PM
+  $subject = 'Your CultureConnect Account is Deleted';
+  $custom_template = "
 <html>
 <head>
   <meta charset='utf-8' />
@@ -114,17 +110,18 @@ if ($delete->execute()) {
 </html>
 ";
 
-    $response = json_encode(["success" => true]);
-    header("Connection: close");
-    header("Content-Type: application/json");
-    header("Content-Length: " . strlen($response));
-    echo $response;
-    ob_flush();
-    flush();
-    ignore_user_abort(true);
-    sendemail_verify($email, $subject, $custom_template);
-    exit;
+  $response = json_encode(["success" => true]);
+  header("Connection: close");
+  header("Content-Type: application/json");
+  header("Content-Length: " . strlen($response));
+  echo $response;
+  ob_flush();
+  flush();
+  ignore_user_abort(true);
+  sendemail_verify($email, $subject, $custom_template);
 } else {
-    echo json_encode(["success" => false, "message" => "Failed to delete account"]);
-    exit;
+  echo json_encode(["success" => false, "message" => "Failed to delete account"]);
 }
+
+$conn->close();
+exit;
