@@ -72,12 +72,19 @@ if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
         echo json_encode(['status' => 'error', 'message' => 'Invalid file type.']);
         exit;
     }
+
+    // Delete old avatar if it exists and is not the default
+    if (!empty($existingUser['profile_pic']) && file_exists(__DIR__ . '/uploads/' . $existingUser['profile_pic'])) {
+        unlink(__DIR__ . '/uploads/' . $existingUser['profile_pic']);
+        //unlink() is the PHP function to delete a file from the server.
+    }
+
     // Allow only certain file types (images)
     //Ensures only allowed image types are accepted.
     //If the uploaded file is not an allowed type, return an error and stop execution.
 
     // Generate a unique, safe filename using email + timestamp
-    $emailSafe = preg_replace('/[^a-z]/', '_', explode('@', $email)[0]); // replace special chars
+    $emailSafe = preg_replace('/[^a-z]/', '', explode('@', $email)[0]); // replace special chars
     $newFileName = 'profilePic_' . $emailSafe . '_' . time() . '.' . $fileExt;
     // avatar_harshit_1734876234.jpg
     // here time() is in seconds since January 1, 1970 (UTC).
@@ -90,7 +97,7 @@ if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
 
     // Move the uploaded file to the uploads directory
     if (move_uploaded_file($fileTmpPath, $destPath)) {
-        $picture = 'backend/uploads/' . $newFileName;
+        $picture = $newFileName;
         // move_uploaded_file() – moves the file from temporary folder to your uploads folder.
         //If successful: $picture stores the relative path to save in the database.
     } else {

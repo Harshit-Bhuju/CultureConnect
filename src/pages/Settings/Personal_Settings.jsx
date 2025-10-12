@@ -37,7 +37,7 @@ const Personal_Settings = () => {
           authUser.picture && authUser.picture.startsWith("http")
             ? authUser.picture
             : authUser.picture
-            ? `http://localhost/CultureConnect/${authUser.picture}`
+            ? `http://localhost/CultureConnect/backend/uploads/${authUser.picture}`
             : default_logo,
       });
     }
@@ -97,7 +97,7 @@ const Personal_Settings = () => {
 
         const newAvatarUrl = result.avatar.startsWith("http")
           ? result.avatar
-          : `http://localhost/CultureConnect/${result.avatar}`;
+          : `http://localhost/CultureConnect//backend/uploads/${result.avatar}`;
 
         // Update local state and AuthContext
         setUser((prev) => ({ ...prev, avatar: newAvatarUrl }));

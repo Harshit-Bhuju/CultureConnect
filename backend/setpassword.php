@@ -44,12 +44,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['last_activity'] = time();
             unset($_SESSION['google_email']);
 
-            $stmt = $conn->prepare("SELECT gender,location FROM users WHERE email = ? LIMIT 1");
-            $stmt->bind_param("s", $email);
-            $stmt->execute();
-            $result_gen = $stmt->get_result();
+            $stmt_gen = $conn->prepare("SELECT gender,location FROM users WHERE email = ? LIMIT 1");
+            $stmt_gen->bind_param("s", $email);
+            $stmt_gen->execute();
+            $result_gen = $stmt_gen->get_result();
             $user_gen = $result_gen->fetch_assoc();
-            $stmt->close();
+            $stmt_gen->close();
 
             echo json_encode([
                 "status" => "success",
@@ -57,8 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "user" => [
                     "email" => $email,
                     "name" => $username,
-                    "gender" => $user_gen['gender'],
-                    "location" => $user_gen['location'],
+                    "gender" => $user_gen['gender'] ?? '',
+                    "location" => $user_gen['location'] ?? '',
                     "picture" => $picture
                 ]
             ]);
@@ -69,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
     }
 }
-
 
 $conn->close();
 exit;
