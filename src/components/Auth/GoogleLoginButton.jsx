@@ -5,27 +5,28 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Spinner } from "../ui/spinner";
 
-export default function GoogleLoginButton() {
+export default function GoogleLoginButton({ isAddingAccount = false }) {
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user, savedAccounts, loadSavedAccounts } = useAuth();
   const navigate = useNavigate();
 
   const handleGoogleLogin = async (tokenResponse) => {
+    setLoading(true);
+
     try {
-      setLoading(true);
       const userInfoResponse = await fetch(
         "https://www.googleapis.com/oauth2/v3/userinfo",
-        {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        }
+        { headers: { Authorization: `Bearer ${tokenResponse.access_token}` } }
       );
-
       const userInfo = await userInfoResponse.json();
-      const { email, picture, gender } = userInfo;
+      const { email, picture } = userInfo;
+      const loginEmail = email.toLowerCase();
+      const currentUserEmail = user?.email?.toLowerCase();
 
       const formData = new URLSearchParams();
       formData.append("email", email);
       formData.append("picture", picture);
+
       const response = await fetch(
         "http://localhost/CultureConnect/backend/google_login.php",
         {
@@ -39,21 +40,95 @@ export default function GoogleLoginButton() {
       const result = await response.json();
 
       if (result.status === "null") {
-        // User needs to set password
+        // User needs to set password (first time Google login)
         toast.success("Please set your password.");
         navigate("/setpassword", {
-          state: { email: result.user.email }, // Pass email in state
+          state: { 
+            email: result.user.email,
+            isAddingAccount,
+            originalUserEmail: currentUserEmail,
+          },
           replace: true,
         });
-      } else if (result.status === "not_null") {
-        // User already has password
-        toast.success("Logged in successfully!");
-        login(result.user);
-        navigate("/", { replace: true });
+      }
+      else if (result.status === "not_null") {
+        if (isAddingAccount) {
+          // Check if adding own account
+          if (loginEmail === currentUserEmail) {
+            toast.error("You cannot add your own account!");
+            setLoading(false);
+            navigate("/", { replace: true });
+            return;
+          }
+
+          // Check if already saved
+          const isAlreadySaved = savedAccounts.some(
+            (acc) => acc.email.toLowerCase() === loginEmail
+          );
+          if (isAlreadySaved) {
+            toast.error("This account has already been added!");
+            setLoading(false);
+            navigate("/", { replace: true });
+            return;
+          }
+
+          // Save account to device with original user context
+          const saveFormData = new URLSearchParams();
+          saveFormData.append("original_user_email", currentUserEmail);
+          saveFormData.append("account_email", loginEmail);
+
+          const saveResponse = await fetch(
+            "http://localhost/CultureConnect/backend/save_account_to_device.php",
+            {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: saveFormData.toString(),
+            }
+          );
+
+          const saveResult = await saveResponse.json();
+          if (saveResult.status !== "success" && saveResult.status !== "exists") {
+            toast.error(saveResult.message || "Failed to save account");
+            setLoading(false);
+            return;
+          }
+
+          // Switch back to original user
+          const switchFormData = new URLSearchParams();
+          switchFormData.append("account_email", currentUserEmail);
+
+          const switchResponse = await fetch(
+            "http://localhost/CultureConnect/backend/switch_account.php",
+            {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: switchFormData.toString(),
+            }
+          );
+
+          const switchResult = await switchResponse.json();
+          if (switchResult.status === "success") {
+            await login(switchResult.user, true);
+            await loadSavedAccounts();
+            toast.success("Account added successfully!");
+            navigate("/", { replace: true });
+          } else {
+            toast.error("Failed to switch back to original account");
+          }
+        } else {
+          // Normal login
+          await login(result.user);
+          toast.success("Logged in successfully!");
+          navigate("/", { replace: true });
+        }
+      } else {
+        toast.error(result.message || "Login failed");
       }
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("An error occurred");
+      console.error("Google login error:", error);
+      toast.error("An error occurred during login");
     } finally {
       setLoading(false);
     }
@@ -61,7 +136,11 @@ export default function GoogleLoginButton() {
 
   const googleLogin = useGoogleLogin({
     onSuccess: handleGoogleLogin,
-    onError: () => toast.error("Google login failed"),
+    onError: (error) => {
+      console.error("Google OAuth error:", error);
+      toast.error("Google login failed");
+      setLoading(false);
+    },
   });
 
   return (
@@ -75,7 +154,7 @@ export default function GoogleLoginButton() {
           <>
             <Spinner className="w-5 h-5" />
             <span className="text-sm font-medium text-gray-700">
-              Logging in...
+              {isAddingAccount ? "Adding..." : "Logging in..."}
             </span>
           </>
         ) : (

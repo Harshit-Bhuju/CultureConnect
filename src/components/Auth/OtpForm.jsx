@@ -19,12 +19,12 @@ import { useAuth } from "../../context/AuthContext";
 export default function OTPForm({ className, ...props }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, user, savedAccounts, loadSavedAccounts } = useAuth();
 
   const source = location.state?.source || "forgot";
-  const redirectTo =
-    location.state?.redirectTo ||
-    (source === "forgot" ? "/changepassword" : "/");
+  const isAddingAccount = location.state?.isAddingAccount || false;
+  const originalUserEmail = location.state?.originalUserEmail;
+  const redirectTo = location.state?.redirectTo || (source === "forgot" ? "/changepassword" : "/");
 
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(60);
@@ -39,7 +39,6 @@ export default function OTPForm({ className, ...props }) {
 
   const autoSubmitRef = useRef(false);
 
-  // Countdown timer
   useEffect(() => {
     if (timer > 0) {
       const countdown = setTimeout(() => setTimer(timer - 1), 1000);
@@ -49,7 +48,6 @@ export default function OTPForm({ className, ...props }) {
     }
   }, [timer]);
 
-  // Auto-submit when OTP is fully entered
   useEffect(() => {
     if (otp.length === 6 && !autoSubmitRef.current) {
       autoSubmitRef.current = true;
@@ -69,27 +67,114 @@ export default function OTPForm({ className, ...props }) {
       const response = await fetch(otpVerifyUrl, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        credentials: "include", // Include session cookies
+        credentials: "include",
         body: formData.toString(),
       });
 
       const result = await response.json();
 
       if (result.status === "success") {
-        toast.success("OTP verified successfully!");
-        
-        // If signup, update user in context
         if (source === "signup" && result.user) {
-          // Session is already created in PHP, just update context
-          await login(result.user);
+          const verifiedEmail = result.user.email.toLowerCase();
+          
+          if (isAddingAccount && originalUserEmail) {
+            // ADD ACCOUNT FLOW
+            const currentUserEmail = originalUserEmail.toLowerCase();
+            
+            // Validate not adding own account
+            if (verifiedEmail === currentUserEmail) {
+              toast.error("You cannot add your own account!");
+              navigate("/", { replace: true });
+              return;
+            }
+            
+            // Validate not already saved
+            const isAlreadySaved = savedAccounts.some(
+              acc => acc.email.toLowerCase() === verifiedEmail
+            );
+            
+            if (isAlreadySaved) {
+              toast.error("This account has already been added!");
+              navigate("/", { replace: true });
+              return;
+            }
+            
+            try {
+              // 1️⃣ Save the newly verified account to the original user's device
+              const saveFormData = new URLSearchParams();
+              saveFormData.append("original_user_email", currentUserEmail);
+              saveFormData.append("account_email", verifiedEmail);
+
+              const saveResponse = await fetch(
+                "http://localhost/CultureConnect/backend/save_account_to_device.php",
+                {
+                  method: "POST",
+                  credentials: "include",
+                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                  body: saveFormData.toString(),
+                }
+              );
+
+              const saveResult = await saveResponse.json();
+              if (saveResult.status !== "success" && saveResult.status !== "exists") {
+                toast.error(saveResult.message || "Failed to save account");
+                navigate("/", { replace: true });
+                return;
+              }
+
+              // 2️⃣ Switch back to the original user
+              const switchBackFormData = new URLSearchParams();
+              switchBackFormData.append("account_email", currentUserEmail);
+
+              const switchResponse = await fetch(
+                "http://localhost/CultureConnect/backend/switch_account.php",
+                {
+                  method: "POST",
+                  credentials: "include",
+                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                  body: switchBackFormData.toString(),
+                }
+              );
+
+              const switchResult = await switchResponse.json();
+
+              if (switchResult.status === "success") {
+                // Update context with original user (skipAutoSave=true to prevent duplicate)
+                await login(switchResult.user, true);
+                
+                // Reload saved accounts to include the new one
+                setTimeout(async () => {
+                  await loadSavedAccounts();
+                  toast.success("Account added and verified successfully!");
+                }, 100);
+                
+                navigate("/", { replace: true });
+              } else {
+                toast.error("Failed to switch back to original account");
+                navigate("/", { replace: true });
+              }
+            } catch (error) {
+              console.error("Error completing add account flow:", error);
+              toast.error("An error occurred while adding account");
+              navigate("/", { replace: true });
+            }
+          } else {
+            // NORMAL SIGNUP FLOW - log in the new user
+            await login(result.user);
+            toast.success("Account verified successfully!");
+            navigate(redirectTo, { replace: true });
+          }
+        } else {
+          // FORGOT PASSWORD FLOW
+          toast.success("OTP verified successfully!");
+          navigate(redirectTo, { replace: true });
         }
-        
-        navigate(redirectTo, { replace: true });
       } else {
         setOtp("");
         setErrorMsg(result.message || "Invalid OTP. Please try again.");
       }
     } catch (error) {
+      console.error("Verification error:", error);
       setOtp("");
       setErrorMsg("Verification failed: " + error.message);
     } finally {
@@ -125,10 +210,7 @@ export default function OTPForm({ className, ...props }) {
   };
 
   return (
-    <div
-      className={cn("flex flex-col gap-6 md:min-h-[450px]", className)}
-      {...props}
-    >
+    <div className={cn("flex flex-col gap-6 md:min-h-[450px]", className)} {...props}>
       <Card className="flex-1 overflow-hidden p-0">
         <CardContent className="grid flex-1 p-0 md:grid-cols-2">
           <form
@@ -138,10 +220,7 @@ export default function OTPForm({ className, ...props }) {
             }}
             className="flex flex-col items-center justify-center p-6 md:p-8 w-full"
           >
-            <div
-              className="self-start mb-4 cursor-pointer"
-              onClick={() => navigate(-1)}
-            >
+            <div className="self-start mb-4 cursor-pointer" onClick={() => navigate(-1)}>
               <FaArrowLeft size={20} />
             </div>
 
@@ -181,9 +260,7 @@ export default function OTPForm({ className, ...props }) {
                   </InputOTPGroup>
                 </InputOTP>
 
-                {errorMsg && (
-                  <p className="text-red-500 text-sm text-center">{errorMsg}</p>
-                )}
+                {errorMsg && <p className="text-red-500 text-sm text-center">{errorMsg}</p>}
 
                 <FieldDescription className="text-center">
                   Enter the 6-digit code sent to your email.
@@ -204,10 +281,7 @@ export default function OTPForm({ className, ...props }) {
 
                 <FieldDescription className="text-center mt-2">
                   {canResend ? (
-                    <span
-                      className="underline cursor-pointer"
-                      onClick={handleResend}
-                    >
+                    <span className="underline cursor-pointer" onClick={handleResend}>
                       Resend verification code
                     </span>
                   ) : (
@@ -225,8 +299,7 @@ export default function OTPForm({ className, ...props }) {
       </Card>
 
       <FieldDescription className="text-center">
-        By clicking continue, you agree to our{" "}
-        <a href="#">Terms of Service</a> and{" "}
+        By clicking continue, you agree to our <a href="#">Terms of Service</a> and{" "}
         <a href="#">Privacy Policy</a>.
       </FieldDescription>
     </div>

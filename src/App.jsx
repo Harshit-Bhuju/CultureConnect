@@ -1,15 +1,12 @@
-import { Route, Routes,Navigate } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import Loading from "./components/Common/Loading";
 import ProtectedRoute from "./components/Auth/ProtectedRoute";
 import PublicRoute from "./components/Auth/PublicRoute";
 import FlowRoute from "./components/Auth/FlowRoute";
 import { Toaster } from "react-hot-toast";
-import Personal_Settings from "./pages/Settings/Personal_Settings";
-import Password_Settings from "./pages/Settings/Password_Settings";
-import Delete_Accounts from "./pages/Settings/Delete_Accounts";
 
-// Lazy load pages
+// Lazy load all pages
 const Home = lazy(() => import("./pages/Home/Home"));
 const Login = lazy(() => import("./pages/Login/Login"));
 const SignUp = lazy(() => import("./pages/SignUp/SignUp"));
@@ -49,8 +46,17 @@ const ActivityTeam = lazy(() => import("./pages/Activity/Team"));
 const ActivityBilling = lazy(() => import("./pages/Activity/Billing"));
 const ActivityLimits = lazy(() => import("./pages/Activity/Limits"));
 
-//Settings
+// Settings pages (lazy-loaded)
 const Settings = lazy(() => import("./pages/Settings/Settings"));
+const Personal_Settings = lazy(() =>
+  import("./pages/Settings/Personal_Settings")
+);
+const Password_Settings = lazy(() =>
+  import("./pages/Settings/Password_Settings")
+);
+const Delete_Accounts = lazy(() =>
+  import("./pages/Settings/Delete_Accounts")
+);
 
 function App() {
   return (
@@ -75,20 +81,23 @@ function App() {
               <ProtectedRoute>
                 <MarketPlace />
               </ProtectedRoute>
-            }>
+            }
+          >
             <Route path="traditional" element={<TraditionalClothing />} />
             <Route path="instruments" element={<Instruments />} />
             <Route path="arts" element={<Arts />} />
             <Route path="decorations" element={<Decorations />} />
           </Route>
-          {/* learnculture with nested routes */}
+
+          {/* Learn Culture with nested routes */}
           <Route
             path="/learnculture"
             element={
               <ProtectedRoute>
                 <LearnCulture />
               </ProtectedRoute>
-            }>
+            }
+          >
             <Route path="dances" element={<Dances />} />
             <Route path="singing" element={<Singing />} />
             <Route path="instruments" element={<LCInstruments />} />
@@ -102,24 +111,26 @@ function App() {
               <ProtectedRoute>
                 <Activity />
               </ProtectedRoute>
-            }>
+            }
+          >
             <Route path="general" element={<ActivityGeneral />} />
             <Route path="team" element={<ActivityTeam />} />
             <Route path="billing" element={<ActivityBilling />} />
             <Route path="limits" element={<ActivityLimits />} />
           </Route>
 
+          {/* Settings with nested routes */}
           <Route
             path="/settings"
             element={
               <ProtectedRoute>
                 <Settings />
               </ProtectedRoute>
-            }>
-            <Route index element={<Navigate to="personal"  />} />
+            }
+          >
+            <Route index element={<Navigate to="personal" />} />
             <Route path="personal" element={<Personal_Settings />} />
             <Route path="security" element={<Password_Settings />} />
-            
             <Route path="delete" element={<Delete_Accounts />} />
           </Route>
 

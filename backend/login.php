@@ -11,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $password = trim($_POST['password']);
+
     // Prepare statement to prevent SQL injection
     $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
     $stmt->bind_param("s", $email);
@@ -31,13 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(["status" => "error", "message" => "Incorrect password."]);
         exit;
     }
-    //for image and name
-    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $stmt->close();
 
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['logged_in'] = true;
@@ -48,10 +42,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         "message" => "Login successful.",
         "user" => [
             "email" => $user['email'],
-            "name" => $row['username'] ?? '',
-            "gender" => $row['gender'] ?? '',
-            "location" => $row['location'] ?? '',
-            "picture" => $row['profile_pic'] ?? ''
+            "name" => $user['username'] ?? '',
+            "gender" => $user['gender'] ?? '',
+            "location" => $user['location'] ?? '',
+            "avatar" => $user['profile_pic'] ?? ''  // Changed from 'picture' to 'avatar'
         ]
     ]);
     exit;

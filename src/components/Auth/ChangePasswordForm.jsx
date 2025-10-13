@@ -14,7 +14,7 @@ import { useAuth } from "../../context/AuthContext";
 export default function ChangePasswordForm({ mode = "change", className, ...props }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, user, savedAccounts, loadSavedAccounts } = useAuth();
 
   const [form, setForm] = useState({ password: "", confirmPassword: "" });
   const [fieldErrors, setFieldErrors] = useState({});
@@ -76,30 +76,116 @@ export default function ChangePasswordForm({ mode = "change", className, ...prop
       const response = await fetch(phpEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        credentials: "include", // Include session cookies
+        credentials: "include",
         body: formData.toString(),
       });
 
       const result = await response.json();
 
       if (result.status === "success") {
-        toast.success(result.message || "Password updated successfully!");
-
-        // If setting password for Google login, update user in context
+        // If setting password for Google login
         if (mode === "set" && result.user) {
-          login(result.user);
-        }
+          const userEmail = result.user.email.toLowerCase();
+          const isAddingAccount = location.state?.isAddingAccount;
+          const originalUserEmail = location.state?.originalUserEmail;
+          
+          if (isAddingAccount && originalUserEmail) {
+            const currentUserEmail = originalUserEmail.toLowerCase();
+            
+            // Validate not adding own account
+            if (userEmail === currentUserEmail) {
+              toast.error("You cannot add your own account!");
+              navigate("/", { replace: true });
+              return;
+            }
+            
+            // Validate not already saved
+            const isAlreadySaved = savedAccounts.some(
+              acc => acc.email.toLowerCase() === userEmail
+            );
+            
+            if (isAlreadySaved) {
+              toast.error("This account has already been added!");
+              navigate("/", { replace: true });
+              return;
+            }
+            
+            try {
+              // 1️⃣ Save the new account to original user's device
+              const saveFormData = new URLSearchParams();
+              saveFormData.append("original_user_email", currentUserEmail);
+              saveFormData.append("account_email", userEmail);
+              
+              const saveResponse = await fetch(
+                "http://localhost/CultureConnect/backend/save_account_to_device.php",
+                {
+                  method: "POST",
+                  credentials: "include",
+                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                  body: saveFormData.toString(),
+                }
+              );
 
-        // Redirect after success
-        setTimeout(() => {
-          navigate(mode === "set" ? "/" : "/login", { replace: true });
-        }, 1000);
+              const saveResult = await saveResponse.json();
+
+              if (saveResult.status !== "success" && saveResult.status !== "exists") {
+                toast.error(saveResult.message || "Failed to save account");
+                navigate("/", { replace: true });
+                return;
+              }
+
+              // 2️⃣ Switch back to original user
+              const switchBackFormData = new URLSearchParams();
+              switchBackFormData.append("account_email", currentUserEmail);
+              
+              const switchResponse = await fetch(
+                "http://localhost/CultureConnect/backend/switch_account.php",
+                {
+                  method: "POST",
+                  credentials: "include",
+                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                  body: switchBackFormData.toString(),
+                }
+              );
+
+              const switchResult = await switchResponse.json();
+
+              if (switchResult.status === "success") {
+                await login(switchResult.user, true);
+                
+                setTimeout(async () => {
+                  await loadSavedAccounts();
+                  toast.success("Account added successfully!");
+                }, 100);
+                
+                navigate("/", { replace: true });
+              } else {
+                toast.error("Failed to switch back to original account");
+                navigate("/", { replace: true });
+              }
+            } catch (error) {
+              console.error("Error completing add account flow:", error);
+              toast.error("An error occurred while adding account");
+              navigate("/", { replace: true });
+            }
+          } else {
+            // Normal set password flow
+            await login(result.user);
+            toast.success(result.message || "Password set successfully!");
+            navigate("/", { replace: true });
+          }
+        } else {
+          // Change password flow
+          toast.success(result.message || "Password updated successfully!");
+          navigate("/login", { replace: true });
+        }
       } else if (result.status === "same") {
         setFieldErrors({ password: result.message });
       } else {
         setFieldErrors({ password: result.message || "Something went wrong." });
       }
     } catch (error) {
+      console.error("Password change/set error:", error);
       setFieldErrors({ password: "Network error: " + error.message });
     } finally {
       setLoading(false);

@@ -17,7 +17,7 @@ import CropModal from "../../profileSettings_Components/CropModal";
 
 const Personal_Settings = () => {
   const { user: authUser, login } = useAuth();
-  
+
   // Nepal address hook
   const {
     provinces,
@@ -52,13 +52,8 @@ const Personal_Settings = () => {
   const [suggestionModalOpen, setSuggestionModalOpen] = useState(false);
   const genderOptions = ["Male", "Female", "Prefer not to say"];
 
-  const allSuggestions = [
-    "user123", "cool_name", "example.user", "fun_guy", "star.player", "cool_cat",
-    "pro_gamer", "tech_ninja", "creative_mind", "sky_walker", "dream_chaser", "code_master"
-  ];
-  const [usernameSuggestions, setUsernameSuggestions] = useState([
-    "user123", "cool_name", "example.user"
-  ]);
+  // ✅ CHANGED: Remove hardcoded suggestions
+  const [usernameSuggestions, setUsernameSuggestions] = useState([]);
   const [usernameError, setUsernameError] = useState("");
   const [usernameTakenError, setUsernameTakenError] = useState("");
   const [showProfilePicModal, setShowProfilePicModal] = useState(false);
@@ -78,12 +73,7 @@ const Personal_Settings = () => {
         username: authUser.name || "",
         location: authUser.location || "",
         gender: authUser.gender || "",
-        avatar:
-          authUser.picture && authUser.picture.startsWith("http")
-            ? authUser.picture
-            : authUser.picture
-            ? `http://localhost/CultureConnect/backend/uploads/${authUser.picture}`
-            : default_logo,
+        avatar: authUser.avatar || default_logo, // Already normalized in AuthContext
       });
     }
   }, [authUser]);
@@ -91,7 +81,7 @@ const Personal_Settings = () => {
   // Open file selector
   const handleAvatarClick = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
       fileInputRef.current.click();
     }
   };
@@ -107,7 +97,7 @@ const Personal_Settings = () => {
       setShowCropModal(true);
       setCropPosition({ x: 0, y: 0 });
       setZoom(1);
-      
+
       const img = new Image();
       img.onload = () => {
         setImageSize({ width: img.width, height: img.height });
@@ -121,10 +111,10 @@ const Personal_Settings = () => {
   const handleCropAndUpload = async () => {
     if (!imageToCrop) return;
 
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     const img = cropImageRef.current;
-    
+
     if (!img) return;
 
     const size = 400;
@@ -133,68 +123,88 @@ const Personal_Settings = () => {
 
     const containerRect = cropContainerRef.current.getBoundingClientRect();
     const imgRect = img.getBoundingClientRect();
-    
+
     const scaleX = img.naturalWidth / imgRect.width;
     const scaleY = img.naturalHeight / imgRect.height;
-    
+
     const containerCenterX = containerRect.left + containerRect.width / 2;
     const containerCenterY = containerRect.top + containerRect.height / 2;
-    
+
     const imgCenterX = imgRect.left + imgRect.width / 2;
     const imgCenterY = imgRect.top + imgRect.height / 2;
-    
+
     const offsetX = (containerCenterX - imgCenterX) * scaleX;
     const offsetY = (containerCenterY - imgCenterY) * scaleY;
-    
+
     const cropRadius = (containerRect.width / 2) * scaleX;
-    
-    const sourceX = (img.naturalWidth / 2) + offsetX - cropRadius;
-    const sourceY = (img.naturalHeight / 2) + offsetY - cropRadius;
+
+    const sourceX = img.naturalWidth / 2 + offsetX - cropRadius;
+    const sourceY = img.naturalHeight / 2 + offsetY - cropRadius;
     const sourceSize = cropRadius * 2;
 
     ctx.beginPath();
     ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
     ctx.closePath();
     ctx.clip();
-    
-    ctx.drawImage(img, sourceX, sourceY, sourceSize, sourceSize, 0, 0, size, size);
 
-    canvas.toBlob(async (blob) => {
-      const formData = new FormData();
-      formData.append("avatar", blob, "avatar.jpg");
-      formData.append("email", user.email);
-      formData.append("username", user.username);
-      formData.append("location", user.location);
-      formData.append("gender", user.gender);
+    ctx.drawImage(
+      img,
+      sourceX,
+      sourceY,
+      sourceSize,
+      sourceSize,
+      0,
+      0,
+      size,
+      size
+    );
 
-      try {
-        const response = await fetch(
-          "http://localhost/CultureConnect/backend/user_profile.php",
-          {
-            method: "POST",
-            body: formData,
-            credentials: "include",
+    canvas.toBlob(
+      async (blob) => {
+        const formData = new FormData();
+        formData.append("avatar", blob, "avatar.jpg");
+        formData.append("email", user.email);
+        formData.append("location", user.location);
+        formData.append("gender", user.gender);
+
+        try {
+          const response = await fetch(
+            "http://localhost/CultureConnect/backend/user_profile.php",
+            {
+              method: "POST",
+              body: formData,
+              credentials: "include",
+            }
+          );
+
+          const result = await response.json();
+          if (result.status === "success") {
+            toast.success("Profile Picture updated successfully!");
+            const newAvatarUrl = result.avatar.startsWith("http")
+              ? result.avatar
+              : `http://localhost/CultureConnect/backend/uploads/${result.avatar}`;
+            setUser((prev) => ({ ...prev, avatar: newAvatarUrl }));
+
+            // Pass as 'picture' or 'avatar' - AuthContext will normalize it
+            login({
+              ...authUser,
+              avatar: newAvatarUrl,
+              picture: result.avatar, // Keep both for compatibility
+            });
+
+            setShowCropModal(false);
+            setImageToCrop(null);
+          } else {
+            toast.error(result.message || "Failed to update profile picture");
           }
-        );
-
-        const result = await response.json();
-        if (result.status === "success") {
-          toast.success("Profile Picture updated successfully!");
-          const newAvatarUrl = result.avatar.startsWith("http")
-            ? result.avatar
-            : `http://localhost/CultureConnect//backend/uploads/${result.avatar}`;
-          setUser((prev) => ({ ...prev, avatar: newAvatarUrl }));
-          login({ ...authUser, picture: newAvatarUrl });
-          setShowCropModal(false);
-          setImageToCrop(null);
-        } else {
-          toast.error(result.message || "Failed to update profile picture");
+        } catch (err) {
+          toast.error("Error uploading avatar");
+          console.error("Error uploading avatar:", err);
         }
-      } catch (err) {
-        toast.error("Error uploading avatar");
-        console.error("Error uploading avatar:", err);
-      }
-    }, "image/jpeg", 0.95);
+      },
+      "image/jpeg",
+      0.95
+    );
   };
 
   // Handle mouse/touch drag
@@ -203,23 +213,23 @@ const Personal_Settings = () => {
     setIsDragging(true);
     setDragStart({
       x: e.clientX || e.touches?.[0]?.clientX,
-      y: e.clientY || e.touches?.[0]?.clientY
+      y: e.clientY || e.touches?.[0]?.clientY,
     });
   };
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
     e.preventDefault();
-    
+
     const clientX = e.clientX || e.touches?.[0]?.clientX;
     const clientY = e.clientY || e.touches?.[0]?.clientY;
-    
+
     const deltaX = clientX - dragStart.x;
     const deltaY = clientY - dragStart.y;
 
-    setCropPosition(prev => ({
+    setCropPosition((prev) => ({
       x: prev.x + deltaX,
-      y: prev.y + deltaY
+      y: prev.y + deltaY,
     }));
 
     setDragStart({ x: clientX, y: clientY });
@@ -233,9 +243,10 @@ const Personal_Settings = () => {
   const handleWheel = (e) => {
     e.preventDefault();
     const delta = e.deltaY * -0.01;
-    setZoom(prev => Math.min(Math.max(0.5, prev + delta * 0.5), 3));
+    setZoom((prev) => Math.min(Math.max(0.5, prev + delta * 0.5), 3));
   };
 
+  // ✅ CHANGED: Open edit popup with suggestion fetch for username
   const openEditPopup = (field) => {
     setEditingField(field);
     if (field === "location") {
@@ -251,6 +262,10 @@ const Personal_Settings = () => {
         setSelectedMunicipal("");
         setSelectedWard("");
       }
+    } else if (field === "username") {
+      setTempValue(user[field] || "");
+      // Fetch suggestions when opening username edit
+      refreshSuggestions();
     } else {
       setTempValue(user[field] || "");
     }
@@ -271,17 +286,22 @@ const Personal_Settings = () => {
     setSelectedWard("");
   };
 
-  // Save username/location
+  // ✅ CHANGED: Save function - routes to different endpoints
   const handleSave = async () => {
     let value;
-    
+
     if (editingField === "location") {
-      if (!selectedProvince || !selectedDistrict || !selectedMunicipal || !selectedWard) {
+      if (
+        !selectedProvince ||
+        !selectedDistrict ||
+        !selectedMunicipal ||
+        !selectedWard
+      ) {
         toast.error("Please select all location fields");
         return;
       }
       value = `${selectedProvince}, ${selectedDistrict}, ${selectedMunicipal}, ${selectedWard}`;
-    } else {
+    } else if (editingField === "username") {
       if (!tempValue.trim()) {
         toast.error("Please enter a value");
         return;
@@ -296,42 +316,72 @@ const Personal_Settings = () => {
     setEditingField(null);
     setTempValue("");
 
-    const formData = new FormData();
-    formData.append("email", user.email);
-    formData.append("username", field === "username" ? value : user.username);
-    formData.append("location", field === "location" ? value : user.location);
-    formData.append("gender", user.gender);
-
     try {
-      const response = await fetch(
-        "http://localhost/CultureConnect/backend/user_profile.php",
-        {
-          method: "POST",
-          credentials: "include",
-          body: formData,
-        }
-      );
+      let response, result;
 
-      const result = await response.json();
-
-      if (result.status === "success") {
-        const updatedUser = {
-          ...authUser,
-          name: result.username,
-          location: result.location,
-          gender: result.gender,
-          picture: result.avatar,
-        };
-        login(updatedUser);
-        toast.success(
-          `${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully`
+      // ✅ Username update goes to usernamePersonal.php
+      if (field === "username") {
+        response = await fetch(
+          "http://localhost/CultureConnect/backend/usernamePersonal.php",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "update",
+              email: user.email,
+              username: value,
+            }),
+            credentials: "include",
+          }
         );
-      } else {
-        setUser((prev) => ({ ...prev, [field]: oldValue }));
-        if (result.message === "Username already taken") {
-          setUsernameTakenError("Username is already taken, choose another one");
+        result = await response.json();
+
+        if (result.status === "success") {
+          login({
+            ...authUser,
+            name: result.username,
+          });
+          toast.success("Username updated successfully");
+        } else {
+          setUser((prev) => ({ ...prev, username: oldValue }));
+          if (result.message === "Username already taken") {
+            setUsernameTakenError(
+              "Username is already taken, choose another one"
+            );
+          }
+          toast.error(result.message || "Failed to update username");
         }
-        toast.error(result.message || `Failed to update ${field}`);
+      }
+      // ✅ Location update goes to user_profile.php
+      else if (field === "location") {
+        const formData = new FormData();
+        formData.append("email", user.email);
+        formData.append("location", value);
+        formData.append("gender", user.gender);
+
+        response = await fetch(
+          "http://localhost/CultureConnect/backend/user_profile.php",
+          {
+            method: "POST",
+            credentials: "include",
+            body: formData,
+          }
+        );
+        result = await response.json();
+
+        if (result.status === "success") {
+          login({
+            ...authUser,
+            location: result.location,
+            name: result.username,
+            gender: result.gender,
+            avatar: result.avatar, // Changed from 'picture'
+          });
+          toast.success("Location updated successfully");
+        } else {
+          setUser((prev) => ({ ...prev, location: oldValue }));
+          toast.error(result.message || "Failed to update location");
+        }
       }
     } catch (err) {
       setUser((prev) => ({ ...prev, [field]: oldValue }));
@@ -348,7 +398,6 @@ const Personal_Settings = () => {
 
     const formData = new FormData();
     formData.append("email", user.email);
-    formData.append("username", user.username);
     formData.append("location", user.location);
     formData.append("gender", option);
 
@@ -365,14 +414,13 @@ const Personal_Settings = () => {
       const result = await response.json();
 
       if (result.status === "success") {
-        const updatedUser = {
+        login({
           ...authUser,
           name: result.username,
           location: result.location,
           gender: result.gender,
-          picture: result.avatar,
-        };
-        login(updatedUser);
+          avatar: result.avatar, // Changed from 'picture'
+        });
         toast.success("Gender updated successfully");
       } else {
         setUser((prev) => ({ ...prev, gender: oldGender }));
@@ -387,22 +435,75 @@ const Personal_Settings = () => {
 
   const isSaveDisabled = () => {
     if (editingField === "location") {
-      return !selectedProvince || !selectedDistrict || !selectedMunicipal || !selectedWard;
+      return (
+        !selectedProvince ||
+        !selectedDistrict ||
+        !selectedMunicipal ||
+        !selectedWard
+      );
     }
     if (editingField !== "username") return false;
     return !tempValue || usernameError || usernameTakenError;
   };
 
-  const refreshSuggestions = () => {
-    const shuffled = [...allSuggestions].sort(() => Math.random() - 0.5);
-    setUsernameSuggestions(shuffled.slice(0, 3));
+  // ✅ CHANGED: Fetch suggestions from backend
+  const refreshSuggestions = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost/CultureConnect/backend/usernamePersonal.php",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "suggest",
+            email: user.email,
+          }),
+          credentials: "include",
+        }
+      );
+      const result = await response.json();
+      if (result.status === "success") {
+        setUsernameSuggestions(result.suggestions);
+      }
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+    }
   };
 
-  const handleUsernameChange = (value, error) => {
+  // ✅ CHANGED: Real-time username availability check
+  const handleUsernameChange = async (value, error) => {
     setTempValue(value);
     setUsernameError(error);
+
     if (error === "") {
       setUsernameTakenError("");
+
+      // Check availability in real-time if no validation error
+      if (value.trim() && value !== user.username) {
+        try {
+          const response = await fetch(
+            "http://localhost/CultureConnect/backend/usernamePersonal.php",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                action: "check",
+                username: value,
+                email: user.email,
+              }),
+              credentials: "include",
+            }
+          );
+          const result = await response.json();
+          if (result.status === "taken") {
+            setUsernameTakenError("Username is already taken");
+          } else {
+            setUsernameTakenError("");
+          }
+        } catch (err) {
+          console.error("Error checking username:", err);
+        }
+      }
     }
   };
 
@@ -420,11 +521,7 @@ const Personal_Settings = () => {
       {/* Content */}
       <div className="space-y-3">
         {/* Email */}
-        <ProfileField
-          label="Email"
-          value={user.email}
-          isEditable={false}
-        />
+        <ProfileField label="Email" value={user.email} isEditable={false} />
 
         {/* Username */}
         <ProfileField
@@ -466,8 +563,7 @@ const Personal_Settings = () => {
         error={usernameError}
         takenError={usernameTakenError}
         isSaveDisabled={isSaveDisabled()}
-        onOpenSuggestions={() => setSuggestionModalOpen(true)}
-      >
+        onOpenSuggestions={() => setSuggestionModalOpen(true)}>
         {editingField === "location" ? (
           <LocationForm
             provinces={provinces}

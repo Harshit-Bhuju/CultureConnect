@@ -1,27 +1,31 @@
 import React, { useState, useRef, useEffect } from "react";
-import { X, ArrowLeft } from "lucide-react";
+import { X } from "lucide-react";
+import { FaArrowLeft, FaEye, FaEyeSlash } from "react-icons/fa";
+import { useAuth } from '../../context/AuthContext';
 import toast from "react-hot-toast";
-import { useAuth } from "../../context/AuthContext";
-
 
 const Password_Settings = () => {
-  const { user } = useAuth(); // get logged-in user
-  if (!user) return null; // or redirect to login
+  const { user } = useAuth(); 
+  if (!user) return null; 
 
-  const userEmail = user.email; // email from context
+  const userEmail = user.email;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState("current"); // "current" | "otp" | "new"
+  const [currentStep, setCurrentStep] = useState("current");
   const [isOTPSent, setIsOTPSent] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+
+  // Show/Hide password states
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const popupRef = useRef(null);
   const otpInputRefs = useRef([]);
@@ -41,6 +45,10 @@ const Password_Settings = () => {
         }
       );
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const result = await response.json();
       return result;
     } catch (err) {
@@ -48,6 +56,8 @@ const Password_Settings = () => {
       return { status: "error", message: "Server error. Try again later." };
     }
   };
+
+
 
   // ------------------- Reset / Modal -------------------
   const resetStates = () => {
@@ -60,6 +70,9 @@ const Password_Settings = () => {
     setIsOTPSent(false);
     setLoading(false);
     setResendTimer(0);
+    setShowCurrentPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
   };
 
   const openModal = () => {
@@ -88,13 +101,14 @@ const Password_Settings = () => {
       currentPassword,
     });
 
+    setLoading(false);
+
     if (result.status === "success") {
+      toast.success("Current password verified!");
       setCurrentStep("new");
     } else {
       setError(result.message || "Current password is incorrect");
     }
-
-    setLoading(false);
   };
 
   const handleForgotPassword = async () => {
@@ -106,6 +120,8 @@ const Password_Settings = () => {
       action: "send_otp",
     });
 
+    setLoading(false);
+
     if (result.status === "otp_sent") {
       toast.success("OTP sent to your email!");
       setIsOTPSent(true);
@@ -114,11 +130,23 @@ const Password_Settings = () => {
     } else {
       setError(result.message || "Failed to send OTP");
     }
-
-    setLoading(false);
   };
 
   // ------------------- OTP -------------------
+  const handleOTPPaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").trim();
+    const digits = pastedData.replace(/\D/g, "").slice(0, 6);
+
+    if (digits.length === 6) {
+      const newOtp = digits.split("");
+      setOtp(newOtp);
+      setError("");
+      // Auto-verify immediately after paste
+      verifyOTP(digits);
+    }
+  };
+
   const handleOTPChange = (index, value) => {
     if (value.length > 1) value = value[0];
     if (!/^\d*$/.test(value)) return;
@@ -132,6 +160,7 @@ const Password_Settings = () => {
       otpInputRefs.current[index + 1]?.focus();
     }
 
+    // Auto-verify when all 6 digits are entered
     if (value && index === 5) {
       const otpString = newOtp.join("");
       if (otpString.length === 6) {
@@ -147,6 +176,9 @@ const Password_Settings = () => {
   };
 
   const verifyOTP = async (otpString) => {
+    // Prevent duplicate calls
+    if (loading) return;
+    
     setLoading(true);
     setError("");
 
@@ -156,16 +188,18 @@ const Password_Settings = () => {
       otp: otpString,
     });
 
+    setLoading(false);
+
     if (result.status === "success") {
       toast.success("OTP verified successfully!");
       setCurrentStep("new");
     } else {
       setError(result.message || "Invalid OTP. Please try again.");
       setOtp(["", "", "", "", "", ""]);
-      setTimeout(() => otpInputRefs.current[0]?.focus(), 0);
+      requestAnimationFrame(() => {
+        otpInputRefs.current[0]?.focus();
+      });
     }
-
-    setLoading(false);
   };
 
   const handleVerifyOTP = async () => {
@@ -178,7 +212,8 @@ const Password_Settings = () => {
   };
 
   const handleResendOTP = async () => {
-    if (resendTimer > 0) return;
+    if (resendTimer > 0 || loading) return;
+    
     setLoading(true);
     setOtp(["", "", "", "", "", ""]);
     setError("");
@@ -188,14 +223,17 @@ const Password_Settings = () => {
       action: "resend_otp",
     });
 
+    setLoading(false);
+
     if (result.status === "otp_sent") {
       toast.success("OTP resent successfully!");
       setResendTimer(60);
+      requestAnimationFrame(() => {
+        otpInputRefs.current[0]?.focus();
+      });
     } else {
       setError(result.message || "Failed to resend OTP");
     }
-
-    setLoading(false);
   };
 
   // ------------------- Change Password -------------------
@@ -207,8 +245,7 @@ const Password_Settings = () => {
       return;
     }
 
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,16}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,16}$/;
 
     if (!passwordRegex.test(newPassword)) {
       setError(
@@ -230,22 +267,24 @@ const Password_Settings = () => {
       newPassword,
     });
 
+    setLoading(false);
+
     if (result.status === "password_changed") {
       toast.success("Password changed successfully!");
       closeModal();
     } else {
       setError(result.message || "Failed to update password");
     }
-
-    setLoading(false);
   };
 
   // ------------------- Back Button -------------------
   const handleBack = () => {
     setError("");
-    if (currentStep === "new" && isOTPSent) setCurrentStep("otp");
-    else if (currentStep === "new") setCurrentStep("current");
-    else if (currentStep === "otp") {
+    if (currentStep === "new" && isOTPSent) {
+      setCurrentStep("otp");
+    } else if (currentStep === "new") {
+      setCurrentStep("current");
+    } else if (currentStep === "otp") {
       setCurrentStep("current");
       setIsOTPSent(false);
       setOtp(["", "", "", "", "", ""]);
@@ -285,6 +324,7 @@ const Password_Settings = () => {
   };
 
   const handlePrimaryAction = () => {
+    if (loading) return;
     if (currentStep === "current") handleCurrentPasswordNext();
     else if (currentStep === "otp") handleVerifyOTP();
     else handleSaveNewPassword();
@@ -324,7 +364,10 @@ const Password_Settings = () => {
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
           <div
             ref={popupRef}
-            className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl w-full max-w-md relative animate-in zoom-in-95 fade-in duration-200 mx-4"
+            className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl w-full max-w-md relative mx-4"
+            style={{
+              animation: "slideIn 0.2s ease-out"
+            }}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
@@ -335,7 +378,7 @@ const Password_Settings = () => {
                     className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-1 transition-all"
                     disabled={loading}
                   >
-                    <ArrowLeft size={20} />
+                    <FaArrowLeft size={18} />
                   </button>
                 )}
                 <h3 className="text-lg sm:text-xl font-bold text-gray-800">
@@ -360,26 +403,37 @@ const Password_Settings = () => {
                     <label className="text-sm text-gray-600 font-medium mb-2 block">
                       Current Password
                     </label>
-                    <input
-                      type="password"
-                      value={currentPassword}
-                      onChange={(e) => {
-                        setCurrentPassword(e.target.value);
-                        setError("");
-                      }}
-                      className="border-2 border-gray-200 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                      placeholder="Enter your current password"
-                      autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !loading)
-                          handleCurrentPasswordNext();
-                      }}
-                    />
+                    <div className="relative">
+                      <input
+                        type={showCurrentPassword ? "text" : "password"}
+                        value={currentPassword}
+                        onChange={(e) => {
+                          setCurrentPassword(e.target.value);
+                          setError("");
+                        }}
+                        className="border-2 border-gray-200 rounded-xl p-3 pr-12 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        placeholder="Enter your current password"
+                        autoFocus
+                        disabled={loading}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !loading)
+                            handleCurrentPasswordNext();
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        disabled={loading}
+                      >
+                        {showCurrentPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                      </button>
+                    </div>
                   </div>
                   <div className="text-right">
                     <button
                       onClick={handleForgotPassword}
-                      className="text-blue-600 text-sm hover:underline font-medium disabled:opacity-50"
+                      className="text-blue-600 text-sm hover:underline font-medium disabled:opacity-50 "
                       disabled={loading}
                     >
                       Forgot Password?
@@ -392,7 +446,7 @@ const Password_Settings = () => {
               {currentStep === "otp" && (
                 <>
                   <p className="text-gray-600 text-sm mb-4">
-                    Enter the 6-digit code sent to your email
+                    Enter the 6-digit code sent to <strong>{userEmail}</strong>
                   </p>
                   <div className="flex gap-2 justify-center mb-4">
                     {otp.map((digit, index) => (
@@ -405,7 +459,8 @@ const Password_Settings = () => {
                         value={digit}
                         onChange={(e) => handleOTPChange(index, e.target.value)}
                         onKeyDown={(e) => handleOTPKeyDown(index, e)}
-                        className="w-12 h-12 text-center text-xl font-semibold border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        onPaste={index === 0 ? handleOTPPaste : undefined}
+                        className="w-12 h-12 text-center text-xl font-semibold border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all disabled:bg-gray-100 "
                         disabled={loading}
                         autoFocus={index === 0}
                       />
@@ -414,7 +469,7 @@ const Password_Settings = () => {
                   <div className="text-center">
                     <button
                       onClick={handleResendOTP}
-                      className="text-blue-600 text-sm hover:underline font-medium disabled:opacity-50"
+                      className="text-blue-600 text-sm hover:underline font-medium disabled:opacity-50 "
                       disabled={loading || resendTimer > 0}
                     >
                       {resendTimer > 0
@@ -432,55 +487,84 @@ const Password_Settings = () => {
                     <label className="text-sm text-gray-600 font-medium mb-2 block">
                       New Password
                     </label>
-                    <input
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => {
-                        setNewPassword(e.target.value);
-                        setError("");
-                      }}
-                      className="border-2 border-gray-200 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                      placeholder="Enter new password"
-                      autoFocus
-                    />
+                    <div className="relative">
+                      <input
+                        type={showNewPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => {
+                          setNewPassword(e.target.value);
+                          setError("");
+                        }}
+                        className="border-2 border-gray-200 rounded-xl p-3 pr-12 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        placeholder="Enter new password"
+                        autoFocus
+                        disabled={loading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        disabled={loading}
+                      >
+                        {showNewPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Must be 8-16 characters with uppercase, lowercase, number, and symbol
+                    </p>
                   </div>
                   <div>
                     <label className="text-sm text-gray-600 font-medium mb-2 block">
                       Confirm Password
                     </label>
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => {
-                        setConfirmPassword(e.target.value);
-                        setError("");
-                      }}
-                      className="border-2 border-gray-200 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                      placeholder="Confirm new password"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !loading)
-                          handleSaveNewPassword();
-                      }}
-                    />
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          setError("");
+                        }}
+                        className="border-2 border-gray-200 rounded-xl p-3 pr-12 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        placeholder="Confirm new password"
+                        disabled={loading}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !loading)
+                            handleSaveNewPassword();
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        disabled={loading}
+                      >
+                        {showConfirmPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                      </button>
+                    </div>
                   </div>
                 </>
               )}
 
-              {error && <p className="text-red-500 text-sm">{error}</p>}
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
             </div>
 
             {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={closeModal}
-                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl hover:bg-gray-200 transition-all font-medium disabled:opacity-50"
+                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl hover:bg-gray-200 transition-all font-medium disabled:opacity-50 "
                 disabled={loading}
               >
                 Cancel
               </button>
               <button
                 onClick={handlePrimaryAction}
-                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all font-medium shadow-md hover:shadow-lg disabled:opacity-50"
+                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all font-medium shadow-md hover:shadow-lg disabled:opacity-50 "
                 disabled={loading}
               >
                 {loading ? "Processing..." : getButtonText()}
@@ -489,6 +573,19 @@ const Password_Settings = () => {
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      `}</style>
     </div>
   );
 };

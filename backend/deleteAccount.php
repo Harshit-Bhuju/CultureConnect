@@ -8,18 +8,13 @@ $email = $_SESSION['user_email'] ?? '';
 $password = trim($_POST['password'] ?? "");
 
 // Example: verify password and delete user
-$stmt = $conn->prepare("SELECT password FROM users WHERE email = ?");
+$stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();
-
-if ($result->num_rows === 0) {
-  echo json_encode(["success" => false, "message" => "User not found"]);
-  exit;
-}
-
 $user = $result->fetch_assoc();
 
+$picture = $user['profile_pic'];
 // Verify password
 if (!password_verify($password, $user['password'])) {
   echo json_encode(["success" => false, "message" => "Incorrect password"]);
@@ -31,6 +26,9 @@ $delete = $conn->prepare("DELETE FROM users WHERE email = ?");
 $delete->bind_param("s", $email);
 
 if ($delete->execute()) {
+      if (file_exists(__DIR__ . '/uploads/' . $picture)) {
+            unlink(__DIR__ . '/uploads/' . $picture);
+        }
   session_unset();
   session_destroy();
   date_default_timezone_set('Asia/Kathmandu');

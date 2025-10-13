@@ -1,51 +1,135 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import default_logo from "../assets/default-image.jpg";
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+// Normalize user data
+const normalizeUserData = (userData) => {
+  if (!userData) return null;
 
-  // Check session status on mount
+  let avatarUrl =
+    userData.avatar || userData.picture || userData.profile_pic || "";
+  if (!avatarUrl || avatarUrl === "null" || avatarUrl === "undefined")
+    avatarUrl = default_logo;
+  else if (
+    !avatarUrl.startsWith("http") &&
+    !avatarUrl.startsWith("blob:") &&
+    !avatarUrl.startsWith("data:")
+  ) {
+    avatarUrl = `http://localhost/CultureConnect/backend/uploads/${avatarUrl}`;
+  }
+
+  return {
+    email: userData.email || "",
+    name: userData.name || userData.username || "",
+    avatar: avatarUrl,
+    gender: userData.gender || "",
+    location: userData.location || "",
+  };
+};
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(() => {
+    // Load from localStorage initially
+    const saved = localStorage.getItem("authUser");
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [loading, setLoading] = useState(true);
+  const [savedAccounts, setSavedAccounts] = useState([]);
+
+  // Persist user to localStorage
   useEffect(() => {
-    checkSession();
+    if (user) localStorage.setItem("authUser", JSON.stringify(user));
+    else localStorage.removeItem("authUser");
+  }, [user]);
+
+  // Check session on mount
+  useEffect(() => {
+    const initializeAuth = async () => {
+      await checkSession();
+    };
+    initializeAuth();
   }, []);
+
+  // Load saved accounts when user changes
+  useEffect(() => {
+    if (user?.email) loadSavedAccounts();
+    else setSavedAccounts([]);
+  }, [user?.email]);
 
   const checkSession = async () => {
     try {
-      const response = await fetch(
+      const res = await fetch(
         "http://localhost/CultureConnect/backend/check_session.php",
         {
           method: "GET",
-          credentials: "include", // Important: send cookies with request
+          credentials: "include",
         }
       );
-
-      const result = await response.json();
-
-      if (result.status === "success" && result.logged_in) {
-        setUser(result.user);
-      } else {
-        setUser(null);
-      }
-    } catch (error) {
-      console.error("Session check failed:", error);
+      const result = await res.json();
+      if (result.status === "success" && result.logged_in)
+        setUser(normalizeUserData(result.user));
+      else setUser(null);
+    } catch (err) {
+      console.error("Check session error:", err);
       setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const login = (userData) => {
-    setUser(userData);
+  const loadSavedAccounts = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost/CultureConnect/backend/get_saved_accounts.php",
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+      const result = await res.json();
+      if (result.status === "success") {
+        const normalized = (result.accounts || [])
+          .map(normalizeUserData)
+          .filter((acc) => acc && acc.email);
+        setSavedAccounts(normalized);
+      }
+    } catch (err) {
+      console.error("Load saved accounts error:", err);
+      setSavedAccounts([]);
+    }
+  };
+
+  // ⭐ FIXED: Added skipAutoSave parameter to prevent duplicate saves during add account flow
+  const login = async (userData, skipAutoSave = false) => {
+    const normalized = normalizeUserData(userData);
+    setUser(normalized);
+
+    // Only auto-save if this is a normal login (not part of add account flow)
+    if (!skipAutoSave && normalized?.email) {
+      try {
+        const formData = new URLSearchParams();
+        formData.append("account_email", normalized.email);
+
+        await fetch(
+          "http://localhost/CultureConnect/backend/save_account_to_device.php",
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: formData.toString(),
+          }
+        );
+      } catch (err) {
+        console.error("Error saving account:", err);
+      }
+    }
   };
 
   const logout = async () => {
@@ -55,18 +139,87 @@ export const AuthProvider = ({ children }) => {
         credentials: "include",
       });
       setUser(null);
-    } catch (error) {
-      console.error("Logout failed:", error);
+      setSavedAccounts([]);
+    } catch (err) {
+      console.error("Logout error:", err);
     }
   };
 
-  const value = {
-    user,
-    loading,
-    login,
-    logout,
-    checkSession,
+  const switchAccount = async (accountEmail) => {
+    try {
+      const formData = new URLSearchParams();
+      formData.append("account_email", accountEmail);
+
+      const res = await fetch(
+        "http://localhost/CultureConnect/backend/switch_account.php",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData.toString(),
+        }
+      );
+      const result = await res.json();
+
+      if (result.status === "success") {
+        const normalized = normalizeUserData(result.user);
+        setUser(normalized);
+
+        // ⭐ Add small delay before reloading accounts to avoid race condition
+        setTimeout(async () => {
+          await loadSavedAccounts();
+        }, 50);
+
+        return { success: true, user: normalized };
+      }
+
+      return { success: false, message: result.message };
+    } catch (err) {
+      console.error("Switch account error:", err);
+      return { success: false, message: "Network error" };
+    }
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  const removeAccount = async (accountEmail) => {
+    try {
+      const formData = new URLSearchParams();
+      formData.append("account_email", accountEmail);
+
+      const res = await fetch(
+        "http://localhost/CultureConnect/backend/remove_saved_account.php",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData.toString(),
+        }
+      );
+      const result = await res.json();
+      if (result.status === "success") {
+        await loadSavedAccounts();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error("Remove account error:", err);
+      return false;
+    }
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        savedAccounts,
+        login,
+        logout,
+        checkSession,
+        switchAccount,
+        removeAccount,
+        loadSavedAccounts,
+      }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };

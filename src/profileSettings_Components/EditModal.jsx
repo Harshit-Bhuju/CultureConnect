@@ -54,7 +54,7 @@ const EditModal = ({
           <div className="w-full mb-4">
             <p className="text-sm text-gray-500">
               {field === "username"
-                ? "You can change your username only once every 14 days."
+                ? ""
                 : "Select your location from Province to Ward."}
             </p>
           </div>

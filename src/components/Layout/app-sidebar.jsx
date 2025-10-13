@@ -35,22 +35,19 @@ export default function AppSidebar({ children, ...props }) {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const { user } = useAuth();
-  const avatarUrl = user?.picture
-    ? user.picture.startsWith("http")
-      ? user.picture // External URL, e.g. Google
-      : `http://localhost/CultureConnect/backend/uploads/${user.picture}` // Local uploads
-    : default_logo; // fallback
 
-  console.log(user?.name); // First name from Google
-  console.log(user?.picture); // Google avatar URL
-  console.log(user?.email); // Email
+  // User data is already normalized in AuthContext
+  const userData = user || {
+    name: "Guest",
+    email: "guest@example.com",
+    avatar: default_logo,
+  };
+
+  console.log("User from AuthContext:", user);
+
   // Sample data
   const data = {
-    user: {
-      name: user?.name?.trim() || "Guest",
-      email: user?.email?.trim() || "guest@example.com",
-      avatar: avatarUrl,
-    },
+    user: userData,
     teams: [
       {
         name: "CultureConnect",

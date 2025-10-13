@@ -7,7 +7,6 @@ include("header.php");
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   $action = $_POST['action'] ?? '';
-
   $email = $_SESSION['pending_email'] ?? '';
 
   if (empty($email)) {
@@ -15,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
   $username = generateSignupUsername($email, $conn);
-
 
   if ($action === 'resend') {
     $verify_token = random_int(100000, 999999);
@@ -66,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     sendemail_verify($email, $subject, $custom_template);
 
-    exit(); //either exit(); or just exit; both are same
+    exit();
   }
 
   // Verify OTP
@@ -83,8 +81,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($row && $row['verify_token'] == $code) {
     $hash = $row['password'];
 
-    //  Insert into users table
-    $stmt = $conn->prepare("INSERT INTO users (email,username, password) VALUES (?, ?, ?)");
+    // Insert into users table
+    $stmt = $conn->prepare("INSERT INTO users (email, username, password) VALUES (?, ?, ?)");
     $stmt->bind_param("sss", $email, $username, $hash);
     $inserted = $stmt->execute();
     $stmt->close();
@@ -96,28 +94,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $stmt->execute();
       $stmt->close();
 
+      // Get the newly created user's info
+      $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
+      $stmt->bind_param("s", $email);
+      $stmt->execute();
+      $result = $stmt->get_result();
+      $new_user = $result->fetch_assoc();
+      $stmt->close();
 
+      // Log in the new user
       $_SESSION['user_email'] = $email;
       $_SESSION['logged_in'] = true;
       unset($_SESSION['pending_email']);
       unset($_SESSION['pending_verification']);
       $_SESSION['last_activity'] = time();
 
-      $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
-      $stmt->bind_param("s", $email);
-      $stmt->execute();
-      $result = $stmt->get_result();
-      $row = $result->fetch_assoc();
-      $stmt->close();
-
       echo json_encode([
         "status" => "success",
         "user" => [
           "email" => $email,
-          "name" => $row['username'] ?? '',
-          "gender" => $row['gender'] ?? '',
-          "location" => $row['location'] ?? '',
-          "picture" => $row['profile_pic'] ?? ''
+          "name" => $new_user['username'] ?? '',
+          "gender" => $new_user['gender'] ?? '',
+          "location" => $new_user['location'] ?? '',
+          "avatar" => $new_user['profile_pic'] ?? ''
         ]
       ]);
     } else {

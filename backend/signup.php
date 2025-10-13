@@ -10,6 +10,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     echo json_encode(["status" => "error", "message" => "Invalid email format."]);
     exit;
   }
+  // Check if email exists in users (already verified)
+  $stmt = $conn->prepare("SELECT email FROM users WHERE email = ? LIMIT 1");
+  $stmt->bind_param("s", $email);
+  $stmt->execute();
+  $stmt->store_result();
+
+  if ($stmt->num_rows > 0) {
+    $stmt->close();
+    echo json_encode([
+      "status" => "error",
+      "field" => "email",
+      "message" => "Email already in use"
+    ]);
+    exit();
+  }
+  $stmt->close();
 
   $password = trim($_POST['password']);
   $hash = password_hash($password, PASSWORD_ARGON2ID);
@@ -43,22 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   </body>
   </html>
     ";
-  // Check if email exists in users (already verified)
-  $stmt = $conn->prepare("SELECT email FROM users WHERE email = ? LIMIT 1");
-  $stmt->bind_param("s", $email);
-  $stmt->execute();
-  $stmt->store_result();
 
-  if ($stmt->num_rows > 0) {
-    $stmt->close();
-    echo json_encode([
-      "status" => "error",
-      "field" => "email",
-      "message" => "Email already in use"
-    ]);
-    exit();
-  }
-  $stmt->close();
 
   // Check if email exists in pending_users
   $stmt = $conn->prepare("SELECT email FROM pending_users WHERE email = ? LIMIT 1");
@@ -91,7 +92,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $response = json_encode(["status" => "success"]);
 
-
     header("Connection: close");
     header("Content-Type: application/json");
     header("Content-Length: " . strlen($response));
@@ -100,12 +100,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     flush();
     ignore_user_abort(true);
     sendemail_verify($email, $subject, $custom_template);
-
     // Summary:
     // After a successful signup, respond instantly to the user and then continue running
     // in the background to send the verification email, even if the user leaves the page.
     exit();
-    // we need to exit after every json
   } else {
     echo json_encode([
       "status" => "error",
