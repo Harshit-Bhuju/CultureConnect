@@ -83,6 +83,7 @@ function App() {
               </ProtectedRoute>
             }
           >
+            <Route index element={<Navigate to="traditional" />} />
             <Route path="traditional" element={<TraditionalClothing />} />
             <Route path="instruments" element={<Instruments />} />
             <Route path="arts" element={<Arts />} />
@@ -98,6 +99,7 @@ function App() {
               </ProtectedRoute>
             }
           >
+            <Route index element={<Navigate to="dances" />} />
             <Route path="dances" element={<Dances />} />
             <Route path="singing" element={<Singing />} />
             <Route path="instruments" element={<LCInstruments />} />
@@ -113,6 +115,7 @@ function App() {
               </ProtectedRoute>
             }
           >
+            <Route index element={<Navigate to="general" />} />
             <Route path="general" element={<ActivityGeneral />} />
             <Route path="team" element={<ActivityTeam />} />
             <Route path="billing" element={<ActivityBilling />} />

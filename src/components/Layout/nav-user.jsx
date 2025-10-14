@@ -1,17 +1,18 @@
 import {
-  BadgeCheck,
   Bell,
   ChevronsUpDown,
   CreditCard,
   LogOut,
-  Sparkles,
   ChevronRight,
   Plus,
   Trash2,
   X,
+  Users,
+  Settings2,
+  User,
 } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarImage } from "../ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,7 +44,7 @@ export function NavUser({ user }) {
 
   // Filter out the current user from saved accounts
   const otherAccounts = savedAccounts.filter((acc) => acc.email !== user.email);
-  
+
   // Split accounts: first one and rest
   const firstAccount = otherAccounts[0];
   const remainingAccounts = otherAccounts.slice(1);
@@ -166,7 +167,11 @@ export function NavUser({ user }) {
                     </div>
                     <button
                       onClick={(e) =>
-                        handleRemoveAccount(firstAccount.email, firstAccount.name, e)
+                        handleRemoveAccount(
+                          firstAccount.email,
+                          firstAccount.name,
+                          e
+                        )
                       }
                       className="flex-shrink-0 p-1 hover:bg-red-50 rounded transition-colors"
                       aria-label="Remove account">
@@ -185,13 +190,18 @@ export function NavUser({ user }) {
                   <DropdownMenuItem
                     onClick={handleOtherAccountsClick}
                     className="cursor-pointer">
-                    <span className="text-sm">Other Accounts ({remainingAccounts.length})</span>
+                    <span className="text-sm">
+                      Other Accounts ({remainingAccounts.length})
+                    </span>
                     <ChevronRight className="ml-auto h-4 w-4" />
                   </DropdownMenuItem>
                 ) : (
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="cursor-pointer">
-                      <span className="text-sm">Other Accounts ({remainingAccounts.length})</span>
+                      <Users className="w-4 h-4 mr-2" />
+                      <span className="text-sm">
+                        Other Accounts ({remainingAccounts.length})
+                      </span>
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent className="min-w-[280px] max-w-[320px] p-1">
                       <DropdownMenuLabel className="text-xs font-semibold">
@@ -220,7 +230,11 @@ export function NavUser({ user }) {
                             </div>
                             <button
                               onClick={(e) =>
-                                handleRemoveAccount(account.email, account.name, e)
+                                handleRemoveAccount(
+                                  account.email,
+                                  account.name,
+                                  e
+                                )
                               }
                               className="flex-shrink-0 p-1 hover:bg-red-50 rounded transition-colors"
                               aria-label="Remove account">
@@ -251,7 +265,7 @@ export function NavUser({ user }) {
               <DropdownMenuItem
                 onClick={() => navigate("/settings")}
                 className="cursor-pointer">
-                <Sparkles className="w-4 h-4 mr-2" />
+                <Settings2 className="w-4 h-4 mr-2" />
                 Settings
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -260,7 +274,7 @@ export function NavUser({ user }) {
             {/* Account Options */}
             <DropdownMenuGroup>
               <DropdownMenuItem className="cursor-pointer">
-                <BadgeCheck className="w-4 h-4 mr-2" />
+                <User className="w-4 h-4 mr-2" />
                 Account
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">
