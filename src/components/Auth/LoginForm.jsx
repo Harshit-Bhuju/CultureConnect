@@ -446,7 +446,7 @@ export default function LoginForm({ className, mode = "login", ...props }) {
                       <span
                         className="cursor-pointer underline"
                         onClick={switchToOther}>
-                        Sign Up instead
+                        Create Account
                       </span>
                     </>
                   ) : (
@@ -455,7 +455,7 @@ export default function LoginForm({ className, mode = "login", ...props }) {
                       <span
                         className="cursor-pointer underline"
                         onClick={switchToOther}>
-                        Sign In instead
+                        Login
                       </span>
                     </>
                   )}

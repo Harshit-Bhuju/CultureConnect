@@ -2,16 +2,12 @@
 
 import * as React from "react";
 import {
-  AudioWaveform,
   BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
+  GraduationCap,
+  House,
   Settings2,
-  SquareTerminal,
+  Store,
+  TrendingUp,
 } from "lucide-react";
 
 import { NavMain } from "./nav-main";
@@ -27,7 +23,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "../ui/sidebar";
-import CultureConnectLogo from "../../assets/cultureconnectlogo.png";
+import CultureConnectLogo from "../../assets/logo/cultureconnect__fav.png";
 import { useAuth } from "../../context/AuthContext";
 import default_logo from "../../assets/default-image.jpg";
 
@@ -57,11 +53,11 @@ export default function AppSidebar({ children, ...props }) {
       },
     ],
     navMain: [
-      { title: "Home", url: "/", icon: SquareTerminal, isActive: true },
+      { title: "Home", url: "/", icon: House, isActive: true },
       {
         title: "Marketplace",
         url: "/marketplace",
-        icon: Bot,
+        icon: Store,
         items: [
           { title: "Traditional Clothing", url: "/marketplace/traditional" },
           { title: "Musical Instruments", url: "/marketplace/instruments" },
@@ -93,8 +89,8 @@ export default function AppSidebar({ children, ...props }) {
       },
     ],
     projects: [
-      { name: "Be a Seller/Vendor", url: "/projects/seller", icon: Frame },
-      { name: "Be a Teacher", url: "/projects/teacher", icon: PieChart },
+      { name: "Be a Seller/Vendor", url: "/projects/seller", icon: TrendingUp },
+      { name: "Be a Teacher", url: "/projects/teacher", icon: GraduationCap },
     ],
   };
 

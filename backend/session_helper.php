@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-function checkSessionTimeout($timeout = 7*86400)
+function checkSessionTimeout($timeout = 7 * 86400)
 {
     if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $timeout)) {
         session_unset();
