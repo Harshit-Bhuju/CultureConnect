@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import default_logo from "../assets/default-image.jpg";
+import API, { BASE_URL } from "../Configs/ApiEndpoints";
 
 const AuthContext = createContext();
 
@@ -9,30 +10,31 @@ export const useAuth = () => {
   return context;
 };
 
-// Normalize user data
-const normalizeUserData = (userData) => {
-  if (!userData) return null;
+  // Normalize user data
+  const normalizeUserData = (userData) => {
+    if (!userData) return null;
 
-  let avatarUrl =
-    userData.avatar || userData.picture || userData.profile_pic || "";
-  if (!avatarUrl || avatarUrl === "null" || avatarUrl === "undefined")
-    avatarUrl = default_logo;
-  else if (
-    !avatarUrl.startsWith("http") &&
-    !avatarUrl.startsWith("blob:") &&
-    !avatarUrl.startsWith("data:")
-  ) {
-    avatarUrl = `http://localhost/CultureConnect/backend/uploads/${avatarUrl}`;
-  }
+    let avatarUrl =
+      userData.avatar || userData.picture || userData.profile_pic || "";
+    if (!avatarUrl || avatarUrl === "null" || avatarUrl === "undefined")
+      avatarUrl = default_logo;
+    else if (
+      !avatarUrl.startsWith("http") &&
+      !avatarUrl.startsWith("blob:") &&
+      !avatarUrl.startsWith("data:")
+    ) {
+      avatarUrl = `${BASE_URL}/uploads/${avatarUrl}`;
+    }
 
-  return {
-    email: userData.email || "",
-    name: userData.name || userData.username || "",
-    avatar: avatarUrl,
-    gender: userData.gender || "",
-    location: userData.location || "",
+    return {
+      email: userData.email || "",
+      name: userData.name || userData.username || "",
+      avatar: avatarUrl,
+      gender: userData.gender || "",
+      location: userData.location || "",
+      role: userData.role || "user",
+    };
   };
-};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
@@ -65,13 +67,10 @@ export const AuthProvider = ({ children }) => {
 
   const checkSession = async () => {
     try {
-      const res = await fetch(
-        "http://localhost/CultureConnect/backend/check_session.php",
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
+      const res = await fetch(API.CHECK_SESSION, {
+        method: "GET",
+        credentials: "include",
+      });
       const result = await res.json();
       if (result.status === "success" && result.logged_in)
         setUser(normalizeUserData(result.user));
@@ -86,13 +85,10 @@ export const AuthProvider = ({ children }) => {
 
   const loadSavedAccounts = async () => {
     try {
-      const res = await fetch(
-        "http://localhost/CultureConnect/backend/get_saved_accounts.php",
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
+      const res = await fetch(API.GET_SAVED_ACCOUNTS, {
+        method: "GET",
+        credentials: "include",
+      });
       const result = await res.json();
       if (result.status === "success") {
         const normalized = (result.accounts || [])
@@ -112,20 +108,17 @@ export const AuthProvider = ({ children }) => {
     setUser(normalized);
 
     // Only auto-save if this is a normal login (not part of add account flow)
-    if (!skipAutoSave && normalized?.email) {
+   if (!skipAutoSave && normalized?.email && normalized?.role !== "admin") { 
       try {
         const formData = new URLSearchParams();
         formData.append("account_email", normalized.email);
 
-        await fetch(
-          "http://localhost/CultureConnect/backend/save_account_to_device.php",
-          {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: formData.toString(),
-          }
-        );
+        await fetch(API.SAVE_ACCOUNT, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData.toString(),
+        });
       } catch (err) {
         console.error("Error saving account:", err);
       }
@@ -134,7 +127,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch("http://localhost/CultureConnect/backend/logout.php", {
+      await fetch(API.LOGOUT, {
         method: "POST",
         credentials: "include",
       });
@@ -150,15 +143,12 @@ export const AuthProvider = ({ children }) => {
       const formData = new URLSearchParams();
       formData.append("account_email", accountEmail);
 
-      const res = await fetch(
-        "http://localhost/CultureConnect/backend/switch_account.php",
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: formData.toString(),
-        }
-      );
+      const res = await fetch(API.SWITCH_ACCOUNT, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData.toString(),
+      });
       const result = await res.json();
 
       if (result.status === "success") {
@@ -185,15 +175,12 @@ export const AuthProvider = ({ children }) => {
       const formData = new URLSearchParams();
       formData.append("account_email", accountEmail);
 
-      const res = await fetch(
-        "http://localhost/CultureConnect/backend/remove_saved_account.php",
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: formData.toString(),
-        }
-      );
+      const res = await fetch(API.REMOVE_SAVED_ACCOUNT, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData.toString(),
+      });
       const result = await res.json();
       if (result.status === "success") {
         await loadSavedAccounts();

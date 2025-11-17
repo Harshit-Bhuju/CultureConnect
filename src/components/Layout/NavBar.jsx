@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, ShoppingCart, Bell, X } from "lucide-react";
+import { Search, ShoppingCart, Bell, X, Menu } from "lucide-react";
 import { SidebarTrigger, useSidebar } from "../../components/ui/sidebar";
 import { useAuth } from "../../context/AuthContext";
 import CultureConnectLogo from "../../assets/logo/cultureconnect__fav.png";
@@ -58,32 +58,32 @@ const Navbar = () => {
   };
 
   return (
-    <header className="w-full bg-gray-100 sticky top-0 z-50">
-      <div className="max-w-full  sm:px-2 md:px-6 lg:px-8">
+    <header className="w-full bg-sidebar sticky top-0 z-50">
+      <div className="max-w-full px-2 md:pr-6 md:pl-2 lg:pr-8 lg:pl-3">
         <div className="flex items-center justify-between h-16 gap-4">
           {/* Left: Sidebar trigger + logo */}
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <SidebarTrigger className="lg:hidden  text-2xl">☰</SidebarTrigger>
+          <div className="flex  items-center gap-1 flex-shrink-0">
             <div className="flex items-center lg:hidden md:gap-2 sm:gap-1">
+            <SidebarTrigger className="lg:hidden text-2xl"><Menu/></SidebarTrigger>
                 <img
                   src={CultureConnectLogo}
                   alt="CultureConnect Logo"
-                  className="w-4 h-4 md:w-6 md:h-6 object-contain hidden md:block"
+                  className="w-4 h-4 md:w-6 md:h-6 object-contain aria-hidden:true block"
                 />
-                <span className="text-sm font-bold text-gray-800  sm:block">
+                <span className="text-sm md:text-[18px] font-bold text-gray-800  block">
                   CultureConnect
                 </span>
               </div>
 
             {/* Logo and Website Name */}
             {!isSearchOpen && isCollapsed && (
-              <div className="hidden lg:flex items-center gap-2">
+              <div className="hidden lg:flex items-center gap-2">  
                 <img
                   src={CultureConnectLogo}
                   alt="CultureConnect Logo"
                   className="w-8 h-8 object-contain"
                 />
-                <span className="text-xl font-bold text-gray-800  sm:block">
+                <span className="text-xl font-bold text-gray-800  md:block">
                   CultureConnect
                 </span>
               </div>

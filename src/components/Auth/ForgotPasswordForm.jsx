@@ -9,6 +9,7 @@ import { Field, FieldDescription, FieldGroup, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
 import { FaArrowLeft } from "react-icons/fa";
 import Rive from "../../Rive";
+import API from "../../Configs/ApiEndpoints";
 
 export default function ForgotPasswordForm({ className, ...props }) {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export default function ForgotPasswordForm({ className, ...props }) {
       formData.append("email", email);
 
       const response = await fetch(
-        "http://localhost/CultureConnect/backend/forgotPassword.php",
+        API.FORGOT_PASSWORD,
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },

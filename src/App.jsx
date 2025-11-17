@@ -1,5 +1,6 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import { useAuth } from "./context/AuthContext";
 import Loading from "./components/Common/Loading";
 import ProtectedRoute from "./components/Auth/ProtectedRoute";
 import PublicRoute from "./components/Auth/PublicRoute";
@@ -39,14 +40,8 @@ const Instruments = lazy(() => import("./pages/Marketplace/Instruments"));
 const Arts = lazy(() => import("./pages/Marketplace/Arts"));
 const Decorations = lazy(() => import("./pages/Marketplace/Decorations"));
 
-// Activity pages
-const Activity = lazy(() => import("./pages/Activity/Activity"));
-const ActivityGeneral = lazy(() => import("./pages/Activity/General"));
-const ActivityTeam = lazy(() => import("./pages/Activity/Team"));
-const ActivityBilling = lazy(() => import("./pages/Activity/Billing"));
-const ActivityLimits = lazy(() => import("./pages/Activity/Limits"));
 
-// Settings pages (lazy-loaded)
+// Settings pages
 const Settings = lazy(() => import("./pages/Settings/Settings"));
 const Personal_Settings = lazy(() =>
   import("./pages/Settings/Personal_Settings")
@@ -57,6 +52,30 @@ const Password_Settings = lazy(() =>
 const Delete_Accounts = lazy(() =>
   import("./pages/Settings/Delete_Accounts")
 );
+const AdminProtectedRoute = lazy(() =>
+  import("./components/Auth/AdminProtectedRoute")
+);
+const AdminPanel = lazy(() => import("./admin/AdminPanel"));
+
+// Home Route Wrapper - Redirects admin to admin panel
+function HomeRoute() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <Loading message="Loading..." />;
+  }
+
+  // If admin tries to access home, redirect to admin panel
+  if (user?.role === "admin") {
+    return <Navigate to="/admin" replace />;
+  }
+
+  return (
+    <ProtectedRoute>
+      <Home />
+    </ProtectedRoute>
+  );
+}
 
 function App() {
   return (
@@ -64,16 +83,20 @@ function App() {
       <Toaster position="top-center" reverseOrder={false} />
       <Suspense fallback={<Loading message="Loading page..." />}>
         <Routes>
-          {/* ---------------------- Protected Routes ---------------------- */}
+          {/* ---------------------- Home Route with Admin Redirect -------- */}
+          <Route path="/" element={<HomeRoute />} />
+
+          {/* ---------------------- Admin Panel --------------------------- */}
           <Route
-            path="/"
+            path="/admin"
             element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
+              <AdminProtectedRoute>
+                <AdminPanel />
+              </AdminProtectedRoute>
             }
           />
 
+          {/* ---------------------- Protected Routes ---------------------- */}
           {/* Marketplace with nested routes */}
           <Route
             path="/marketplace"
@@ -86,7 +109,7 @@ function App() {
             <Route index element={<Navigate to="traditional" />} />
             <Route path="traditional" element={<TraditionalClothing />} />
             <Route path="instruments" element={<Instruments />} />
-            <Route path="arts" element={<Arts />} />
+            <Route path="arts_decors" element={<Arts />} />
             <Route path="decorations" element={<Decorations />} />
           </Route>
 
@@ -106,21 +129,7 @@ function App() {
             <Route path="art" element={<ArtCrafts />} />
           </Route>
 
-          {/* Activity with nested routes */}
-          <Route
-            path="/activity"
-            element={
-              <ProtectedRoute>
-                <Activity />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Navigate to="general" />} />
-            <Route path="general" element={<ActivityGeneral />} />
-            <Route path="team" element={<ActivityTeam />} />
-            <Route path="billing" element={<ActivityBilling />} />
-            <Route path="limits" element={<ActivityLimits />} />
-          </Route>
+         
 
           {/* Settings with nested routes */}
           <Route

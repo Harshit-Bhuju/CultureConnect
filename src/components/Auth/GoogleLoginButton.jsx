@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Spinner } from "../ui/spinner";
+import API from "../../Configs/ApiEndpoints";
 
 export default function GoogleLoginButton({ isAddingAccount = false }) {
   const [loading, setLoading] = useState(false);
@@ -27,8 +28,7 @@ export default function GoogleLoginButton({ isAddingAccount = false }) {
       formData.append("email", email);
       formData.append("picture", picture);
 
-      const response = await fetch(
-        "http://localhost/CultureConnect/backend/google_login.php",
+      const response = await fetch(API.GOOGLE_LOGIN,
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -77,8 +77,7 @@ export default function GoogleLoginButton({ isAddingAccount = false }) {
           saveFormData.append("original_user_email", currentUserEmail);
           saveFormData.append("account_email", loginEmail);
 
-          const saveResponse = await fetch(
-            "http://localhost/CultureConnect/backend/save_account_to_device.php",
+          const saveResponse = await fetch(API.SAVE_ACCOUNT,
             {
               method: "POST",
               credentials: "include",
@@ -95,28 +94,30 @@ export default function GoogleLoginButton({ isAddingAccount = false }) {
           }
 
           // Switch back to original user
-          const switchFormData = new URLSearchParams();
-          switchFormData.append("account_email", currentUserEmail);
+         // Stay logged in as the NEW account
+// Check session to ensure sync
+const checkRes = await fetch(API.CHECK_SESSION,
+  {
+    method: "GET",
+    credentials: "include",
+  }
+);
+const checkResult = await checkRes.json();
 
-          const switchResponse = await fetch(
-            "http://localhost/CultureConnect/backend/switch_account.php",
-            {
-              method: "POST",
-              credentials: "include",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
-              body: switchFormData.toString(),
-            }
-          );
 
-          const switchResult = await switchResponse.json();
-          if (switchResult.status === "success") {
-            await login(switchResult.user, true);
-            await loadSavedAccounts();
-            toast.success("Account added successfully!");
-            navigate("/", { replace: true });
-          } else {
-            toast.error("Failed to switch back to original account");
-          }
+
+if (checkResult.status === "success" && checkResult.logged_in) {
+  await login(checkResult.user, true);
+  
+  setTimeout(async () => {
+    await loadSavedAccounts();
+  }, 100);
+  
+  toast.success("Account added and logged in successfully!");
+  navigate("/", { replace: true });
+} else {
+  toast.error("Session sync failed");
+}
         } else {
           // Normal login
           await login(result.user);

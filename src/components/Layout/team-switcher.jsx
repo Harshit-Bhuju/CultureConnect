@@ -11,6 +11,7 @@ import {
   useSidebar,
   SidebarTrigger,
 } from "../ui/sidebar";
+import { PanelLeftIcon } from "lucide-react";
 
 export function TeamSwitcher({ teams }) {
   const { isMobile, state } = useSidebar();
@@ -54,7 +55,7 @@ export function TeamSwitcher({ teams }) {
           )}
           {/* Sidebar trigger - only show when NOT collapsed */}
           {!isCollapsed && (
-            <SidebarTrigger className="w-9 h-9 p-2 rounded-xl hover:bg-sidebar-accent transition [&_svg]:w-5 [&_svg]:h-5" />
+            <SidebarTrigger className="w-9 h-9 p-2 rounded-xl hover:bg-sidebar-accent transition [&_svg]:w-5 [&_svg]:h-5" ><PanelLeftIcon/></SidebarTrigger>
           )}
         </div>
       </SidebarMenuItem>

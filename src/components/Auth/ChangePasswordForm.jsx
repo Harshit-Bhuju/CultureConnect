@@ -10,8 +10,13 @@ import { FaArrowLeft, FaEye, FaEyeSlash } from "react-icons/fa";
 import Rive from "../../Rive";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
+import API from "../../Configs/ApiEndpoints";
 
-export default function ChangePasswordForm({ mode = "change", className, ...props }) {
+export default function ChangePasswordForm({
+  mode = "change",
+  className,
+  ...props
+}) {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, user, savedAccounts, loadSavedAccounts } = useAuth();
@@ -26,20 +31,21 @@ export default function ChangePasswordForm({ mode = "change", className, ...prop
     set: {
       title: "Set Your Password",
       description: "Create a password to secure your account.",
-      phpEndpoint: "http://localhost/CultureConnect/backend/setpassword.php",
+      phpEndpoint: API.SET_PASSWORD,
       submitText: "Set Password",
       fallbackRedirect: "/login",
     },
     change: {
       title: "Change Your Password",
       description: "Update your password for account security.",
-      phpEndpoint: "http://localhost/CultureConnect/backend/changePassword.php",
+      phpEndpoint: API.CHANGE_PASSWORD,
       submitText: "Change Password",
       fallbackRedirect: "/login",
     },
   };
 
-  const { title, description, phpEndpoint, submitText, fallbackRedirect } = config[mode];
+  const { title, description, phpEndpoint, submitText, fallbackRedirect } =
+    config[mode];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -88,79 +94,81 @@ export default function ChangePasswordForm({ mode = "change", className, ...prop
           const userEmail = result.user.email.toLowerCase();
           const isAddingAccount = location.state?.isAddingAccount;
           const originalUserEmail = location.state?.originalUserEmail;
-          
+
           if (isAddingAccount && originalUserEmail) {
             const currentUserEmail = originalUserEmail.toLowerCase();
-            
+
             // Validate not adding own account
             if (userEmail === currentUserEmail) {
               toast.error("You cannot add your own account!");
               navigate("/", { replace: true });
               return;
             }
-            
+
             // Validate not already saved
             const isAlreadySaved = savedAccounts.some(
-              acc => acc.email.toLowerCase() === userEmail
+              (acc) => acc.email.toLowerCase() === userEmail
             );
-            
+
             if (isAlreadySaved) {
               toast.error("This account has already been added!");
               navigate("/", { replace: true });
               return;
             }
-            
+
             try {
               // 1️⃣ Save the new account to original user's device
               const saveFormData = new URLSearchParams();
               saveFormData.append("original_user_email", currentUserEmail);
               saveFormData.append("account_email", userEmail);
-              
+
               const saveResponse = await fetch(
-                "http://localhost/CultureConnect/backend/save_account_to_device.php",
+                API.SAVE_ACCOUNT,
                 {
                   method: "POST",
                   credentials: "include",
-                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                  headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                  },
                   body: saveFormData.toString(),
                 }
               );
 
               const saveResult = await saveResponse.json();
 
-              if (saveResult.status !== "success" && saveResult.status !== "exists") {
+              if (
+                saveResult.status !== "success" &&
+                saveResult.status !== "exists"
+              ) {
                 toast.error(saveResult.message || "Failed to save account");
                 navigate("/", { replace: true });
                 return;
               }
 
               // 2️⃣ Switch back to original user
-              const switchBackFormData = new URLSearchParams();
-              switchBackFormData.append("account_email", currentUserEmail);
-              
-              const switchResponse = await fetch(
-                "http://localhost/CultureConnect/backend/switch_account.php",
+              // 2️⃣ Stay logged in as NEW account - check session to sync
+              const checkRes = await fetch(
+                API.CHECK_SESSION,
                 {
-                  method: "POST",
+                  method: "GET",
                   credentials: "include",
-                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                  body: switchBackFormData.toString(),
                 }
               );
 
-              const switchResult = await switchResponse.json();
+              const checkResult = await checkRes.json();
 
-              if (switchResult.status === "success") {
-                await login(switchResult.user, true);
-                
+              if (checkResult.status === "success" && checkResult.logged_in) {
+                // Login with the NEW account
+                await login(checkResult.user, true);
+
                 setTimeout(async () => {
                   await loadSavedAccounts();
                   toast.success("Account added successfully!");
                 }, 100);
-                
+
                 navigate("/", { replace: true });
               } else {
-                toast.error("Failed to switch back to original account");
+                toast.error("Session sync failed");
                 navigate("/", { replace: true });
               }
             } catch (error) {
@@ -193,18 +201,26 @@ export default function ChangePasswordForm({ mode = "change", className, ...prop
   };
 
   return (
-    <div className={cn("flex flex-col gap-6 md:min-h-[450px]", className)} {...props}>
+    <div
+      className={cn("flex flex-col gap-6 md:min-h-[450px]", className)}
+      {...props}>
       <Card className="flex-1 overflow-hidden p-0">
         <CardContent className="grid flex-1 p-0 md:grid-cols-2">
-          <form onSubmit={handleSubmit} className="flex flex-col justify-center p-6 md:p-8 w-full">
-            <div className="self-start mb-4 cursor-pointer" onClick={() => navigate(-1)}>
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col justify-center p-6 md:p-8 w-full">
+            <div
+              className="self-start mb-4 cursor-pointer"
+              onClick={() => navigate(-1)}>
               <FaArrowLeft size={20} />
             </div>
 
             <FieldGroup>
               <Field className="text-center">
                 <h1 className="text-2xl font-bold">{title}</h1>
-                <p className="text-muted-foreground text-sm mt-1">{description}</p>
+                <p className="text-muted-foreground text-sm mt-1">
+                  {description}
+                </p>
               </Field>
 
               <Field>
@@ -221,13 +237,16 @@ export default function ChangePasswordForm({ mode = "change", className, ...prop
                   <button
                     type="button"
                     className="absolute right-2 top-2 text-gray-500"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
+                    onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
                 <p className="text-red-500 text-sm mt-1">
-                  {fieldErrors.password || <span className="text-muted-foreground">Enter a strong password.</span>}
+                  {fieldErrors.password || (
+                    <span className="text-muted-foreground">
+                      Enter a strong password.
+                    </span>
+                  )}
                 </p>
               </Field>
 
@@ -245,13 +264,18 @@ export default function ChangePasswordForm({ mode = "change", className, ...prop
                   <button
                     type="button"
                     className="absolute right-2 top-2 text-gray-500"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
+                    onClick={() =>
+                      setShowConfirmPassword(!showConfirmPassword)
+                    }>
                     {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
                 <p className="text-red-500 text-sm mt-1">
-                  {fieldErrors.confirmPassword || <span className="text-muted-foreground">Enter the same password again.</span>}
+                  {fieldErrors.confirmPassword || (
+                    <span className="text-muted-foreground">
+                      Enter the same password again.
+                    </span>
+                  )}
                 </p>
               </Field>
 
@@ -261,13 +285,17 @@ export default function ChangePasswordForm({ mode = "change", className, ...prop
                     <div className="flex items-center gap-2">
                       <Spinner className="w-4 h-4" /> {submitText}...
                     </div>
-                  ) : submitText}
+                  ) : (
+                    submitText
+                  )}
                 </Button>
               </Field>
 
               <FieldDescription className="text-center mt-3">
                 Remembered your password?{" "}
-                <span className="underline cursor-pointer" onClick={() => navigate("/login")}>
+                <span
+                  className="underline cursor-pointer"
+                  onClick={() => navigate("/login")}>
                   Go back to login
                 </span>
               </FieldDescription>
@@ -282,8 +310,14 @@ export default function ChangePasswordForm({ mode = "change", className, ...prop
 
       <FieldDescription className="text-center">
         By continuing, you agree to our{" "}
-        <a href="#" className="underline">Terms of Service</a> and{" "}
-        <a href="#" className="underline">Privacy Policy</a>.
+        <a href="#" className="underline">
+          Terms of Service
+        </a>{" "}
+        and{" "}
+        <a href="#" className="underline">
+          Privacy Policy
+        </a>
+        .
       </FieldDescription>
     </div>
   );

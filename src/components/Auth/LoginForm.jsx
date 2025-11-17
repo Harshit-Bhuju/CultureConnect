@@ -17,6 +17,7 @@ import Rive from "../../Rive";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import GoogleLoginButton from "./GoogleLoginButton";
+import API from "../../Configs/ApiEndpoints";
 
 export default function LoginForm({ className, mode = "login", ...props }) {
   const { login, user, loadSavedAccounts, savedAccounts } = useAuth();
@@ -82,7 +83,7 @@ export default function LoginForm({ className, mode = "login", ...props }) {
         formData.append("password", form.password);
 
         const response = await fetch(
-          "http://localhost/CultureConnect/backend/signup.php",
+          API.SIGNUP,
           {
             method: "POST",
             credentials: "include",
@@ -116,7 +117,7 @@ export default function LoginForm({ className, mode = "login", ...props }) {
         formData.append("password", form.password);
 
         const response = await fetch(
-          "http://localhost/CultureConnect/backend/login.php",
+          API.LOGIN,
           {
             method: "POST",
             credentials: "include",
@@ -128,89 +129,103 @@ export default function LoginForm({ className, mode = "login", ...props }) {
         const result = await response.json();
 
         if (result.status === "success") {
-          if (isAddingAccount) {
-            const loginEmail = form.email.toLowerCase();
-            const currentUserEmail = user?.email?.toLowerCase();
+       if (isAddingAccount) {
+  const loginEmail = form.email.toLowerCase();
+  const currentUserEmail = user?.email?.toLowerCase();
 
-            // Check if adding own account
-            if (loginEmail === currentUserEmail) {
-              toast.error("You cannot add your own account!");
-              setLoading(false);
-              navigate("/", { replace: true });
-              return;
-            }
+  if (result.user.role === "admin") {
+    toast.error("Admin accounts cannot be added!");
+    setLoading(false);
+    navigate("/", { replace: true });
+    return;
+  }
 
-            // Check if already saved
-            const isAlreadySaved = savedAccounts.some(
-              (acc) => acc.email.toLowerCase() === loginEmail
-            );
-            if (isAlreadySaved) {
-              toast.error("This account has already been added!");
-              setLoading(false);
-              navigate("/", { replace: true });
-              return;
-            }
+  // Check if adding own account
+  if (loginEmail === currentUserEmail) {
+    toast.error("You cannot add your own account!");
+    setLoading(false);
+    navigate("/", { replace: true });
+    return;
+  }
 
-            try {
-              // Save account with ORIGINAL user context
-              const saveFormData = new URLSearchParams();
-              saveFormData.append("original_user_email", currentUserEmail);
-              saveFormData.append("account_email", loginEmail);
+  // Check if already saved
+  const isAlreadySaved = savedAccounts.some(
+    (acc) => acc.email.toLowerCase() === loginEmail
+  );
+  if (isAlreadySaved) {
+    toast.error("This account has already been added!");
+    setLoading(false);
+    navigate("/", { replace: true });
+    return;
+  }
 
-              const saveResponse = await fetch(
-                "http://localhost/CultureConnect/backend/save_account_to_device.php",
-                {
-                  method: "POST",
-                  credentials: "include",
-                  headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                  },
-                  body: saveFormData.toString(),
-                }
-              );
-              const saveResult = await saveResponse.json();
+  try {
+    // Save account with ORIGINAL user context
+    const saveFormData = new URLSearchParams();
+    saveFormData.append("original_user_email", currentUserEmail);
+    saveFormData.append("account_email", loginEmail);
 
-              if (
-                saveResult.status === "success" ||
-                saveResult.status === "exists"
-              ) {
-                // Switch back to original user
-                const switchFormData = new URLSearchParams();
-                switchFormData.append("account_email", currentUserEmail);
+    const saveResponse = await fetch(
+      API.SAVE_ACCOUNT,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: saveFormData.toString(),
+      }
+    );
+    const saveResult = await saveResponse.json();
 
-                const switchResponse = await fetch(
-                  "http://localhost/CultureConnect/backend/switch_account.php",
-                  {
-                    method: "POST",
-                    credentials: "include",
-                    headers: {
-                      "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    body: switchFormData.toString(),
-                  }
-                );
-                const switchResult = await switchResponse.json();
-
-                if (switchResult.status === "success") {
-                  await login(switchResult.user, true);
-                  await loadSavedAccounts();
-                  toast.success("Account added successfully!");
-                  navigate("/", { replace: true });
-                } else {
-                  toast.error("Failed to switch back to original account");
-                }
-              } else {
-                toast.error(saveResult.message || "Failed to save account");
-              }
-            } catch (err) {
-              console.error("Save account error:", err);
-              toast.error("Failed to save account");
-            }
-          } else {
+    if (saveResult.status === "success" || saveResult.status === "exists") {
+      // ✅ Backend session is already on NEW account from login.php
+      // Refresh session to ensure frontend syncs with backend
+      
+      try {
+        const checkRes = await fetch(
+          API.CHECK_SESSION,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+        const checkResult = await checkRes.json();
+        
+        if (checkResult.status === "success" && checkResult.logged_in) {
+          // Use session data to ensure sync
+          await login(checkResult.user, true);
+          
+          // Load saved accounts after small delay
+          setTimeout(async () => {
+            await loadSavedAccounts();
+          }, 100);
+          
+          toast.success("Account added and logged in successfully!");
+          navigate("/", { replace: true });
+        } else {
+          toast.error("Session sync failed");
+        }
+      } catch (sessionErr) {
+        console.error("Session check error:", sessionErr);
+        toast.error("Failed to sync session");
+      }
+    } else {
+      toast.error(saveResult.message || "Failed to save account");
+    }
+  } catch (err) {
+    console.error("Save account error:", err);
+    toast.error("Failed to save account");
+  }
+} else {
             // Normal login flow
             await login(result.user);
             toast.success("Logged in successfully!");
-            navigate("/", { replace: true });
+            if (result.user.role === "admin") {
+    navigate("/admin", { replace: true }); // admin panel
+  } else {
+    navigate("/", { replace: true }); // normal user
+  }
           }
         } else {
           setFieldErrors({ password: result.message || "Login failed" });

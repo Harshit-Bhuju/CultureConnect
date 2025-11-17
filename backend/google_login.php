@@ -22,8 +22,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($result && $result->num_rows > 0) {
         $row = $result->fetch_assoc();
 
-       
+
         if (!empty($row['password'])) {
+            if ($row['profile_pic'] == 'default-image.jpg') {
+                $stmt = $conn->prepare("UPDATE users SET profile_pic = ? WHERE email = ?");
+                $stmt->bind_param("ss", $picture, $email);
+                $stmt->execute();
+                $stmt->close();
+
+                $row['profile_pic'] = $picture;
+            }
             $_SESSION['user_email'] = $email;
             $_SESSION['logged_in'] = true;
             $_SESSION['last_activity'] = time();
@@ -35,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     "name" => $row['username'],
                     "gender" => $row['gender'],
                     "location" => $row['location'],
-                    "avatar" => $row['profile_pic']
+                    "avatar" => $row['profile_pic'],
                 ]
             ]);
             exit;

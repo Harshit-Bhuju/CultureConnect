@@ -22,12 +22,13 @@ if (!$account_to_save) {
 }
 
 try {
-    // Optional: ensure the account exists in users table
-    $stmt = $conn->prepare("SELECT email FROM users WHERE email=? LIMIT 1");
+    // Check if the account exists and get user info including role
+    $stmt = $conn->prepare("SELECT email, role FROM users WHERE email=? LIMIT 1");
     $stmt->bind_param("s", $account_to_save);
     $stmt->execute();
     $result = $stmt->get_result();
     $user_exists = $result->num_rows > 0;
+    $user_data = $result->fetch_assoc();
     $stmt->close();
 
     if (!$user_exists) {
@@ -36,6 +37,16 @@ try {
         $stmt->bind_param("s", $account_to_save);
         $stmt->execute();
         $stmt->close();
+    } else {
+        // Check if user is admin
+        if (isset($user_data['role']) && $user_data['role'] === 'admin') {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Admin accounts cannot be saved",
+                "saved_email" => $account_to_save
+            ]);
+            exit;
+        }
     }
 
     // Check if account is already saved for this device
@@ -52,7 +63,7 @@ try {
         $stmt->bind_param("ss", $device_id, $account_to_save);
         $stmt->execute();
         $stmt->close();
-
+        
         echo json_encode([
             "status" => "success",
             "message" => "Account saved",

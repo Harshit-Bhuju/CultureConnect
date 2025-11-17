@@ -1,6 +1,5 @@
 import { ChevronRight } from "lucide-react"
 import { NavLink, useLocation, useNavigate } from "react-router-dom"
-import { useState } from "react"
 import {
   Collapsible,
   CollapsibleContent,
@@ -22,35 +21,13 @@ export function NavMain({ items }) {
   const location = useLocation()
   const navigate = useNavigate()
   const currentPath = location.pathname
-    const { state } = useSidebar();
+  const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
 
-  // Track which items are open using their titles as keys
-  const [openItems, setOpenItems] = useState(() => {
-    // Initialize with items that have active subitems
-    const initialOpen = {}
-    items.forEach((item) => {
-      const hasSubItems = item.items && item.items.length > 0
-      const hasActiveSubItem = hasSubItems && item.items.some(sub => sub.url === currentPath)
-      if (currentPath === item.url || hasActiveSubItem) {
-        initialOpen[item.title] = true
-      }
-    })
-    return initialOpen
-  })
-
-  const toggleItem = (title, url, hasSubItems) => {
-    const wasOpen = openItems[title]
-    
-    // If clicking on an already open item with subitems, navigate to its URL
-    if (wasOpen && hasSubItems && url) {
+  const handleTopLevelClick = (url, hasSubItems) => {
+    // If clicking on an item with subitems, navigate to its URL
+    if (hasSubItems && url) {
       navigate(url)
-    } else {
-      // Toggle the item
-      setOpenItems(prev => ({
-        ...prev,
-        [title]: !prev[title]
-      }))
     }
   }
 
@@ -63,34 +40,26 @@ export function NavMain({ items }) {
           const isTopLevelActive =
             currentPath === item.url ||
             (hasSubItems && item.items.some(sub => sub.url === currentPath))
-          const isOpen = openItems[item.title] || false
 
           return (
             <SidebarMenuItem key={item.title}>
               <Collapsible
-                open={isOpen}
-                onOpenChange={() => toggleItem(item.title, item.url, hasSubItems)}
+                open={true}
                 className="group/collapsible"
               >
                 {/* Top-level button */}
                 <div className="flex items-center w-full">
                   {hasSubItems ? (
-                    // If has subitems, make it a collapsible trigger
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton
-                        tooltip={item.title}
-                        className="flex items-center w-full"
-                     data-active={isTopLevelActive && isCollapsed}
-                      >
-                        {item.icon && <item.icon />}
-                        <span className="ml-2">{item.title}</span>
-                        <ChevronRight
-                          className={`ml-auto transition-transform duration-200 ${
-                            isOpen ? "rotate-90" : ""
-                          }`}
-                        />
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
+                    // If has subitems, make it clickable but not a collapsible trigger
+                    <SidebarMenuButton
+                      tooltip={item.title}
+                      className="flex items-center w-full"
+                      data-active={isTopLevelActive && isCollapsed}
+                      onClick={() => handleTopLevelClick(item.url, hasSubItems)}
+                    >
+                      {item.icon && <item.icon />}
+                      <span className="ml-2">{item.title}</span>
+                    </SidebarMenuButton>
                   ) : (
                     // If no subitems, make it a regular link
                     <SidebarMenuButton
@@ -102,7 +71,6 @@ export function NavMain({ items }) {
                       <NavLink to={item.url} className="flex items-center w-full">
                         {item.icon && <item.icon />}
                         <span className="ml-2">{item.title}</span>
-                        <ChevronRight className="ml-auto" />
                       </NavLink>
                     </SidebarMenuButton>
                   )}

@@ -56,9 +56,10 @@ const Delete_Accounts = () => {
 
       if (data.success) {
         setSuccess(true);
-        toast.success("Your account has been successfully deleted");
         setTimeout(() => {
           logout();
+        toast.success("Your account has been successfully deleted");
+
         }, 1500);
       } else {
         setError(data.message || "Failed to delete account. Please try again.");
@@ -84,39 +85,6 @@ const Delete_Accounts = () => {
     }
   };
 
-  const handleLogoutOtherSessions = async () => {
-    try {
-      setError("");
-      setLoading(true);
-
-      const formData = new URLSearchParams();
-      formData.append("action", "logout_others");
-
-      const response = await fetch(
-        "http://localhost/CultureConnect/backend/logoutOtherSessions.php",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          credentials: "include",
-          body: formData.toString(),
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success("Logged out from all other sessions successfully");
-        handleCancel();
-      } else {
-        setError(data.message || "Failed to logout from other sessions.");
-      }
-    } catch (err) {
-      console.error("Logout other sessions error:", err);
-      setError("An error occurred. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handlePrimaryAction = () => {
     if (loading) return;
@@ -125,9 +93,7 @@ const Delete_Accounts = () => {
       handleDelete();
     } else if (modalType === "logout") {
       handleLogout();
-    } else if (modalType === "logoutOthers") {
-      handleLogoutOtherSessions();
-    }
+    } 
   };
 
   const getModalConfig = () => {
@@ -146,14 +112,6 @@ const Delete_Accounts = () => {
           description: "Are you sure you want to logout from this session?",
           requirePassword: false,
           buttonText: "Logout",
-          buttonClass: "from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700",
-        };
-      case "logoutOthers":
-        return {
-          title: "Logout from All Other Sessions",
-          description: "This will log you out from all other active sessions. Your current session will remain active.",
-          requirePassword: false,
-          buttonText: "Logout Other Sessions",
           buttonClass: "from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700",
         };
       default:
