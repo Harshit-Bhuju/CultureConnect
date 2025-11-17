@@ -15,6 +15,7 @@ import { FaArrowLeft } from "react-icons/fa";
 import Rive from "../../Rive";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
+import API from "../../Configs/ApiEndpoints";
 
 export default function OTPForm({ className, ...props }) {
   const navigate = useNavigate();
@@ -24,7 +25,9 @@ export default function OTPForm({ className, ...props }) {
   const source = location.state?.source || "forgot";
   const isAddingAccount = location.state?.isAddingAccount || false;
   const originalUserEmail = location.state?.originalUserEmail;
-  const redirectTo = location.state?.redirectTo || (source === "forgot" ? "/changepassword" : "/");
+  const redirectTo =
+    location.state?.redirectTo ||
+    (source === "forgot" ? "/changepassword" : "/");
 
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(60);
@@ -34,8 +37,8 @@ export default function OTPForm({ className, ...props }) {
 
   const otpVerifyUrl =
     source === "forgot"
-      ? "http://localhost/CultureConnect/backend/forgotPassword_verify.php"
-      : "http://localhost/CultureConnect/backend/signup_verify.php";
+      ? API.FORGOT_PASSWORD_VERIFY
+      : API.SIGNUP_VERIFY;
 
   const autoSubmitRef = useRef(false);
 
@@ -76,29 +79,29 @@ export default function OTPForm({ className, ...props }) {
       if (result.status === "success") {
         if (source === "signup" && result.user) {
           const verifiedEmail = result.user.email.toLowerCase();
-          
+
           if (isAddingAccount && originalUserEmail) {
             // ADD ACCOUNT FLOW
             const currentUserEmail = originalUserEmail.toLowerCase();
-            
+
             // Validate not adding own account
             if (verifiedEmail === currentUserEmail) {
               toast.error("You cannot add your own account!");
               navigate("/", { replace: true });
               return;
             }
-            
+
             // Validate not already saved
             const isAlreadySaved = savedAccounts.some(
-              acc => acc.email.toLowerCase() === verifiedEmail
+              (acc) => acc.email.toLowerCase() === verifiedEmail
             );
-            
+
             if (isAlreadySaved) {
               toast.error("This account has already been added!");
               navigate("/", { replace: true });
               return;
             }
-            
+
             try {
               // 1️⃣ Save the newly verified account to the original user's device
               const saveFormData = new URLSearchParams();
@@ -106,51 +109,52 @@ export default function OTPForm({ className, ...props }) {
               saveFormData.append("account_email", verifiedEmail);
 
               const saveResponse = await fetch(
-                "http://localhost/CultureConnect/backend/save_account_to_device.php",
+                API.SAVE_ACCOUNT,
                 {
                   method: "POST",
                   credentials: "include",
-                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                  headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                  },
                   body: saveFormData.toString(),
                 }
               );
 
               const saveResult = await saveResponse.json();
-              if (saveResult.status !== "success" && saveResult.status !== "exists") {
+              if (
+                saveResult.status !== "success" &&
+                saveResult.status !== "exists"
+              ) {
                 toast.error(saveResult.message || "Failed to save account");
                 navigate("/", { replace: true });
                 return;
               }
 
               // 2️⃣ Switch back to the original user
-              const switchBackFormData = new URLSearchParams();
-              switchBackFormData.append("account_email", currentUserEmail);
-
-              const switchResponse = await fetch(
-                "http://localhost/CultureConnect/backend/switch_account.php",
+              // 2️⃣ Stay logged in as NEW account - check session to sync
+              const checkRes = await fetch(
+                API.CHECK_SESSION,
                 {
-                  method: "POST",
+                  method: "GET",
                   credentials: "include",
-                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                  body: switchBackFormData.toString(),
                 }
               );
 
-              const switchResult = await switchResponse.json();
+              const checkResult = await checkRes.json();
 
-              if (switchResult.status === "success") {
-                // Update context with original user (skipAutoSave=true to prevent duplicate)
-                await login(switchResult.user, true);
-                
-                // Reload saved accounts to include the new one
+              if (checkResult.status === "success" && checkResult.logged_in) {
+                // Login with the NEW account
+                await login(checkResult.user, true);
+
+                // Reload saved accounts
                 setTimeout(async () => {
                   await loadSavedAccounts();
                   toast.success("Account added and verified successfully!");
                 }, 100);
-                
+
                 navigate("/", { replace: true });
               } else {
-                toast.error("Failed to switch back to original account");
+                toast.error("Session sync failed");
                 navigate("/", { replace: true });
               }
             } catch (error) {
@@ -210,7 +214,9 @@ export default function OTPForm({ className, ...props }) {
   };
 
   return (
-    <div className={cn("flex flex-col gap-6 md:min-h-[450px]", className)} {...props}>
+    <div
+      className={cn("flex flex-col gap-6 md:min-h-[450px]", className)}
+      {...props}>
       <Card className="flex-1 overflow-hidden p-0">
         <CardContent className="grid flex-1 p-0 md:grid-cols-2">
           <form
@@ -218,9 +224,10 @@ export default function OTPForm({ className, ...props }) {
               e.preventDefault();
               handleVerify();
             }}
-            className="flex flex-col items-center justify-center p-6 md:p-8 w-full"
-          >
-            <div className="self-start mb-4 cursor-pointer" onClick={() => navigate(-1)}>
+            className="flex flex-col items-center justify-center p-6 md:p-8 w-full">
+            <div
+              className="self-start mb-4 cursor-pointer"
+              onClick={() => navigate(-1)}>
               <FaArrowLeft size={20} />
             </div>
 
@@ -245,8 +252,7 @@ export default function OTPForm({ className, ...props }) {
                     setErrorMsg("");
                   }}
                   required
-                  containerClassName="gap-4"
-                >
+                  containerClassName="gap-4">
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />
                     <InputOTPSlot index={1} />
@@ -260,7 +266,9 @@ export default function OTPForm({ className, ...props }) {
                   </InputOTPGroup>
                 </InputOTP>
 
-                {errorMsg && <p className="text-red-500 text-sm text-center">{errorMsg}</p>}
+                {errorMsg && (
+                  <p className="text-red-500 text-sm text-center">{errorMsg}</p>
+                )}
 
                 <FieldDescription className="text-center">
                   Enter the 6-digit code sent to your email.
@@ -281,7 +289,9 @@ export default function OTPForm({ className, ...props }) {
 
                 <FieldDescription className="text-center mt-2">
                   {canResend ? (
-                    <span className="underline cursor-pointer" onClick={handleResend}>
+                    <span
+                      className="underline cursor-pointer"
+                      onClick={handleResend}>
                       Resend verification code
                     </span>
                   ) : (
@@ -299,8 +309,8 @@ export default function OTPForm({ className, ...props }) {
       </Card>
 
       <FieldDescription className="text-center">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a> and{" "}
-        <a href="#">Privacy Policy</a>.
+        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
+        and <a href="#">Privacy Policy</a>.
       </FieldDescription>
     </div>
   );

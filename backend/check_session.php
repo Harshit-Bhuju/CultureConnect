@@ -20,10 +20,10 @@ $device_id = getDeviceId();
 // Fetch all accounts saved on this device
 $savedAccounts = [];
 $stmt = $conn->prepare("
-    SELECT u.email, u.username, u.profile_pic, u.gender, u.location
+    SELECT u.email, u.username, u.profile_pic, u.gender, u.location, u.role
     FROM saved_accounts_device sa
     JOIN users u ON sa.saved_email = u.email
-    WHERE sa.device_id = ?
+    WHERE sa.device_id = ? AND  u.role != 'admin'
     ORDER BY sa.id DESC
 ");
 $stmt->bind_param("s", $device_id);
@@ -35,7 +35,8 @@ while ($row = $result->fetch_assoc()) {
         "name" => $row['username'],
         "avatar" => $row['profile_pic'],
         "gender" => $row['gender'],
-        "location" => $row['location']
+        "location" => $row['location'],
+        "role" => $row['role']
     ];
 }
 $stmt->close();
@@ -43,7 +44,7 @@ $stmt->close();
 // Get current logged in user info separately
 $current_user_data = null;
 if ($current_user_email) {
-    $stmt = $conn->prepare("SELECT email, username, profile_pic, gender, location FROM users WHERE email=? LIMIT 1");
+    $stmt = $conn->prepare("SELECT email, username, profile_pic, gender,location, role FROM users WHERE email=? LIMIT 1");
     $stmt->bind_param("s", $current_user_email);
     $stmt->execute();
     $row = $stmt->get_result()->fetch_assoc();
@@ -55,7 +56,8 @@ if ($current_user_email) {
             "name" => $row['username'],
             "avatar" => $row['profile_pic'],
             "gender" => $row['gender'],
-            "location" => $row['location']
+            "location" => $row['location'],
+            "role" => $row['role']
         ];
     }
 }

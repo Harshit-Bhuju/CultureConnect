@@ -33,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $picture = $existingUser['profile_pic']; // keep old avatar by default
 
-
     if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === 0) {
         $file = $_FILES['avatar'];
         $uploadDir = __DIR__ . '/uploads/';
@@ -54,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $fileExt = strtolower($info['extension']);
         //pathinfo()
         // var/www/html/uploads/profilePic_harshit_1734876234.jpg
-        // we take only wxtension
+        // we take only extension
         // Array
         // (
         //     [dirname] => /var/www/html/uploads
@@ -66,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         //$fileName – original filename uploaded by the user.
         //$fileExt – file extension (jpg, png, etc.) converted to lowercase.
 
-
         $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
         if (!in_array($fileExt, $allowedExts)) {
             echo json_encode(['status' => 'error', 'message' => 'Invalid file type.']);
@@ -76,10 +74,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         //Ensures only allowed image types are accepted.
         //If the uploaded file is not an allowed type, return an error and stop execution.
 
-
         // Delete old avatar if it exists and is not the default
         if (!empty($existingUser['profile_pic']) && file_exists(__DIR__ . '/uploads/' . $existingUser['profile_pic'])) {
+            if ($existingUser['profile_pic'] !== 'default-image.jpg'){
             unlink(__DIR__ . '/uploads/' . $existingUser['profile_pic']);
+            }
             //unlink() is the PHP function to delete a file from the server.
         }
         // Generate a unique, safe filename using email + timestamp
@@ -89,7 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Full destination path
         $destPath = $uploadDir . $newFileName;
         //  $destPath will save C:\xampp\htdocs\CultureConnect\backend\uploads\avatar_harshit_1734876234.jpg
-
 
         // Move the uploaded file to the uploads directory
         if (move_uploaded_file($fileTmpPath, $destPath)) {
@@ -110,47 +108,44 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($location !== $existingUser['location']) {
         $updates[] = "location=?";
         $params[] = $location;
-        $types = $types . "s";
+        $types .= "s";
     }
 
     if ($gender !== $existingUser['gender']) {
         $updates[] = "gender=?";
         $params[] = $gender;
-        $types = $types . "s";
+        $types .= "s";
     }
 
     if ($picture !== $existingUser['profile_pic']) {
         $updates[] = "profile_pic=?";
         $params[] = $picture;
-        $types = $types . "s";
+        $types .= "s";
     }
 
+    if (count($updates) > 0) {
+        $query = "UPDATE users SET " . implode(", ", $updates) . " WHERE email=?";
+        //implode(", ", $updates) => username=?, location=?, gender=?, picture=? 
+        //its in string form
+        $params[] = $email;
+        $types .= "s";
 
-    $query = "UPDATE users SET " . implode(", ", $updates) . " WHERE email=?";
-    //implode(", ", $updates) => username=?, location=?, gender=?, picture=? 
-    //its in string form
-    $params[] = $email;
-    $types = $types . "s";
-
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param($types, ...$params);
-    //$params = [$username, $location, $gender, $email];
-    //so ...$params spreads the array so each element becomes a separate argument.
-    //now it will be like $stmt->bind_param($types, $username, $location, $gender, $picture, $email);
-    // we cant do implode() as it converts into string so if $username then it will be harman like that
-
-    if ($stmt->execute()) {
-        echo json_encode([
-            'status' => 'success',
-            'username' => $existingUser['username'],
-            'location' => $location,
-            'gender' => $gender,
-            'avatar' => $picture
-        ]);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Update failed']);
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param($types, ...$params);
+        if ($stmt->execute()) {
+            echo json_encode([
+                'status' => 'success',
+                'username' => $existingUser['username'],
+                'location' => $location,
+                'gender' => $gender,
+                'avatar' => $picture
+            ]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Update failed']);
+        }
+        $stmt->close();
     }
 }
-$stmt->close();
+
 $conn->close();
 exit;

@@ -26,9 +26,11 @@ $delete = $conn->prepare("DELETE FROM users WHERE email = ?");
 $delete->bind_param("s", $email);
 
 if ($delete->execute()) {
-      if (file_exists(__DIR__ . '/uploads/' . $picture)) {
-            unlink(__DIR__ . '/uploads/' . $picture);
-        }
+  if (file_exists(__DIR__ . '/uploads/' . $picture)) {
+    if ( $picture !== 'default-image.jpg') {
+    unlink(__DIR__ . '/uploads/' . $picture);
+    }
+  }
   session_unset();
   session_destroy();
   date_default_timezone_set('Asia/Kathmandu');

@@ -45,7 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "name" => $user['username'] ?? '',
             "gender" => $user['gender'] ?? '',
             "location" => $user['location'] ?? '',
-            "avatar" => $user['profile_pic'] ?? ''  // Changed from 'picture' to 'avatar'
+            "avatar" => $user['profile_pic'] ?? '',
+            "role" => $user['role'] 
         ]
     ]);
     exit;

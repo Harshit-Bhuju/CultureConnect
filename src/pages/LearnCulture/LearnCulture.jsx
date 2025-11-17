@@ -7,13 +7,13 @@ import {
   SidebarTrigger,
 } from "../../components/ui/sidebar";
 import Navbar from "../../components/Layout/NavBar";
+import Footer from "../../components/Layout/Footer";
 
 const LearnCulture = () => {
   return (
     <SidebarProvider>
       <AppSidebar />
-
-      <SidebarInset>
+      <SidebarInset className="md:overflow-x-hidden  h-screen overflow-y-auto ">
         <Navbar />
         <div className="p-4">
           <div className="flex items-center justify-between mb-4">
@@ -22,6 +22,7 @@ const LearnCulture = () => {
 
           <Outlet />
         </div>
+        <Footer/>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import Loading from "../Common/Loading";
+import API from "../../Configs/ApiEndpoints";
 
 /**
  * FlowRoute protects routes that require specific session data
@@ -29,7 +30,7 @@ const FlowRoute = ({ children, requiredState, storageKey }) => {
 
       // If no location.state, check server session
       const response = await fetch(
-        "http://localhost/CultureConnect/backend/check_session.php",
+        API.CHECK_SESSION,
         {
           method: "GET",
           credentials: "include",

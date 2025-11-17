@@ -5,6 +5,7 @@ import {
   BookOpen,
   GraduationCap,
   House,
+  PanelLeftIcon,
   Settings2,
   Store,
   TrendingUp,
@@ -26,6 +27,7 @@ import {
 import CultureConnectLogo from "../../assets/logo/cultureconnect__fav.png";
 import { useAuth } from "../../context/AuthContext";
 import default_logo from "../../assets/default-image.jpg";
+import Navbar from "./NavBar";
 
 export default function AppSidebar({ children, ...props }) {
   const { state } = useSidebar();
@@ -61,8 +63,7 @@ export default function AppSidebar({ children, ...props }) {
         items: [
           { title: "Traditional Clothing", url: "/marketplace/traditional" },
           { title: "Musical Instruments", url: "/marketplace/instruments" },
-          { title: "Handicrafts & Arts", url: "/marketplace/arts" },
-          { title: "Cultural Decorations", url: "/marketplace/decorations" },
+          { title: "Arts & Decors", url: "/marketplace/arts_decors" },
         ],
       },
       {
@@ -74,17 +75,6 @@ export default function AppSidebar({ children, ...props }) {
           { title: "Cultural Singing", url: "/learnculture/singing" },
           { title: "Musical Instruments", url: "/learnculture/instruments" },
           { title: "Cultural Art & Crafts", url: "/learnculture/art" },
-        ],
-      },
-      {
-        title: "Your Activity",
-        url: "/activity",
-        icon: Settings2,
-        items: [
-          { title: "General", url: "/activity/general" },
-          { title: "Team", url: "/activity/team" },
-          { title: "Billing", url: "/activity/billing" },
-          { title: "Limits", url: "/activity/limits" },
         ],
       },
     ],
@@ -99,7 +89,7 @@ export default function AppSidebar({ children, ...props }) {
       <Sidebar collapsible="icon" {...props}>
         <SidebarHeader className="flex items-center justify-between">
           <TeamSwitcher teams={data.teams} />
-          {isCollapsed && <SidebarTrigger className="w-8 h-8 p-3" />}
+          {isCollapsed && <SidebarTrigger className="w-8 h-8 p-3" ><PanelLeftIcon/></SidebarTrigger>}
         </SidebarHeader>
 
         <SidebarContent>
@@ -110,7 +100,6 @@ export default function AppSidebar({ children, ...props }) {
         <SidebarFooter>
           <NavUser user={data.user} />
         </SidebarFooter>
-
         <SidebarRail />
       </Sidebar>
 

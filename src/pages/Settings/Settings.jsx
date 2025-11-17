@@ -2,6 +2,7 @@ import React from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/Layout/app-sidebar";
+import { Menu } from "lucide-react";
 
 const Settings = () => {
   const location = useLocation();
@@ -48,7 +49,7 @@ const Settings = () => {
               <div className="flex items-center justify-between p-4">
                 <h2 className="text-2xl font-bold text-gray-800">Settings</h2>
                 <SidebarTrigger className="p-2">
-                  <span className="text-xl">☰</span>
+                  <Menu/>
                 </SidebarTrigger>
               </div>
 
