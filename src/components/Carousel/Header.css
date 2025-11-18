@@ -1,0 +1,47 @@
+/* Add this to your global CSS file or component CSS */
+.swiper-pagination-bullet {
+  background-color: white !important; /* gray-300 */
+  width: 8px;
+  height: 8px;
+  opacity: 1; /* Ensure visible */
+}
+
+.swiper-pagination-bullet-active {
+  background-color: #ef4444 !important; /* red-500 */
+  width: 32px;
+  height: 8px;
+}
+
+/* Media Queries for Responsive Width */
+@media (max-width: 640px) {
+  .swiper-pagination-bullet {
+    width: 6px; /* Smaller bullet for mobile */
+    height: 6px;
+  }
+
+  .swiper-pagination-bullet-active {
+    width: 24px; /* Smaller active bullet for mobile */
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .swiper-pagination-bullet {
+    width: 8px; /* Standard bullet for tablets */
+    height: 8px;
+  }
+
+  .swiper-pagination-bullet-active {
+    width: 28px; /* Slightly larger active bullet for tablets */
+  }
+}
+
+@media (min-width: 1025px) {
+  .swiper-pagination-bullet {
+    width: 8px; /* Standard bullet for larger screens */
+    height: 8px;
+  }
+
+  .swiper-pagination-bullet-active {
+    width: 32px; /* Standard active bullet for larger screens */
+  }
+}

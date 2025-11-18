@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import API from "../../Configs/ApiEndpoints";
 
 export default function useProducts() {
   const [products, setProducts] = useState([]);
@@ -7,8 +8,7 @@ export default function useProducts() {
     // Define an async function inside useEffect
     const fetchProducts = async () => {
       try {
-        const res = await fetch(
-          "http://192.168.1.10/CultureConnect/backend/get_sliders.php",
+        const res = await fetch(API.GET_SLIDESRS,
           {
             method: "GET", // or "POST" if your API expects POST
             credentials: "include", // include cookies if needed

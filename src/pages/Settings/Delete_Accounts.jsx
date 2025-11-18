@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { X, Trash2, LogOut, Check } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
+import API from "../../Configs/ApiEndpoints";
 
 const Delete_Accounts = () => {
   const { user: authUser, logout } = useAuth();
@@ -43,7 +44,7 @@ const Delete_Accounts = () => {
       formData.append("password", password);
 
       const response = await fetch(
-        "http://localhost/CultureConnect/backend/deleteAccount.php",
+        API.DELETE_ACCOUNTS,
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },

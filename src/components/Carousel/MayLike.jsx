@@ -126,14 +126,24 @@ export default function MayLike() {
               </div>
 
               <div className="p-1 sm:p-2">
-                <h3 className="text-[8px] sm:text-xs md:text-sm font-medium text-gray-700 mb-1 line-clamp-1">
+                <h3
+                  className={`text-[8px] min-[500px]:text-[10px] md:text-xs lg:text-sm font-medium text-gray-700 mb-1 line-clamp-1
+                                 ${isCollapsed ? "lg:text-sm" : "lg:text-xs"}`}>
                   {product.title}
                 </h3>
-                <div className="flex items-center gap-1 sm:gap-2 mb-1">
-                  <span className="text-[8px] min-[500px]:text-sm font-semibold text-gray-900">
+                <div className="flex  items-center gap-1 sm:gap-2 mb-1">
+                  <span
+                    className={`text-[8px] min-[500px]:text-[10px] md:text-xs lg:text-sm font-semibold text-gray-900
+                                   ${
+                                     isCollapsed ? "lg:text-sm" : "lg:text-xs"
+                                   }`}>
                     {product.price}
                   </span>
-                  <span className="text-[6px] min-[500px]:text-xs text-gray-400 line-through">
+                  <span
+                    className={`text-[8px] min-[500px]:text-[10px] md:text-xs lg:text-sm text-gray-400 line-through
+                                   ${
+                                     isCollapsed ? "lg:text-sm" : "lg:text-xs"
+                                   }`}>
                     {product.originalPrice}
                   </span>
                 </div>

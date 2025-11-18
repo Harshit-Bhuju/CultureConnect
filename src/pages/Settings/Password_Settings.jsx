@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { FaArrowLeft, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from '../../context/AuthContext';
 import toast from "react-hot-toast";
+import API from "../../Configs/ApiEndpoints";
 
 const Password_Settings = () => {
   const { user } = useAuth(); 
@@ -36,7 +37,7 @@ const Password_Settings = () => {
       const formData = new URLSearchParams(data);
 
       const response = await fetch(
-        "http://localhost/CultureConnect/backend/settingPassword.php",
+       API.SETTING_PASSWORD,
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },

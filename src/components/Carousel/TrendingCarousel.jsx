@@ -3,10 +3,11 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/mousewheel";
 import { Mousewheel } from "swiper/modules";
-import { useNavigate } from "react-router-dom"; // for navigation
+import { useNavigate } from "react-router-dom";
 import { productsData } from "./TrendingCarouselDetails";
 import { useSidebar } from "../ui/sidebar";
 import Rating from "../Rating/Rating";
+import './TrendingCarousel.css'
 
 export default function TrendingCarousel() {
   const [activeTab, setActiveTab] = useState("Clothes");
@@ -41,16 +42,15 @@ export default function TrendingCarousel() {
   });
 
   const goToProductPage = (productId) => {
-    // Navigate to a buying page (e.g., /product/:id)
     navigate(`/product/${productId}`);
   };
 
   return (
-    <div className="w-full py-6 px-3 sm:px-6 md:px-10">
+    <div className="w-full py-6 px-3 sm:px-6 md:px-10 bg-gray-100">
       <div className="max-w-6xl mx-auto">
         {/* Title + Main Tabs */}
         <div
-          className={`flex justify-between mb-6 gap-4 ${
+          className={`flex justify-between mb-4 md:mb-6 gap-4 ${
             isCollapsed
               ? "flex-col md:flex-row items-start md:items-center"
               : "flex-col lg:flex-row items-start lg:items-center"
@@ -68,7 +68,7 @@ export default function TrendingCarousel() {
                   setActiveTab(tab);
                   setActiveSubTab("All");
                 }}
-                className={`text-sm sm:text-base font-medium pb-2 px-2 sm:px-3 md:px-0 relative transition-colors ${
+                className={`text-xs sm:text-base font-medium pb-2 px-2 sm:px-3 md:px-0 relative transition-colors ${
                   activeTab === tab
                     ? "text-red-500"
                     : "text-gray-600 hover:text-gray-900"
@@ -83,12 +83,12 @@ export default function TrendingCarousel() {
         </div>
 
         {/* Sub Tabs */}
-        <div className="flex flex-wrap gap-2 sm:gap-3 mb-6">
+        <div className="flex overflow-x-auto gap-2 sm:gap-3 mb-6 scrollbar-hide">
           {subcategories[activeTab]?.map((sub) => (
             <button
               key={sub}
               onClick={() => setActiveSubTab(sub)}
-              className={`text-xs sm:text-sm font-medium px-3 py-1 rounded-full border transition-colors ${
+              className={`text-[10px] sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full border transition-colors ${
                 activeSubTab === sub
                   ? "bg-red-500 text-white border-red-500"
                   : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
@@ -110,44 +110,44 @@ export default function TrendingCarousel() {
             1280: { slidesPerView: 6 },
             1024: { slidesPerView: 5 },
             768: { slidesPerView: 5 },
-            480: { slidesPerView: 4 },
+            480: { slidesPerView: 5 },
             0: { slidesPerView: 4 },
           }}>
           {filteredProducts.map((product) => (
             <SwiperSlide key={product.id}>
-              {/* Make whole card clickable */}
+              {/* Updated card markup/classes to match MayLike */}
               <div
-                className="group relative cursor-pointer"
+                className="group min-[340px]:min-w-[80px]   relative cursor-pointer bg-white shadow-sm hover:shadow-md transition"
                 onClick={() => goToProductPage(product.id)}>
-                <div className="relative bg-gray-200 rounded-lg overflow-hidden mb-2 aspect-[3/4]  ">
+                <div className="relative bg-gray-200 overflow-hidden aspect-[4/4]">
                   <img
                     src={product.image}
                     alt={product.title}
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105 "
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                   />
                 </div>
 
-                {/* Text + Buy Button */}
-              <div className="text-center">
+                <div className="p-1 sm:p-2">
                   <h3
-                    className="text-[10px] sm:text-xs md:text-sm font-medium text-gray-700 mb-1
-                
-                 overflow-hidden
-                 line-clamp-1
-                 ">
+                    className={`text-[8px] min-[500px]:text-[10px] md:text-xs lg:text-sm font-medium text-gray-700 mb-1 line-clamp-1
+                    ${isCollapsed ? "lg:text-sm" : "lg:text-xs"}`}>
                     {product.title}
                   </h3>
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-0 sm:gap-2 mb-0 sm:mb-2">
-                    <span className="text-[10px] min-[500px]:text-sm font-semibold text-gray-900">
+                  <div className="flex  items-center gap-1 sm:gap-2 mb-1">
+                    <span
+                      className={`text-[8px] min-[500px]:text-[10px] md:text-xs lg:text-sm font-semibold text-gray-900
+                      ${isCollapsed ? "lg:text-sm" : "lg:text-xs"}`}>
                       {product.price}
                     </span>
-                    <span className="text-[8px] min-[500px]:text-xs text-gray-400 line-through">
+                    <span
+                      className={`text-[8px] min-[500px]:text-[10px] md:text-xs lg:text-sm text-gray-400 line-through
+                      ${isCollapsed ? "lg:text-sm" : "lg:text-xs"}`}>
                       {product.originalPrice}
                     </span>
                   </div>
-                   <div className="flex justify-center">
-                   <Rating rating={product.rating} reviews={product.reviews} />
-                    </div>
+                  <div className="flex">
+                    <Rating rating={product.rating} reviews={product.reviews} />
+                  </div>
                 </div>
               </div>
             </SwiperSlide>

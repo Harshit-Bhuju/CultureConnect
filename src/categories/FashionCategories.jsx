@@ -26,7 +26,7 @@ export default function FashionCategories() {
   ];
 
   return (
-    <div className="py-5 md:py-12 px-2 md:px-5">
+    <div className="py-5 md:py-12 px-2 md:px-5 bg-gray-100">
       <div className="max-w-3xl mx-auto">
       <h1
         className={`text-xl sm:text-2xl text-center font-bold text-gray-900 md:text-3xl lg:text-4xl `}>

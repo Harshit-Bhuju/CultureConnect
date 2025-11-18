@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import default_logo from "../../assets/default-image.jpg";
 import toast from "react-hot-toast";
 import useNepalAddress from "../../hooks/NepalAddress";
+import API from "../../Configs/ApiEndpoints";
 
 // Import components
 import ProfileHeader from "../../profileSettings_Components/ProfileHeader";
@@ -168,21 +169,18 @@ const Personal_Settings = () => {
         formData.append("gender", user.gender);
 
         try {
-          const response = await fetch(
-            "http://localhost/CultureConnect/backend/user_profile.php",
-            {
-              method: "POST",
-              body: formData,
-              credentials: "include",
-            }
-          );
+          const response = await fetch(API.USER_PROFILE, {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+          });
 
           const result = await response.json();
           if (result.status === "success") {
             toast.success("Profile Picture updated successfully!");
             const newAvatarUrl = result.avatar.startsWith("http")
               ? result.avatar
-              : `http://localhost/CultureConnect/backend/uploads/${result.avatar}`;
+              : `${API.UPLOADS}/${result.avatar}`;
             setUser((prev) => ({ ...prev, avatar: newAvatarUrl }));
 
             // Pass as 'picture' or 'avatar' - AuthContext will normalize it
@@ -321,19 +319,16 @@ const Personal_Settings = () => {
 
       // ✅ Username update goes to usernamePersonal.php
       if (field === "username") {
-        response = await fetch(
-          "http://localhost/CultureConnect/backend/usernamePersonal.php",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              action: "update",
-              email: user.email,
-              username: value,
-            }),
-            credentials: "include",
-          }
-        );
+        response = await fetch(API.USERNAME_PERSONAL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "update",
+            email: user.email,
+            username: value,
+          }),
+          credentials: "include",
+        });
         result = await response.json();
 
         if (result.status === "success") {
@@ -359,14 +354,11 @@ const Personal_Settings = () => {
         formData.append("location", value);
         formData.append("gender", user.gender);
 
-        response = await fetch(
-          "http://localhost/CultureConnect/backend/user_profile.php",
-          {
-            method: "POST",
-            credentials: "include",
-            body: formData,
-          }
-        );
+        response = await fetch(API.USER_PROFILE, {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
         result = await response.json();
 
         if (result.status === "success") {
@@ -402,14 +394,11 @@ const Personal_Settings = () => {
     formData.append("gender", option);
 
     try {
-      const response = await fetch(
-        "http://localhost/CultureConnect/backend/user_profile.php",
-        {
-          method: "POST",
-          credentials: "include",
-          body: formData,
-        }
-      );
+      const response = await fetch(API.USER_PROFILE, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
 
       const result = await response.json();
 
@@ -449,18 +438,15 @@ const Personal_Settings = () => {
   // ✅ CHANGED: Fetch suggestions from backend
   const refreshSuggestions = async () => {
     try {
-      const response = await fetch(
-        "http://localhost/CultureConnect/backend/usernamePersonal.php",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            action: "suggest",
-            email: user.email,
-          }),
-          credentials: "include",
-        }
-      );
+      const response = await fetch(API.USERNAME_PERSONAL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "suggest",
+          email: user.email,
+        }),
+        credentials: "include",
+      });
       const result = await response.json();
       if (result.status === "success") {
         setUsernameSuggestions(result.suggestions);
@@ -481,19 +467,16 @@ const Personal_Settings = () => {
       // Check availability in real-time if no validation error
       if (value.trim() && value !== user.username) {
         try {
-          const response = await fetch(
-            "http://localhost/CultureConnect/backend/usernamePersonal.php",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
-              body: new URLSearchParams({
-                action: "check",
-                username: value,
-                email: user.email,
-              }),
-              credentials: "include",
-            }
-          );
+          const response = await fetch(API.USERNAME_PERSONAL, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "check",
+              username: value,
+              email: user.email,
+            }),
+            credentials: "include",
+          });
           const result = await response.json();
           if (result.status === "taken") {
             setUsernameTakenError("Username is already taken");

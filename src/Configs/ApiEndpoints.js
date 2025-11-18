@@ -16,6 +16,12 @@ export const API = {
   SWITCH_ACCOUNT: `${BASE_URL}/switch_account.php`,
   REMOVE_SAVED_ACCOUNT: `${BASE_URL}/remove_saved_account.php`,
   UPLOADS: `${BASE_URL}/uploads`,
+  // app-specific endpoints used in profile & username flows
+  USER_PROFILE: `${BASE_URL}/user_profile.php`,
+  USERNAME_PERSONAL: `${BASE_URL}/usernamePersonal.php`,
+  DELETE_ACCOUNTS: `${BASE_URL}/deleteAccount.php`,
+  SETTING_PASSWORD: `${BASE_URL}/settingpassword.php`,
+  GET_SLIDESRS: `${BASE_URL}/get_sliders.php`,
 };
 
 export default API;

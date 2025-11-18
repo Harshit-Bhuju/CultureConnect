@@ -10,6 +10,8 @@ import TrendingCarousel from "../../components/Carousel/TrendingCarousel";
 import FashionCategories from "../../categories/FashionCategories";
 import Footer from "../../components/Layout/Footer";
 import MayLike from "../../components/Carousel/MayLike";
+import CardsArranged from "../../components/Home/CardsArranged";
+import Header from "../../components/Carousel/Header";
 
 const Home = () => {
   const { loading } = useAuth();
@@ -23,11 +25,11 @@ const Home = () => {
       <AppSidebar />
       <SidebarInset className="md:overflow-x-hidden  h-screen overflow-y-auto ">
         <Navbar />
-        <div className="w-full">
-          <Carousel />
-        </div>
+          <Header/>
+          {/* <Carousel /> */}
         <TrendingCarousel />
-        <FashionCategories />
+        {/* <FashionCategories /> */}
+        <CardsArranged/>
         <MayLike />
       <Footer />
       </SidebarInset>
