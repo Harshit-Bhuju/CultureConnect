@@ -2,7 +2,7 @@
 $servername = "localhost";
 $username = "CultureConnect";
 $password = getenv("DB_PASS");
-$dbname = "school_project";
+$dbname = "cultureconnect";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 

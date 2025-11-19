@@ -3,7 +3,7 @@ include("session_helper.php");
 include("header.php");
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(["status"=>"error","message"=>"Invalid request"]);
+    echo json_encode(["status" => "error", "message" => "Invalid request"]);
     exit;
 }
 
@@ -12,11 +12,10 @@ $current_email = $_SESSION['user_email'] ?? '';
 $device_id = getDeviceId();
 
 if (!$target_email || !$current_email) {
-    echo json_encode(["status"=>"error","message"=>"Missing information"]);
+    echo json_encode(["status" => "error", "message" => "Missing information"]);
     exit;
 }
 
-// Verify target account is saved on this device
 $stmt = $conn->prepare("SELECT saved_email FROM saved_accounts_device WHERE device_id=? AND saved_email=? LIMIT 1");
 $stmt->bind_param("ss", $device_id, $target_email);
 $stmt->execute();
@@ -24,23 +23,21 @@ $result = $stmt->get_result();
 $stmt->close();
 
 if ($result->num_rows === 0) {
-    echo json_encode(["status"=>"error","message"=>"Account not saved on this device"]);
+    echo json_encode(["status" => "error", "message" => "Account not saved on this device"]);
     exit;
 }
 
-// Fetch user info
-$stmt = $conn->prepare("SELECT email, username, profile_pic, gender, location FROM users WHERE email=? LIMIT 1");
+$stmt = $conn->prepare("SELECT email, username, profile_pic, gender, province, district, municipality, ward FROM users WHERE email=? LIMIT 1");
 $stmt->bind_param("s", $target_email);
 $stmt->execute();
 $row = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if (!$row) {
-    echo json_encode(["status"=>"error","message"=>"User not found"]);
+    echo json_encode(["status" => "error", "message" => "User not found"]);
     exit;
 }
 
-// Switch session
 $_SESSION['user_email'] = $row['email'];
 $_SESSION['logged_in'] = true;
 $_SESSION['last_activity'] = time();
@@ -53,7 +50,13 @@ echo json_encode([
         "name" => $row['username'],
         "avatar" => $row['profile_pic'],
         "gender" => $row['gender'],
-        "location" => $row['location']
+        "location" => [
+            "province" => $row['province'],
+            "district" => $row['district'],
+            "municipality" => $row['municipality'],
+            "ward" => $row['ward']
+        ],
+
     ]
 ]);
 

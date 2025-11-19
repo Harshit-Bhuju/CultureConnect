@@ -3,7 +3,6 @@ session_start();
 include("header.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
     $email = strtolower(trim(filter_input(INPUT_POST, "email", FILTER_SANITIZE_EMAIL)));
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         echo json_encode(["status" => "error", "message" => "Invalid email format."]);
@@ -12,7 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $password = trim($_POST['password']);
 
-    // Prepare statement to prevent SQL injection
     $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -27,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $result->fetch_assoc();
     $stmt->close();
 
-    // Verify password
     if (!password_verify($password, $user['password'])) {
         echo json_encode(["status" => "error", "message" => "Incorrect password."]);
         exit;
@@ -44,9 +41,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "email" => $user['email'],
             "name" => $user['username'] ?? '',
             "gender" => $user['gender'] ?? '',
-            "location" => $user['location'] ?? '',
+            "location" => [
+                "province" => $user['province'] ?? '',
+                "district" => $user['district'] ?? '',
+                "municipality" => $user['municipality'] ?? '',
+                "ward" => $user['ward'] ?? ''
+            ],
+
             "avatar" => $user['profile_pic'] ?? '',
-            "role" => $user['role'] 
+            "role" => $user['role']
         ]
     ]);
     exit;

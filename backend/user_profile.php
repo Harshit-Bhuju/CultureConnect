@@ -1,7 +1,6 @@
 <?php
 include("header.php");
 
-// Get email first to identify user
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $email = strtolower(trim(filter_input(INPUT_POST, "email", FILTER_SANITIZE_EMAIL)));
@@ -10,7 +9,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
-    // Fetch existing user
     $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -23,15 +21,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
-    $location = trim($_POST['location'] ?? '');
-    $location = $location === '' ? $existingUser['location'] : htmlspecialchars($location, ENT_QUOTES);
-    //if ''(null) then existingUser else validate $location terniary operator is used here
+    $province = trim($_POST['province'] ?? '');
+    $province = $province === '' ? $existingUser['province'] : htmlspecialchars($province, ENT_QUOTES);
+
+    $district = trim($_POST['district'] ?? '');
+    $district = $district === '' ? $existingUser['district'] : htmlspecialchars($district, ENT_QUOTES);
+
+    $municipality = trim($_POST['municipality'] ?? '');
+    $municipality = $municipality === '' ? $existingUser['municipality'] : htmlspecialchars($municipality, ENT_QUOTES);
+
+    $ward = trim($_POST['ward'] ?? '');
+    $ward = $ward === '' ? $existingUser['ward'] : htmlspecialchars($ward, ENT_QUOTES);
 
     $gender = trim($_POST['gender'] ?? '');
     $allowedGenders = ["Male", "Female", "Prefer not to say"];
     $gender = in_array($gender, $allowedGenders) ? $gender : $existingUser['gender'];
 
-    $picture = $existingUser['profile_pic']; // keep old avatar by default
+    $picture = $existingUser['profile_pic'];
 
     if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === 0) {
         $file = $_FILES['avatar'];
@@ -40,60 +46,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
-        //  __DIR__ = current directory of this PHP file.
-        ///uploads/ = folder where avatars will be stored.
-        //is_dir() checks if the folder exists.
-        //If not, mkdir() creates it with permissions 0755 (read/write/execute for owner, read/execute for others).
-        //true allows nested folder creation, just in case.
 
         $fileTmpPath = $file['tmp_name'];
-        //$fileTmpPath – temporary location of uploaded file (stored by PHP).
-
         $info = pathinfo($file['name']);
         $fileExt = strtolower($info['extension']);
-        //pathinfo()
-        // var/www/html/uploads/profilePic_harshit_1734876234.jpg
-        // we take only extension
-        // Array
-        // (
-        //     [dirname] => /var/www/html/uploads
-        //     [basename] => profilePic_harshit_1734876234.jpg
-        //     [extension] => jpg
-        //     [filename] => profilePic_harshit_1734876234
-        // )
-
-        //$fileName – original filename uploaded by the user.
-        //$fileExt – file extension (jpg, png, etc.) converted to lowercase.
 
         $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
         if (!in_array($fileExt, $allowedExts)) {
             echo json_encode(['status' => 'error', 'message' => 'Invalid file type.']);
             exit;
         }
-        // Allow only certain file types (images)
-        //Ensures only allowed image types are accepted.
-        //If the uploaded file is not an allowed type, return an error and stop execution.
 
-        // Delete old avatar if it exists and is not the default
         if (!empty($existingUser['profile_pic']) && file_exists(__DIR__ . '/uploads/' . $existingUser['profile_pic'])) {
-            if ($existingUser['profile_pic'] !== 'default-image.jpg'){
-            unlink(__DIR__ . '/uploads/' . $existingUser['profile_pic']);
+            if ($existingUser['profile_pic'] !== 'default-image.jpg') {
+                unlink(__DIR__ . '/uploads/' . $existingUser['profile_pic']);
             }
-            //unlink() is the PHP function to delete a file from the server.
         }
-        // Generate a unique, safe filename using email + timestamp
-        $emailSafe = preg_replace('/[^a-z]/', '', explode('@', $email)[0]); // replace special chars
+
+        $emailSafe = preg_replace('/[^a-z]/', '', explode('@', $email)[0]);
         $newFileName = 'profilePic_' . $emailSafe . '_' . bin2hex(random_bytes(16)) . '.' . $fileExt;
-
-        // Full destination path
         $destPath = $uploadDir . $newFileName;
-        //  $destPath will save C:\xampp\htdocs\CultureConnect\backend\uploads\avatar_harshit_1734876234.jpg
 
-        // Move the uploaded file to the uploads directory
         if (move_uploaded_file($fileTmpPath, $destPath)) {
             $picture = $newFileName;
-            // move_uploaded_file() – moves the file from temporary folder to your uploads folder.
-            //If successful: $picture stores the relative path to save in the database.
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Avatar upload failed']);
             exit;
@@ -104,19 +79,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $params = [];
     $types = "";
 
-    // Compare each field to check if changed
-    if ($location !== $existingUser['location']) {
-        $updates[] = "location=?";
-        $params[] = $location;
+    if ($province !== $existingUser['province']) {
+        $updates[] = "province=?";
+        $params[] = $province;
         $types .= "s";
     }
-
+    if ($district !== $existingUser['district']) {
+        $updates[] = "district=?";
+        $params[] = $district;
+        $types .= "s";
+    }
+    if ($municipality !== $existingUser['municipality']) {
+        $updates[] = "municipality=?";
+        $params[] = $municipality;
+        $types .= "s";
+    }
+    if ($ward !== $existingUser['ward']) {
+        $updates[] = "ward=?";
+        $params[] = $ward;
+        $types .= "s";
+    }
     if ($gender !== $existingUser['gender']) {
         $updates[] = "gender=?";
         $params[] = $gender;
         $types .= "s";
     }
-
     if ($picture !== $existingUser['profile_pic']) {
         $updates[] = "profile_pic=?";
         $params[] = $picture;
@@ -125,8 +112,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (count($updates) > 0) {
         $query = "UPDATE users SET " . implode(", ", $updates) . " WHERE email=?";
-        //implode(", ", $updates) => username=?, location=?, gender=?, picture=? 
-        //its in string form
         $params[] = $email;
         $types .= "s";
 
@@ -136,7 +121,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo json_encode([
                 'status' => 'success',
                 'username' => $existingUser['username'],
-                'location' => $location,
+                "location" => [
+                    'province' => $province,
+                    'district' => $district,
+                    'municipality' => $municipality,
+                    'ward' => $ward
+                ],
                 'gender' => $gender,
                 'avatar' => $picture
             ]);

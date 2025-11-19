@@ -3,13 +3,11 @@ include("header.php");
 session_start();
 include("username_gen.php");
 
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_SESSION['google_email'] ?? '';
 
     if (empty($email)) {
         echo json_encode(["status" => "error", "message" => "Session expired. Please login with Google again."]);
-        
         exit;
     }
 
@@ -34,14 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $hash = password_hash($password, PASSWORD_ARGON2ID);
         $picture = $user['profile_pic'];
 
-        // Insert new user
         $stmt = $conn->prepare("INSERT INTO users(email, username, profile_pic, password) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssss", $email, $username, $picture, $hash);
         $inserted = $stmt->execute();
         $stmt->close();
 
         if ($inserted) {
-            // Delete from pending
             $stmt = $conn->prepare("DELETE FROM pending_users WHERE email = ? LIMIT 1");
             $stmt->bind_param("s", $email);
             $deleted = $stmt->execute();
@@ -53,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['last_activity'] = time();
                 unset($_SESSION['google_email']);
 
-                $stmt_gen = $conn->prepare("SELECT gender, location FROM users WHERE email = ? LIMIT 1");
+                $stmt_gen = $conn->prepare("SELECT gender, province, district, municipality, ward FROM users WHERE email = ? LIMIT 1");
                 $stmt_gen->bind_param("s", $email);
                 $stmt_gen->execute();
                 $result_gen = $stmt_gen->get_result();
@@ -67,7 +63,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         "email" => $email,
                         "name" => $username,
                         "gender" => $user_gen['gender'] ?? '',
-                        "location" => $user_gen['location'] ?? '',
+                        "location" => [
+                            "province" => $user_gen['province'] ?? '',
+                            "district" => $user_gen['district'] ?? '',
+                            "municipality" => $user_gen['municipality'] ?? '',
+                            "ward" => $user_gen['ward'] ?? ''
+                        ],
+
                         "avatar" => $picture
                     ]
                 ]);
@@ -78,7 +80,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(["status" => "error", "message" => "Failed to create user."]);
         }
     } else {
-        // ✅ If user not found or password already set
         echo json_encode(["status" => "error", "message" => "Invalid or already registered user."]);
     }
 } else {

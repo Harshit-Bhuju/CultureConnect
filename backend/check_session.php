@@ -2,7 +2,6 @@
 include("session_helper.php");
 include("header.php");
 
-// Check session timeout
 if (!checkSessionTimeout()) {
     echo json_encode([
         "status" => "error",
@@ -13,17 +12,15 @@ if (!checkSessionTimeout()) {
     exit;
 }
 
-// Get current user info
 $current_user_email = $_SESSION['user_email'] ?? null;
 $device_id = getDeviceId();
 
-// Fetch all accounts saved on this device
 $savedAccounts = [];
 $stmt = $conn->prepare("
-    SELECT u.email, u.username, u.profile_pic, u.gender, u.location, u.role
+    SELECT u.email, u.username, u.profile_pic, u.gender, u.province, u.district, u.municipality, u.ward, u.role
     FROM saved_accounts_device sa
     JOIN users u ON sa.saved_email = u.email
-    WHERE sa.device_id = ? AND  u.role != 'admin'
+    WHERE sa.device_id = ? AND u.role != 'admin'
     ORDER BY sa.id DESC
 ");
 $stmt->bind_param("s", $device_id);
@@ -35,16 +32,20 @@ while ($row = $result->fetch_assoc()) {
         "name" => $row['username'],
         "avatar" => $row['profile_pic'],
         "gender" => $row['gender'],
-        "location" => $row['location'],
+        "location" => [
+            "province" => $row['province'],
+            "district" => $row['district'],
+            "municipality" => $row['municipality'],
+            "ward" => $row['ward']
+        ],
         "role" => $row['role']
     ];
 }
 $stmt->close();
 
-// Get current logged in user info separately
 $current_user_data = null;
 if ($current_user_email) {
-    $stmt = $conn->prepare("SELECT email, username, profile_pic, gender,location, role FROM users WHERE email=? LIMIT 1");
+    $stmt = $conn->prepare("SELECT email, username, profile_pic, gender, province, district, municipality, ward, role FROM users WHERE email=? LIMIT 1");
     $stmt->bind_param("s", $current_user_email);
     $stmt->execute();
     $row = $stmt->get_result()->fetch_assoc();
@@ -56,7 +57,12 @@ if ($current_user_email) {
             "name" => $row['username'],
             "avatar" => $row['profile_pic'],
             "gender" => $row['gender'],
-            "location" => $row['location'],
+            "location" => [
+                "province" => $row['province'],
+                "district" => $row['district'],
+                "municipality" => $row['municipality'],
+                "ward" => $row['ward']
+            ],
             "role" => $row['role']
         ];
     }
