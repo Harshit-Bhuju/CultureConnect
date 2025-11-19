@@ -10,31 +10,49 @@ export const useAuth = () => {
   return context;
 };
 
-  // Normalize user data
-  const normalizeUserData = (userData) => {
-    if (!userData) return null;
+// Normalize user data
+const normalizeUserData = (userData) => {
+  if (!userData) return null;
 
-    let avatarUrl =
-      userData.avatar || userData.picture || userData.profile_pic || "";
-    if (!avatarUrl || avatarUrl === "null" || avatarUrl === "undefined")
-      avatarUrl = default_logo;
-    else if (
-      !avatarUrl.startsWith("http") &&
-      !avatarUrl.startsWith("blob:") &&
-      !avatarUrl.startsWith("data:")
-    ) {
-      avatarUrl = `${BASE_URL}/uploads/${avatarUrl}`;
+  let avatarUrl =
+    userData.avatar || userData.picture || userData.profile_pic || "";
+  if (!avatarUrl || avatarUrl === "null" || avatarUrl === "undefined")
+    avatarUrl = default_logo;
+  else if (
+    !avatarUrl.startsWith("http") &&
+    !avatarUrl.startsWith("blob:") &&
+    !avatarUrl.startsWith("data:")
+  ) {
+    avatarUrl = `${BASE_URL}/uploads/${avatarUrl}`;
+  }
+
+  // ⭐ FIXED: Handle location as either object or string
+  let location = "";
+  if (userData.location) {
+    if (typeof userData.location === "object" && userData.location !== null) {
+      // Backend sends nested object - format it as string
+      const parts = [
+        userData.location.ward && `Ward ${userData.location.ward}`,
+        userData.location.municipality,
+        userData.location.district,
+        userData.location.province
+      ].filter(Boolean);
+      location = parts.join(", ");
+    } else if (typeof userData.location === "string") {
+      // Already a string
+      location = userData.location;
     }
+  }
 
-    return {
-      email: userData.email || "",
-      name: userData.name || userData.username || "",
-      avatar: avatarUrl,
-      gender: userData.gender || "",
-      location: userData.location || "",
-      role: userData.role || "user",
-    };
+  return {
+    email: userData.email || "",
+    name: userData.name || userData.username || "",
+    avatar: avatarUrl,
+    gender: userData.gender || "",
+    location: location,
+    role: userData.role || "user",
   };
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
@@ -102,13 +120,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ⭐ FIXED: Added skipAutoSave parameter to prevent duplicate saves during add account flow
   const login = async (userData, skipAutoSave = false) => {
     const normalized = normalizeUserData(userData);
     setUser(normalized);
 
     // Only auto-save if this is a normal login (not part of add account flow)
-   if (!skipAutoSave && normalized?.email && normalized?.role !== "admin") { 
+    if (!skipAutoSave && normalized?.email && normalized?.role !== "admin") { 
       try {
         const formData = new URLSearchParams();
         formData.append("account_email", normalized.email);
@@ -155,7 +172,6 @@ export const AuthProvider = ({ children }) => {
         const normalized = normalizeUserData(result.user);
         setUser(normalized);
 
-        // ⭐ Add small delay before reloading accounts to avoid race condition
         setTimeout(async () => {
           await loadSavedAccounts();
         }, 50);
