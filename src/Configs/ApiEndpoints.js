@@ -1,4 +1,14 @@
-export const BASE_URL = "http://localhost/CultureConnect/backend";
+const getBaseUrl = () => {
+  const hostname = window.location.hostname;
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    return "http://localhost/CultureConnect/backend";
+  } else {
+    // LAN IP or deployed server
+    return `http://${hostname}/CultureConnect/backend`;
+  }
+};
+
+export const BASE_URL = getBaseUrl();
 
 export const API = {
   GOOGLE_LOGIN: `${BASE_URL}/google_login.php`,
@@ -16,7 +26,6 @@ export const API = {
   SWITCH_ACCOUNT: `${BASE_URL}/switch_account.php`,
   REMOVE_SAVED_ACCOUNT: `${BASE_URL}/remove_saved_account.php`,
   UPLOADS: `${BASE_URL}/uploads`,
-  // app-specific endpoints used in profile & username flows
   USER_PROFILE: `${BASE_URL}/user_profile.php`,
   USERNAME_PERSONAL: `${BASE_URL}/usernamePersonal.php`,
   DELETE_ACCOUNTS: `${BASE_URL}/deleteAccount.php`,
