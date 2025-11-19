@@ -7,6 +7,7 @@ import PublicRoute from "./components/Auth/PublicRoute";
 import FlowRoute from "./components/Auth/FlowRoute";
 import { Toaster } from "react-hot-toast";
 
+
 // Lazy load all pages
 const Home = lazy(() => import("./pages/Home/Home"));
 const Login = lazy(() => import("./pages/Login/Login"));
@@ -40,7 +41,8 @@ const Instruments = lazy(() => import("./pages/Marketplace/Instruments"));
 const Arts = lazy(() => import("./pages/Marketplace/Arts"));
 const Decorations = lazy(() => import("./pages/Marketplace/Decorations"));
 
-
+// Product Detail Page - ADD THIS
+const ProductDetailPage = lazy(() => import("./components/Products/ProductDetailPage"))
 // Settings pages
 const Settings = lazy(() => import("./pages/Settings/Settings"));
 const Personal_Settings = lazy(() =>
@@ -113,6 +115,16 @@ function App() {
             <Route path="decorations" element={<Decorations />} />
           </Route>
 
+          {/* ---------------------- Product Detail Route - ADD THIS ------ */}
+          <Route
+            path="/product/:id"
+            element={
+              <ProtectedRoute>
+                <ProductDetailPage />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Learn Culture with nested routes */}
           <Route
             path="/learnculture"
@@ -128,8 +140,6 @@ function App() {
             <Route path="instruments" element={<LCInstruments />} />
             <Route path="art" element={<ArtCrafts />} />
           </Route>
-
-         
 
           {/* Settings with nested routes */}
           <Route
