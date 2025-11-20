@@ -26,25 +26,34 @@ const normalizeUserData = (userData) => {
     avatarUrl = `${BASE_URL}/uploads/${avatarUrl}`;
   }
 
-  // ⭐ FIXED: Handle location as either object or string
+  // ⭐ IMPROVED: Handle location as either object or string
   let location = "";
   if (userData.location) {
     if (typeof userData.location === "object" && userData.location !== null) {
       // Backend sends nested object - format it as string
-      const parts = [
-        userData.location.ward && `Ward ${userData.location.ward}`,
-        userData.location.municipality,
-        userData.location.district,
-        userData.location.province
-      ].filter(Boolean);
-      location = parts.join(", ");
+      const parts = [];
+      
+      if (userData.location.ward) {
+        parts.push(`Ward ${userData.location.ward}`);
+      }
+      if (userData.location.municipality) {
+        parts.push(userData.location.municipality);
+      }
+      if (userData.location.district) {
+        parts.push(userData.location.district);
+      }
+      if (userData.location.province) {
+        parts.push(userData.location.province);
+      }
+      
+      location = parts.filter(Boolean).join(", ");
     } else if (typeof userData.location === "string") {
-      // Already a string
-      location = userData.location;
+      // Already a string - use as is
+      location = userData.location.trim();
     }
   }
 
-  return {
+  const normalized = {
     email: userData.email || "",
     name: userData.name || userData.username || "",
     avatar: avatarUrl,
@@ -52,6 +61,9 @@ const normalizeUserData = (userData) => {
     location: location,
     role: userData.role || "user",
   };
+
+  console.log("Normalized user data:", normalized);
+  return normalized;
 };
 
 export const AuthProvider = ({ children }) => {
@@ -65,8 +77,12 @@ export const AuthProvider = ({ children }) => {
 
   // Persist user to localStorage
   useEffect(() => {
-    if (user) localStorage.setItem("authUser", JSON.stringify(user));
-    else localStorage.removeItem("authUser");
+    if (user) {
+      console.log("Saving user to localStorage:", user);
+      localStorage.setItem("authUser", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("authUser");
+    }
   }, [user]);
 
   // Check session on mount
@@ -90,9 +106,12 @@ export const AuthProvider = ({ children }) => {
         credentials: "include",
       });
       const result = await res.json();
-      if (result.status === "success" && result.logged_in)
-        setUser(normalizeUserData(result.user));
-      else setUser(null);
+      if (result.status === "success" && result.logged_in) {
+        const normalized = normalizeUserData(result.user);
+        setUser(normalized);
+      } else {
+        setUser(null);
+      }
     } catch (err) {
       console.error("Check session error:", err);
       setUser(null);
@@ -121,7 +140,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (userData, skipAutoSave = false) => {
+    console.log("Login called with userData:", userData);
     const normalized = normalizeUserData(userData);
+    console.log("Setting user to:", normalized);
     setUser(normalized);
 
     // Only auto-save if this is a normal login (not part of add account flow)

@@ -46,7 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($deleted) {
                 $_SESSION['user_email'] = $email;
                 $_SESSION['logged_in'] = true;
-                $_SESSION['last_activity'] = time();
                 unset($_SESSION['google_email']);
 
                 $stmt_gen = $conn->prepare("SELECT gender, province, district, municipality, ward FROM users WHERE email = ? LIMIT 1");

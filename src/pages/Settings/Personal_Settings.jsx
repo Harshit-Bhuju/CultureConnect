@@ -53,7 +53,6 @@ const Personal_Settings = () => {
   const [suggestionModalOpen, setSuggestionModalOpen] = useState(false);
   const genderOptions = ["Male", "Female", "Prefer not to say"];
 
-  // ✅ CHANGED: Remove hardcoded suggestions
   const [usernameSuggestions, setUsernameSuggestions] = useState([]);
   const [usernameError, setUsernameError] = useState("");
   const [usernameTakenError, setUsernameTakenError] = useState("");
@@ -74,7 +73,7 @@ const Personal_Settings = () => {
         username: authUser.name || "",
         location: authUser.location || "",
         gender: authUser.gender || "",
-        avatar: authUser.avatar || default_logo, // Already normalized in AuthContext
+        avatar: authUser.avatar || default_logo,
       });
     }
   }, [authUser]);
@@ -162,10 +161,16 @@ const Personal_Settings = () => {
 
     canvas.toBlob(
       async (blob) => {
+        // ✅ CHANGED: Send location fields separately
+        const locationParts = user.location?.split(", ") || ["", "", "", ""];
+        
         const formData = new FormData();
         formData.append("avatar", blob, "avatar.jpg");
         formData.append("email", user.email);
-        formData.append("location", user.location);
+        formData.append("province", locationParts[0] || "");
+        formData.append("district", locationParts[1] || "");
+        formData.append("municipality", locationParts[2] || "");
+        formData.append("ward", locationParts[3] || "");
         formData.append("gender", user.gender);
 
         try {
@@ -181,13 +186,23 @@ const Personal_Settings = () => {
             const newAvatarUrl = result.avatar.startsWith("http")
               ? result.avatar
               : `${API.UPLOADS}/${result.avatar}`;
-            setUser((prev) => ({ ...prev, avatar: newAvatarUrl }));
+            
+            // ✅ CHANGED: Handle location object from PHP response
+            const newLocation = result.location 
+              ? `${result.location.province}, ${result.location.district}, ${result.location.municipality}, ${result.location.ward}`
+              : user.location;
+            
+            setUser((prev) => ({ 
+              ...prev, 
+              avatar: newAvatarUrl,
+              location: newLocation 
+            }));
 
-            // Pass as 'picture' or 'avatar' - AuthContext will normalize it
             login({
               ...authUser,
               avatar: newAvatarUrl,
-              picture: result.avatar, // Keep both for compatibility
+              location: newLocation,
+              gender: result.gender,
             });
 
             setShowCropModal(false);
@@ -244,7 +259,6 @@ const Personal_Settings = () => {
     setZoom((prev) => Math.min(Math.max(0.5, prev + delta * 0.5), 3));
   };
 
-  // ✅ CHANGED: Open edit popup with suggestion fetch for username
   const openEditPopup = (field) => {
     setEditingField(field);
     if (field === "location") {
@@ -262,7 +276,6 @@ const Personal_Settings = () => {
       }
     } else if (field === "username") {
       setTempValue(user[field] || "");
-      // Fetch suggestions when opening username edit
       refreshSuggestions();
     } else {
       setTempValue(user[field] || "");
@@ -284,7 +297,6 @@ const Personal_Settings = () => {
     setSelectedWard("");
   };
 
-  // ✅ CHANGED: Save function - routes to different endpoints
   const handleSave = async () => {
     let value;
 
@@ -317,7 +329,6 @@ const Personal_Settings = () => {
     try {
       let response, result;
 
-      // ✅ Username update goes to usernamePersonal.php
       if (field === "username") {
         response = await fetch(API.USERNAME_PERSONAL, {
           method: "POST",
@@ -346,12 +357,14 @@ const Personal_Settings = () => {
           }
           toast.error(result.message || "Failed to update username");
         }
-      }
-      // ✅ Location update goes to user_profile.php
-      else if (field === "location") {
+      } else if (field === "location") {
+        // ✅ CHANGED: Send location fields separately to PHP
         const formData = new FormData();
         formData.append("email", user.email);
-        formData.append("location", value);
+        formData.append("province", selectedProvince);
+        formData.append("district", selectedDistrict);
+        formData.append("municipality", selectedMunicipal);
+        formData.append("ward", selectedWard);
         formData.append("gender", user.gender);
 
         response = await fetch(API.USER_PROFILE, {
@@ -362,12 +375,19 @@ const Personal_Settings = () => {
         result = await response.json();
 
         if (result.status === "success") {
+          // ✅ CHANGED: Handle location object from PHP response
+          const newLocation = result.location 
+            ? `${result.location.province}, ${result.location.district}, ${result.location.municipality}, ${result.location.ward}`
+            : value;
+          
+          setUser((prev) => ({ ...prev, location: newLocation }));
+          
           login({
             ...authUser,
-            location: result.location,
+            location: newLocation,
             name: result.username,
             gender: result.gender,
-            avatar: result.avatar, // Changed from 'picture'
+            avatar: result.avatar,
           });
           toast.success("Location updated successfully");
         } else {
@@ -388,9 +408,15 @@ const Personal_Settings = () => {
     setUser((prev) => ({ ...prev, gender: option }));
     setGenderDropdownOpen(false);
 
+    // ✅ CHANGED: Send location fields separately
+    const locationParts = user.location?.split(", ") || ["", "", "", ""];
+    
     const formData = new FormData();
     formData.append("email", user.email);
-    formData.append("location", user.location);
+    formData.append("province", locationParts[0] || "");
+    formData.append("district", locationParts[1] || "");
+    formData.append("municipality", locationParts[2] || "");
+    formData.append("ward", locationParts[3] || "");
     formData.append("gender", option);
 
     try {
@@ -403,12 +429,17 @@ const Personal_Settings = () => {
       const result = await response.json();
 
       if (result.status === "success") {
+        // ✅ CHANGED: Handle location object from PHP response
+        const newLocation = result.location 
+          ? `${result.location.province}, ${result.location.district}, ${result.location.municipality}, ${result.location.ward}`
+          : user.location;
+        
         login({
           ...authUser,
           name: result.username,
-          location: result.location,
+          location: newLocation,
           gender: result.gender,
-          avatar: result.avatar, // Changed from 'picture'
+          avatar: result.avatar,
         });
         toast.success("Gender updated successfully");
       } else {
@@ -435,7 +466,6 @@ const Personal_Settings = () => {
     return !tempValue || usernameError || usernameTakenError;
   };
 
-  // ✅ CHANGED: Fetch suggestions from backend
   const refreshSuggestions = async () => {
     try {
       const response = await fetch(API.USERNAME_PERSONAL, {
@@ -456,7 +486,6 @@ const Personal_Settings = () => {
     }
   };
 
-  // ✅ CHANGED: Real-time username availability check
   const handleUsernameChange = async (value, error) => {
     setTempValue(value);
     setUsernameError(error);
@@ -464,7 +493,6 @@ const Personal_Settings = () => {
     if (error === "") {
       setUsernameTakenError("");
 
-      // Check availability in real-time if no validation error
       if (value.trim() && value !== user.username) {
         try {
           const response = await fetch(API.USERNAME_PERSONAL, {

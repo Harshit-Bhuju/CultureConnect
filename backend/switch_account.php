@@ -40,7 +40,6 @@ if (!$row) {
 
 $_SESSION['user_email'] = $row['email'];
 $_SESSION['logged_in'] = true;
-$_SESSION['last_activity'] = time();
 
 echo json_encode([
     "status" => "success",

@@ -32,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['logged_in'] = true;
-    $_SESSION['last_activity'] = time();
 
     echo json_encode([
         "status" => "success",

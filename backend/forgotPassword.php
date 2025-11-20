@@ -75,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
 
     $_SESSION['forgot_email'] = $email;
-    $_SESSION['last_activity'] = time();
 
     $response = json_encode(["status" => "success", "message" => "Code sent to $email"]);
     header("Connection: close");

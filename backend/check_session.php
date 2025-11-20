@@ -2,15 +2,6 @@
 include("session_helper.php");
 include("header.php");
 
-if (!checkSessionTimeout()) {
-    echo json_encode([
-        "status" => "error",
-        "message" => "Session expired",
-        "logged_in" => false,
-        "accounts" => []
-    ]);
-    exit;
-}
 
 $current_user_email = $_SESSION['user_email'] ?? null;
 $device_id = getDeviceId();

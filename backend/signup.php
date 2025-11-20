@@ -88,7 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $_SESSION['pending_email'] = $email;
     $_SESSION['pending_verification'] = true;
-    $_SESSION['last_activity'] = time();
 
     $response = json_encode(["status" => "success"]);
 

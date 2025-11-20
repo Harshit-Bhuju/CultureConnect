@@ -12,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // 1️⃣ Check if user exists in users table
     $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -24,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
         if (!empty($row['password'])) {
-            if ($row['profile_pic'] == 'default-image.jpg') {
+            if ($row['profile_pic'] !== $picture) {
                 $stmt = $conn->prepare("UPDATE users SET profile_pic = ? WHERE email = ?");
                 $stmt->bind_param("ss", $picture, $email);
                 $stmt->execute();
@@ -34,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $_SESSION['user_email'] = $email;
             $_SESSION['logged_in'] = true;
-            $_SESSION['last_activity'] = time();
 
             echo json_encode([
                 "status" => "not_null",
@@ -42,7 +40,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     "email" => $row['email'],
                     "name" => $row['username'],
                     "gender" => $row['gender'],
-                    "location" => $row['location'],
+                    "location" => [
+                        "province" => $user['province'] ?? '',
+                        "district" => $user['district'] ?? '',
+                        "municipality" => $user['municipality'] ?? '',
+                        "ward" => $user['ward'] ?? ''
+                    ],
                     "avatar" => $row['profile_pic'],
                 ]
             ]);

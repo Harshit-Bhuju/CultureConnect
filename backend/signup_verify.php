@@ -99,7 +99,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $_SESSION['logged_in'] = true;
       unset($_SESSION['pending_email']);
       unset($_SESSION['pending_verification']);
-      $_SESSION['last_activity'] = time();
 
       echo json_encode([
         "status" => "success",
