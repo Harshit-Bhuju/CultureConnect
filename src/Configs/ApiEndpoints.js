@@ -31,6 +31,8 @@ export const API = {
   DELETE_ACCOUNTS: `${BASE_URL}/deleteAccount.php`,
   SETTING_PASSWORD: `${BASE_URL}/settingpassword.php`,
   GET_SLIDESRS: `${BASE_URL}/get_sliders.php`,
+    SELLER_REGISTRATION: `${BASE_URL}/seller-registration.php`,
+  GET_SELLER_PROFILE: `${BASE_URL}/get-seller-profile.php`,
 };
 
 export default API;

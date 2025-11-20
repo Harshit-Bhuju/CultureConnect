@@ -1,217 +1,237 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { Store, Upload, X } from 'lucide-react';
+import useNepalAddress from '../../hooks/NepalAddress';
+import API from '../../Configs/ApiEndpoints';
+import toast from 'react-hot-toast';
 
-export default function CultureConnectSellerForm() {
-  const [currentPage, setCurrentPage] = useState('form'); // 'form' or 'profile'
+function SellerForm() {
+  const navigate = useNavigate();
+  const { user, login } = useAuth();
   const [bannerPreview, setBannerPreview] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [bannerFile, setBannerFile] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    storeName: '',
+    storeDescription: '',
+    businessEmail: user?.email || '',
+    esewaPhone: '',
+    primaryCategory: '',
+    termsAccepted: false
+  });
+
+  const {
+    provinces,
+    districts,
+    municipals,
+    wards,
+    selectedProvince,
+    selectedDistrict,
+    selectedMunicipal,
+    selectedWard,
+    setSelectedProvince,
+    setSelectedDistrict,
+    setSelectedMunicipal,
+    setSelectedWard,
+  } = useNepalAddress();
 
   const handleImagePreview = (e, type) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        if (type === 'banner') setBannerPreview(reader.result);
-        if (type === 'logo') setLogoPreview(reader.result);
+        if (type === 'banner') {
+          setBannerPreview(reader.result);
+          setBannerFile(file);
+        }
+        if (type === 'logo') {
+          setLogoPreview(reader.result);
+          setLogoFile(file);
+        }
       };
       reader.readAsDataURL(file);
     }
   };
 
-  if (currentPage === 'profile') {
-    return (
-      <div className="min-h-screen bg-black text-white">
-        {/* Banner Section */}
-        <div className="relative">
-          <div className="w-full h-48 md:h-64 bg-gradient-to-r from-gray-800 to-gray-900 overflow-hidden">
-            {bannerPreview ? (
-              <img src={bannerPreview} alt="Store Banner" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-600">
-                <span className="text-lg">Store Banner</span>
-              </div>
-            )}
-          </div>
-        </div>
+  const handleSubmit = async () => {
+    // Validate required fields
+    if (!formData.storeName || !formData.businessEmail || !formData.esewaPhone || 
+        !selectedProvince || !selectedDistrict || !selectedMunicipal || !selectedWard ||
+        !formData.primaryCategory || !logoFile || !bannerFile || !formData.termsAccepted) {
+      toast.error('Please fill all required fields');
+      return;
+    }
 
-        {/* Profile Section */}
-        <div className="max-w-7xl mx-auto px-4 -mt-16 md:-mt-20 relative z-10">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            {/* Logo */}
-            <div className="relative">
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gray-800 border-4 border-black overflow-hidden">
-                {logoPreview ? (
-                  <img src={logoPreview} alt="Store Logo" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Store className="w-16 h-16 text-gray-600" />
-                  </div>
-                )}
-              </div>
-            </div>
+    setIsSubmitting(true);
 
-            {/* Store Info */}
-            <div className="flex-1 mt-4 md:mt-12">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl md:text-4xl font-bold">Traditional Arts Store</h1>
-                <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </div>
-              
-              <p className="text-gray-400 mb-1">@traditionalarts · 245 followers · 89 products</p>
-              
-              <p className="text-gray-300 mb-3 max-w-3xl">
-                Authentic Nepali traditional clothing, handcrafted with love. Preserving our culture through quality craftsmanship.
-              </p>
+    try {
+      // Create FormData for file upload
+      const submitData = new FormData();
+      submitData.append('storeName', formData.storeName);
+      submitData.append('storeDescription', formData.storeDescription);
+      submitData.append('businessEmail', formData.businessEmail);
+      submitData.append('esewaPhone', formData.esewaPhone);
+      submitData.append('primaryCategory', formData.primaryCategory);
+      submitData.append('province', selectedProvince);
+      submitData.append('district', selectedDistrict);
+      submitData.append('municipality', selectedMunicipal);
+      submitData.append('ward', selectedWard);
+      submitData.append('termsAccepted', formData.termsAccepted);
+      submitData.append('logo', logoFile);
+      submitData.append('banner', bannerFile);
 
-              <p className="text-sm text-gray-400 mb-4">
-                📍 Kathmandu, Nepal · Joined December 2024
-              </p>
+      // Replace API.SELLER_REGISTRATION with your actual endpoint
+      const response = await fetch(API.SELLER_REGISTRATION, {
+        method: 'POST',
+        body: submitData,
+        credentials: 'include',
+      });
 
-              <button className="bg-red-600 text-white px-8 py-2 rounded font-semibold hover:bg-red-700 transition-colors">
-                Follow
-              </button>
-            </div>
-          </div>
-        </div>
+      const result = await response.json();
 
-        {/* Products Section */}
-        <div className="max-w-7xl mx-auto px-4 mt-12">
-          <div className="border-b border-gray-800">
-            <div className="flex gap-8">
-              <button className="px-4 py-4 border-b-2 border-white font-semibold">
-                Products
-              </button>
-              <button className="px-4 py-4 text-gray-400 hover:text-white">
-                About
-              </button>
-            </div>
-          </div>
+      if (result.status === 'success') {
+        toast.success('Seller registration successful!');
+        
+        // Update user context with seller data
+        login({
+          ...user,
+          role: 'seller',
+          sellerId: result.sellerId
+        });
 
-          {/* Products Grid Placeholder */}
-          <div className="py-12">
-            <div className="text-center text-gray-500">
-              <Store className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg">Products will be displayed here</p>
-              <p className="text-sm mt-2">Seller will add products after registration</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Back Button */}
-        <div className="fixed bottom-8 left-8">
-          <button 
-            onClick={() => setCurrentPage('form')}
-            className="bg-white text-black px-6 py-2 rounded font-semibold hover:bg-gray-200 transition-colors"
-          >
-            Back to Form
-          </button>
-        </div>
-      </div>
-    );
-  }
+        // Navigate to seller profile
+        navigate(`/seller-profile/${result.sellerId}`);
+      } else {
+        toast.error(result.message || 'Failed to submit application');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast.error('Error submitting application. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-black text-white py-12">
+    <div className="bg-gray-100 py-12">
       <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Store className="w-10 h-10" />
-            <h1 className="text-4xl font-bold">CultureConnect</h1>
+            <Store className="w-10 h-10 text-gray-800" />
+            <h1 className="text-4xl font-bold text-gray-800">CultureConnect</h1>
           </div>
-          <h2 className="text-2xl font-semibold mb-2">Seller Registration</h2>
-          <p className="text-gray-400">Join our community of cultural artisans and sellers</p>
+          <h2 className="text-2xl font-semibold mb-2 text-gray-800">Seller Registration</h2>
+          <p className="text-gray-600">Join our community of cultural artisans and sellers</p>
         </div>
 
         {/* Form */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-8">
+        <div className="bg-white rounded-lg shadow-md p-8">
           <div className="space-y-6">
             {/* Store Name */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700">
                 Store Name <span className="text-red-500">*</span>
               </label>
               <input 
                 type="text" 
-                className="w-full px-4 py-3 bg-black border border-gray-700 rounded text-white focus:outline-none focus:border-gray-500"
+                value={formData.storeName}
+                onChange={(e) => setFormData({...formData, storeName: e.target.value})}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
                 placeholder="Enter your store name"
               />
             </div>
 
             {/* Store Description */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700">
                 Store Description <span className="text-gray-500">(Optional)</span>
               </label>
               <textarea 
                 rows={4}
-                className="w-full px-4 py-3 bg-black border border-gray-700 rounded text-white focus:outline-none focus:border-gray-500"
+                value={formData.storeDescription}
+                onChange={(e) => setFormData({...formData, storeDescription: e.target.value})}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
                 placeholder="Tell customers about your store and products..."
               />
             </div>
 
             {/* Business Email */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700">
                 Business Email <span className="text-red-500">*</span>
               </label>
               <input 
                 type="email" 
-                className="w-full px-4 py-3 bg-black border border-gray-700 rounded text-white focus:outline-none focus:border-gray-500"
+                value={formData.businessEmail}
+                onChange={(e) => setFormData({...formData, businessEmail: e.target.value})}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
                 placeholder="your.business@example.com"
               />
             </div>
 
             {/* Business Location */}
             <div>
-              <label className="block text-sm font-medium mb-4">
+              <label className="block text-sm font-medium mb-4 text-gray-700">
                 Business Location <span className="text-red-500">*</span>
               </label>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-gray-400 mb-2">Province</label>
-                  <select className="w-full px-4 py-3 bg-black border border-gray-700 rounded text-white focus:outline-none focus:border-gray-500">
+                  <label className="block text-xs text-gray-600 mb-2">Province</label>
+                  <select 
+                    value={selectedProvince}
+                    onChange={(e) => setSelectedProvince(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
+                  >
                     <option value="">Select Province</option>
-                    <option>Province 1</option>
-                    <option>Madhesh Province</option>
-                    <option>Bagmati Province</option>
-                    <option>Gandaki Province</option>
-                    <option>Lumbini Province</option>
-                    <option>Karnali Province</option>
-                    <option>Sudurpashchim Province</option>
+                    {provinces.map(province => (
+                      <option key={province} value={province}>{province}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-2">District</label>
-                  <select className="w-full px-4 py-3 bg-black border border-gray-700 rounded text-white focus:outline-none focus:border-gray-500">
+                  <label className="block text-xs text-gray-600 mb-2">District</label>
+                  <select 
+                    value={selectedDistrict}
+                    onChange={(e) => setSelectedDistrict(e.target.value)}
+                    disabled={!selectedProvince}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <option value="">Select District</option>
-                    <option>Kathmandu</option>
-                    <option>Lalitpur</option>
-                    <option>Bhaktapur</option>
-                    <option>Pokhara</option>
-                    <option>Chitwan</option>
+                    {districts.map(district => (
+                      <option key={district} value={district}>{district}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-2">Municipality</label>
-                  <select className="w-full px-4 py-3 bg-black border border-gray-700 rounded text-white focus:outline-none focus:border-gray-500">
+                  <label className="block text-xs text-gray-600 mb-2">Municipality</label>
+                  <select 
+                    value={selectedMunicipal}
+                    onChange={(e) => setSelectedMunicipal(e.target.value)}
+                    disabled={!selectedDistrict}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <option value="">Select Municipality</option>
-                    <option>Metropolitan</option>
-                    <option>Sub-Metropolitan</option>
-                    <option>Municipality</option>
-                    <option>Rural Municipality</option>
+                    {municipals.map(municipal => (
+                      <option key={municipal} value={municipal}>{municipal}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-2">Ward</label>
-                  <select className="w-full px-4 py-3 bg-black border border-gray-700 rounded text-white focus:outline-none focus:border-gray-500">
+                  <label className="block text-xs text-gray-600 mb-2">Ward</label>
+                  <select 
+                    value={selectedWard}
+                    onChange={(e) => setSelectedWard(e.target.value)}
+                    disabled={!selectedMunicipal}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <option value="">Select Ward</option>
-                    {[...Array(32)].map((_, i) => (
-                      <option key={i} value={i + 1}>Ward {i + 1}</option>
+                    {wards.map(ward => (
+                      <option key={ward} value={ward}>{ward}</option>
                     ))}
                   </select>
                 </div>
@@ -220,12 +240,14 @@ export default function CultureConnectSellerForm() {
 
             {/* eSewa Phone Number */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700">
                 eSewa Phone Number <span className="text-red-500">*</span>
               </label>
               <input 
                 type="tel" 
-                className="w-full px-4 py-3 bg-black border border-gray-700 rounded text-white focus:outline-none focus:border-gray-500"
+                value={formData.esewaPhone}
+                onChange={(e) => setFormData({...formData, esewaPhone: e.target.value})}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
                 placeholder="98XXXXXXXX"
               />
               <p className="text-xs text-gray-500 mt-1">Payment will be sent to this eSewa account</p>
@@ -233,10 +255,14 @@ export default function CultureConnectSellerForm() {
 
             {/* Primary Category */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700">
                 Primary Category of Selling <span className="text-red-500">*</span>
               </label>
-              <select className="w-full px-4 py-3 bg-black border border-gray-700 rounded text-white focus:outline-none focus:border-gray-500">
+              <select 
+                value={formData.primaryCategory}
+                onChange={(e) => setFormData({...formData, primaryCategory: e.target.value})}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
+              >
                 <option value="">Select Category</option>
                 <option>Traditional Clothing</option>
                 <option>Musical Instruments</option>
@@ -246,26 +272,29 @@ export default function CultureConnectSellerForm() {
 
             {/* Store Logo Upload */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700">
                 Store Logo <span className="text-red-500">*</span>
               </label>
-              <div className="border-2 border-dashed border-gray-700 rounded-lg p-6">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
                 {logoPreview ? (
                   <div className="relative">
                     <img src={logoPreview} alt="Logo Preview" className="w-32 h-32 mx-auto rounded-full object-cover" />
                     <button 
                       type="button"
-                      onClick={() => setLogoPreview(null)}
+                      onClick={() => {
+                        setLogoPreview(null);
+                        setLogoFile(null);
+                      }}
                       className="absolute top-0 right-1/2 translate-x-16 bg-red-600 rounded-full p-1 hover:bg-red-700"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-4 h-4 text-white" />
                     </button>
                   </div>
                 ) : (
                   <label className="flex flex-col items-center cursor-pointer">
-                    <Upload className="w-12 h-12 text-gray-600 mb-2" />
-                    <span className="text-sm text-gray-400">Click to upload logo</span>
-                    <span className="text-xs text-gray-600 mt-1">Recommended: 400x400px, PNG or JPG</span>
+                    <Upload className="w-12 h-12 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-600">Click to upload logo</span>
+                    <span className="text-xs text-gray-500 mt-1">Recommended: 400x400px, PNG or JPG</span>
                     <input 
                       type="file" 
                       className="hidden" 
@@ -279,26 +308,29 @@ export default function CultureConnectSellerForm() {
 
             {/* Store Banner Upload */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700">
                 Store Banner <span className="text-red-500">*</span>
               </label>
-              <div className="border-2 border-dashed border-gray-700 rounded-lg p-6">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
                 {bannerPreview ? (
                   <div className="relative">
                     <img src={bannerPreview} alt="Banner Preview" className="w-full h-48 object-cover rounded" />
                     <button 
                       type="button"
-                      onClick={() => setBannerPreview(null)}
+                      onClick={() => {
+                        setBannerPreview(null);
+                        setBannerFile(null);
+                      }}
                       className="absolute top-2 right-2 bg-red-600 rounded-full p-1 hover:bg-red-700"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-4 h-4 text-white" />
                     </button>
                   </div>
                 ) : (
                   <label className="flex flex-col items-center cursor-pointer">
-                    <Upload className="w-12 h-12 text-gray-600 mb-2" />
-                    <span className="text-sm text-gray-400">Click to upload banner</span>
-                    <span className="text-xs text-gray-600 mt-1">Recommended: 2048x1152px, 6MB or less</span>
+                    <Upload className="w-12 h-12 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-600">Click to upload banner</span>
+                    <span className="text-xs text-gray-500 mt-1">Recommended: 2048x1152px, 6MB or less</span>
                     <input 
                       type="file" 
                       className="hidden" 
@@ -311,54 +343,52 @@ export default function CultureConnectSellerForm() {
             </div>
 
             {/* Terms & Conditions */}
-            <div className="border border-gray-700 rounded-lg p-6 bg-gray-950">
-              <h3 className="font-semibold mb-4 text-lg">Terms & Conditions for Sellers:</h3>
-              <ul className="space-y-3 text-sm text-gray-300 mb-4">
+            <div className="border border-gray-300 rounded-lg p-6 bg-gray-50">
+              <h3 className="font-semibold mb-4 text-lg text-gray-800">Terms & Conditions for Sellers:</h3>
+              <ul className="space-y-3 text-sm text-gray-700 mb-4">
                 <li className="flex items-start gap-2">
-                  <span className="text-white mt-1">•</span>
+                  <span className="text-gray-800 mt-1">•</span>
                   <span><strong>Commission:</strong> A 1% commission will be deducted from each successful sale</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white mt-1">•</span>
+                  <span className="text-gray-800 mt-1">•</span>
                   <span><strong>Delivery:</strong> Buyers are responsible for all delivery charges. Sellers incur no delivery costs</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white mt-1">•</span>
+                  <span className="text-gray-800 mt-1">•</span>
                   <span><strong>Shipping:</strong> Products must be shipped to the nearest branch location selected by the buyer at checkout</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white mt-1">•</span>
+                  <span className="text-gray-800 mt-1">•</span>
                   <span><strong>Payment:</strong> Settlements are processed within 7 business days after successful delivery</span>
                 </li>
               </ul>
               
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" className="w-5 h-5 mt-0.5 bg-black border-gray-700 rounded" />
-                <span className="text-sm">I agree to the Terms & Conditions and confirm that the information provided is accurate</span>
+                <input 
+                  type="checkbox" 
+                  checked={formData.termsAccepted}
+                  onChange={(e) => setFormData({...formData, termsAccepted: e.target.checked})}
+                  className="w-5 h-5 mt-0.5 accent-gray-800"
+                />
+                <span className="text-sm text-gray-700">I agree to the Terms & Conditions and confirm that the information provided is accurate</span>
               </label>
             </div>
 
             {/* Submit Button */}
             <button 
               type="button"
-              onClick={() => setCurrentPage('profile')}
-              className="w-full bg-white text-black font-semibold py-4 rounded hover:bg-gray-200 transition-colors"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="w-full bg-gray-800 text-white font-semibold py-4 rounded hover:bg-gray-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Submit Application
+              {isSubmitting ? 'Submitting...' : 'Submit Application'}
             </button>
           </div>
-        </div>
-
-        {/* Preview Profile Button */}
-        <div className="text-center mt-6">
-          <button 
-            onClick={() => setCurrentPage('profile')}
-            className="text-gray-400 hover:text-white text-sm underline"
-          >
-            Preview Store Profile
-          </button>
         </div>
       </div>
     </div>
   );
 }
+
+export default SellerForm;

@@ -1,7 +1,7 @@
 import React from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/Layout/app-sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "../../components/ui/sidebar";
+import AppSidebar from "../../components/Layout/app-sidebar";
 import { Menu } from "lucide-react";
 
 const Settings = () => {

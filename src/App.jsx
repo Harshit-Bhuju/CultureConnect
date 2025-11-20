@@ -42,7 +42,8 @@ const Arts = lazy(() => import("./pages/Marketplace/Arts"));
 const Decorations = lazy(() => import("./pages/Marketplace/Decorations"));
 
 // Product Detail Page - ADD THIS
-const ProductDetailPage = lazy(() => import("./components/Products/ProductDetailPage"))
+const ProductDetailPage = lazy(() => import("./components/Products/ProductDetailPage"));
+
 // Settings pages
 const Settings = lazy(() => import("./pages/Settings/Settings"));
 const Personal_Settings = lazy(() =>
@@ -58,6 +59,10 @@ const AdminProtectedRoute = lazy(() =>
   import("./components/Auth/AdminProtectedRoute")
 );
 const AdminPanel = lazy(() => import("./admin/AdminPanel"));
+
+// NEW: BeSeller page
+const Seller = lazy(() => import("./pages/BeSeller/Seller"));
+const SellerProfile = lazy(() => import("./pages/BeSeller/SellerProfile"));
 
 // Home Route Wrapper - Redirects admin to admin panel
 function HomeRoute() {
@@ -114,6 +119,24 @@ function App() {
             <Route path="arts_decors" element={<Arts />} />
             <Route path="decorations" element={<Decorations />} />
           </Route>
+
+          {/* Be a Seller */}
+          <Route
+            path="/seller"
+            element={
+              <ProtectedRoute>
+                <Seller />
+              </ProtectedRoute>
+            }
+          />
+              <Route
+            path="/sellerprofile"
+            element={
+              <ProtectedRoute>
+                <SellerProfile />
+              </ProtectedRoute>
+            }
+          />
 
           {/* ---------------------- Product Detail Route - ADD THIS ------ */}
           <Route

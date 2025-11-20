@@ -79,8 +79,8 @@ export default function AppSidebar({ children, ...props }) {
       },
     ],
     projects: [
-      { name: "Be a Seller/Vendor", url: "/projects/seller", icon: TrendingUp },
-      { name: "Be a Teacher", url: "/projects/teacher", icon: GraduationCap },
+      { name: "Be a Seller/Vendor", url: "/seller", icon: TrendingUp },
+      { name: "Be a Teacher", url: "/teacher", icon: GraduationCap },
     ],
   };
 
