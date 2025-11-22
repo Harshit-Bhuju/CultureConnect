@@ -369,6 +369,7 @@ const useNepalAddress = () => {
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedMunicipal, setSelectedMunicipal] = useState("");
+  const [selectedWard, setSelectedWard] = useState("");
 
   // Load provinces on mount
   useEffect(() => {
@@ -382,8 +383,10 @@ const useNepalAddress = () => {
     } else {
       setDistricts([]);
     }
+    setSelectedDistrict("");
     setMunicipals([]);
     setWards([]);
+    setSelectedWard("");
   }, [selectedProvince]);
 
   // Load municipalities when district changes
@@ -393,7 +396,9 @@ const useNepalAddress = () => {
     } else {
       setMunicipals([]);
     }
+    setSelectedMunicipal("");
     setWards([]);
+    setSelectedWard("");
   }, [selectedDistrict, selectedProvince]);
 
   // Load wards when municipality changes
@@ -409,6 +414,7 @@ const useNepalAddress = () => {
     } else {
       setWards([]);
     }
+    setSelectedWard("");
   }, [selectedMunicipal, selectedProvince, selectedDistrict]);
 
   return {
@@ -422,6 +428,8 @@ const useNepalAddress = () => {
     setSelectedDistrict,
     selectedMunicipal,
     setSelectedMunicipal,
+    selectedWard,
+    setSelectedWard,
   };
 };
 

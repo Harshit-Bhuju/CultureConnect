@@ -56,7 +56,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo json_encode(['status' => 'error', 'message' => 'Invalid file type.']);
             exit;
         }
-
+        // Check file size (max 5MB)
+        if ($file['size'] > 5 * 1024 * 1024) {
+            echo json_encode(['status' => 'error', 'message' => 'Logo file too large. Maximum 5MB']);
+            exit;
+        }
+        
         if (!empty($existingUser['profile_pic']) && file_exists(__DIR__ . '/uploads/' . $existingUser['profile_pic'])) {
             if ($existingUser['profile_pic'] !== 'default-image.jpg') {
                 unlink(__DIR__ . '/uploads/' . $existingUser['profile_pic']);

@@ -14,7 +14,7 @@ function SellerForm() {
   const [bannerFile, setBannerFile] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     storeName: '',
     storeDescription: '',
@@ -59,9 +59,9 @@ function SellerForm() {
 
   const handleSubmit = async () => {
     // Validate required fields
-    if (!formData.storeName || !formData.businessEmail || !formData.esewaPhone || 
-        !selectedProvince || !selectedDistrict || !selectedMunicipal || !selectedWard ||
-        !formData.primaryCategory || !logoFile || !bannerFile || !formData.termsAccepted) {
+    if (!formData.storeName || !formData.businessEmail || !formData.esewaPhone ||
+      !selectedProvince || !selectedDistrict || !selectedMunicipal || !selectedWard ||
+      !formData.primaryCategory || !logoFile || !bannerFile || !formData.termsAccepted) {
       toast.error('Please fill all required fields');
       return;
     }
@@ -80,7 +80,7 @@ function SellerForm() {
       submitData.append('district', selectedDistrict);
       submitData.append('municipality', selectedMunicipal);
       submitData.append('ward', selectedWard);
-      submitData.append('termsAccepted', formData.termsAccepted);
+      submitData.append('terms', formData.termsAccepted ? 'on' : 'off');
       submitData.append('logo', logoFile);
       submitData.append('banner', bannerFile);
 
@@ -95,7 +95,7 @@ function SellerForm() {
 
       if (result.status === 'success') {
         toast.success('Seller registration successful!');
-        
+
         // Update user context with seller data
         login({
           ...user,
@@ -137,10 +137,10 @@ function SellerForm() {
               <label className="block text-sm font-medium mb-2 text-gray-700">
                 Store Name <span className="text-red-500">*</span>
               </label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={formData.storeName}
-                onChange={(e) => setFormData({...formData, storeName: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
                 placeholder="Enter your store name"
               />
@@ -151,10 +151,10 @@ function SellerForm() {
               <label className="block text-sm font-medium mb-2 text-gray-700">
                 Store Description <span className="text-gray-500">(Optional)</span>
               </label>
-              <textarea 
+              <textarea
                 rows={4}
                 value={formData.storeDescription}
-                onChange={(e) => setFormData({...formData, storeDescription: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, storeDescription: e.target.value })}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
                 placeholder="Tell customers about your store and products..."
               />
@@ -165,10 +165,10 @@ function SellerForm() {
               <label className="block text-sm font-medium mb-2 text-gray-700">
                 Business Email <span className="text-red-500">*</span>
               </label>
-              <input 
-                type="email" 
+              <input
+                type="email"
                 value={formData.businessEmail}
-                onChange={(e) => setFormData({...formData, businessEmail: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, businessEmail: e.target.value })}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
                 placeholder="your.business@example.com"
               />
@@ -182,7 +182,7 @@ function SellerForm() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs text-gray-600 mb-2">Province</label>
-                  <select 
+                  <select
                     value={selectedProvince}
                     onChange={(e) => setSelectedProvince(e.target.value)}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
@@ -195,7 +195,7 @@ function SellerForm() {
                 </div>
                 <div>
                   <label className="block text-xs text-gray-600 mb-2">District</label>
-                  <select 
+                  <select
                     value={selectedDistrict}
                     onChange={(e) => setSelectedDistrict(e.target.value)}
                     disabled={!selectedProvince}
@@ -209,7 +209,7 @@ function SellerForm() {
                 </div>
                 <div>
                   <label className="block text-xs text-gray-600 mb-2">Municipality</label>
-                  <select 
+                  <select
                     value={selectedMunicipal}
                     onChange={(e) => setSelectedMunicipal(e.target.value)}
                     disabled={!selectedDistrict}
@@ -223,7 +223,7 @@ function SellerForm() {
                 </div>
                 <div>
                   <label className="block text-xs text-gray-600 mb-2">Ward</label>
-                  <select 
+                  <select
                     value={selectedWard}
                     onChange={(e) => setSelectedWard(e.target.value)}
                     disabled={!selectedMunicipal}
@@ -243,10 +243,10 @@ function SellerForm() {
               <label className="block text-sm font-medium mb-2 text-gray-700">
                 eSewa Phone Number <span className="text-red-500">*</span>
               </label>
-              <input 
-                type="tel" 
+              <input
+                type="tel"
                 value={formData.esewaPhone}
-                onChange={(e) => setFormData({...formData, esewaPhone: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, esewaPhone: e.target.value })}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
                 placeholder="98XXXXXXXX"
               />
@@ -258,9 +258,9 @@ function SellerForm() {
               <label className="block text-sm font-medium mb-2 text-gray-700">
                 Primary Category of Selling <span className="text-red-500">*</span>
               </label>
-              <select 
+              <select
                 value={formData.primaryCategory}
-                onChange={(e) => setFormData({...formData, primaryCategory: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, primaryCategory: e.target.value })}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
               >
                 <option value="">Select Category</option>
@@ -279,7 +279,7 @@ function SellerForm() {
                 {logoPreview ? (
                   <div className="relative">
                     <img src={logoPreview} alt="Logo Preview" className="w-32 h-32 mx-auto rounded-full object-cover" />
-                    <button 
+                    <button
                       type="button"
                       onClick={() => {
                         setLogoPreview(null);
@@ -295,9 +295,9 @@ function SellerForm() {
                     <Upload className="w-12 h-12 text-gray-400 mb-2" />
                     <span className="text-sm text-gray-600">Click to upload logo</span>
                     <span className="text-xs text-gray-500 mt-1">Recommended: 400x400px, PNG or JPG</span>
-                    <input 
-                      type="file" 
-                      className="hidden" 
+                    <input
+                      type="file"
+                      className="hidden"
                       accept="image/*"
                       onChange={(e) => handleImagePreview(e, 'logo')}
                     />
@@ -315,7 +315,7 @@ function SellerForm() {
                 {bannerPreview ? (
                   <div className="relative">
                     <img src={bannerPreview} alt="Banner Preview" className="w-full h-48 object-cover rounded" />
-                    <button 
+                    <button
                       type="button"
                       onClick={() => {
                         setBannerPreview(null);
@@ -331,9 +331,9 @@ function SellerForm() {
                     <Upload className="w-12 h-12 text-gray-400 mb-2" />
                     <span className="text-sm text-gray-600">Click to upload banner</span>
                     <span className="text-xs text-gray-500 mt-1">Recommended: 2048x1152px, 6MB or less</span>
-                    <input 
-                      type="file" 
-                      className="hidden" 
+                    <input
+                      type="file"
+                      className="hidden"
                       accept="image/*"
                       onChange={(e) => handleImagePreview(e, 'banner')}
                     />
@@ -363,12 +363,12 @@ function SellerForm() {
                   <span><strong>Payment:</strong> Settlements are processed within 7 business days after successful delivery</span>
                 </li>
               </ul>
-              
+
               <label className="flex items-start gap-3 cursor-pointer">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={formData.termsAccepted}
-                  onChange={(e) => setFormData({...formData, termsAccepted: e.target.checked})}
+                  onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
                   className="w-5 h-5 mt-0.5 accent-gray-800"
                 />
                 <span className="text-sm text-gray-700">I agree to the Terms & Conditions and confirm that the information provided is accurate</span>
@@ -376,7 +376,7 @@ function SellerForm() {
             </div>
 
             {/* Submit Button */}
-            <button 
+            <button
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting}

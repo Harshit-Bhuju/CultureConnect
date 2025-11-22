@@ -1,6 +1,7 @@
 <?php
-include("header.php");
 session_start();
+include("header.php");
+include("mail.php");
 include("username_gen.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -55,7 +56,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user_gen = $result_gen->fetch_assoc();
                 $stmt_gen->close();
 
-                echo json_encode([
+                $subject = 'Your CultureConnect Account is Ready';
+                $custom_template = "
+    <html>
+    <head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background: #f2f5f7;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                max-width: 600px;
+                margin: 40px auto;
+                padding: 20px;
+            }
+            .card {
+                background: #ffffff;
+                border-radius: 14px;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+                padding: 40px 30px;
+                text-align: center;
+            }
+            .title {
+                font-size: 30px;
+                font-weight: bold;
+                color: #4a90e2;
+                margin-bottom: 20px;
+            }
+            .message {
+                font-size: 16px;
+                color: #555555;
+                margin-bottom: 30px;
+                line-height: 1.6;
+            }
+            .highlight-box {
+                display: inline-block;
+                background: linear-gradient(90deg, #ffb347, #ffcc33);
+                color: #ffffff;
+                padding: 18px 40px;
+                font-size: 20px;
+                font-weight: bold;
+                border-radius: 10px;
+                letter-spacing: 1px;
+                box-shadow: 0 5px 12px rgba(0,0,0,0.2);
+            }
+            .footer {
+                margin-top: 35px;
+                font-size: 14px;
+                color: #777777;
+                line-height: 1.5;
+            }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='card'>
+                <div class='title'>Thank You for Joining CultureConnect!</div>
+                <div class='message'>
+                    We're thrilled to have you on board. Your account has been successfully created, and you now have full access to explore, connect, and enjoy everything <strong>CultureConnect</strong> offers.
+                </div>
+                <div class='highlight-box'>Account Created Successfully 🎉</div>
+                <div class='footer'>
+                    If you did not create this account, please contact our support immediately.<br>
+                    We’re excited to have you with us!<br>- The <span style='color:red;'>CultureConnect</span> Team
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
+        ";
+                $response = json_encode([
                     "status" => "success",
                     "message" => "Password set successfully!",
                     "user" => [
@@ -72,6 +145,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         "avatar" => $picture
                     ]
                 ]);
+                header("Connection: close");
+                header("Content-Type: application/json");
+                header("Content-Length: " . strlen($response));
+                echo $response;
+                ob_flush();
+                flush();
+
+                ignore_user_abort(true);
+                sendemail_verify($email, $subject, $custom_template);
             } else {
                 echo json_encode(["status" => "error", "message" => "Failed to remove pending user."]);
             }
