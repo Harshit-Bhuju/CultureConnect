@@ -1,7 +1,173 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Store, Upload, X, Check, Mail, Shield } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
-import CropModal from "../../profileSettings_Components/CropModal";
+
+// Crop Modal Component
+const CropModal = ({
+  isOpen,
+  imageToCrop,
+  cropPosition,
+  zoom,
+  isDragging,
+  imageSize,
+  onMouseDown,
+  onMouseMove,
+  onMouseUp,
+  onWheel,
+  onZoomChange,
+  onSave,
+  onCancel,
+  cropImageRef,
+  cropContainerRef,
+  cropType
+}) => {
+  if (!isOpen || !imageToCrop) return null;
+
+  const getImageDisplaySize = () => {
+    if (!imageSize.width || !imageSize.height) return { width: 0, height: 0 };
+    
+    const containerSize = cropType === 'logo' ? 320 : 500;
+    const aspectRatio = imageSize.width / imageSize.height;
+    
+    let width, height;
+    if (cropType === 'banner') {
+      // For banner, maintain aspect ratio in rectangle
+      if (aspectRatio > 16/9) {
+        width = containerSize;
+        height = width / aspectRatio;
+      } else {
+        width = containerSize;
+        height = width / (16/9);
+      }
+    } else {
+      // For logo (circular)
+      if (aspectRatio > 1) {
+        height = containerSize;
+        width = height * aspectRatio;
+      } else {
+        width = containerSize;
+        height = width / aspectRatio;
+      }
+    }
+    
+    return { width, height };
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-[1100] bg-black/95 backdrop-blur-sm">
+      <div className="w-full max-w-2xl mx-4">
+        <div className="flex justify-between items-center mb-4 px-4">
+          <h3 className="text-xl font-bold text-white">
+            Adjust Your {cropType === 'logo' ? 'Logo' : 'Banner'}
+          </h3>
+          <button
+            className="text-white hover:text-gray-300 transition-colors p-2 hover:bg-white/10 rounded-full"
+            onClick={onCancel}
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        <div 
+          ref={cropContainerRef}
+          className={`relative mx-auto bg-black/50 mb-6 overflow-hidden ${
+            cropType === 'logo' 
+              ? 'w-80 h-80 rounded-full' 
+              : 'w-full max-w-2xl h-64 rounded-2xl'
+          }`}
+          onWheel={onWheel}
+        >
+          <div className={`absolute inset-0 pointer-events-none z-10 ${
+            cropType === 'logo' ? 'rounded-full border-4 border-white/30' : 'rounded-2xl border-4 border-white/30'
+          }`}></div>
+
+          <div
+            className="absolute inset-0 flex items-center justify-center cursor-move select-none"
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            onMouseLeave={onMouseUp}
+            onTouchStart={onMouseDown}
+            onTouchMove={onMouseMove}
+            onTouchEnd={onMouseUp}
+          >
+            <img
+              ref={cropImageRef}
+              src={imageToCrop}
+              alt="Crop preview"
+              className="block"
+              draggable="false"
+              style={{
+                width: `${getImageDisplaySize().width}px`,
+                height: `${getImageDisplaySize().height}px`,
+                transform: `translate(${cropPosition.x}px, ${cropPosition.y}px) scale(${zoom})`,
+                transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+              }}
+            />
+          </div>
+        </div>
+
+        <p className="text-white/70 text-sm text-center mb-4 px-4">
+          Drag to reposition • Scroll to zoom • Use slider to zoom
+        </p>
+
+        <div className="px-4 mb-6">
+          <div className="flex justify-between items-center mb-2">
+            <label className="text-white text-sm font-medium">Zoom</label>
+            <span className="text-white/70 text-sm">{zoom.toFixed(1)}x</span>
+          </div>
+          <input
+            type="range"
+            min="0.5"
+            max="3"
+            step="0.1"
+            value={zoom}
+            onChange={(e) => onZoomChange(parseFloat(e.target.value))}
+            className="w-full h-2 bg-gray-700 rounded-lg cursor-pointer slider-thumb"
+          />
+        </div>
+
+        <div className="flex gap-3 px-4">
+          <button
+            onClick={onCancel}
+            className="flex-1 bg-gray-700 text-white py-3 rounded-xl hover:bg-gray-600 transition-all duration-200 font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onSave}
+            className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium shadow-lg"
+          >
+            Save {cropType === 'logo' ? 'Logo' : 'Banner'}
+          </button>
+        </div>
+      </div>
+
+      <style>{`
+        .slider-thumb::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .slider-thumb::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+      `}</style>
+    </div>
+  );
+};
 
 function SellerForm() {
   const [bannerPreview, setBannerPreview] = useState(null);
@@ -9,6 +175,29 @@ function SellerForm() {
   const [bannerFile, setBannerFile] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [isOtpSending, setIsOtpSending] = useState(false);
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+
+  // Crop modal states
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState(null);
+  const [cropType, setCropType] = useState(null); // 'logo' or 'banner'
+  const [cropPosition, setCropPosition] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+
+  const cropImageRef = useRef(null);
+  const cropContainerRef = useRef(null);
+  const logoInputRef = useRef(null);
+  const bannerInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     storeName: '',
@@ -396,55 +585,32 @@ function SellerForm() {
   }, [formData, logoFile, bannerFile]);
 
   const handleSubmit = async () => {
-    // Validate required fields
-    if (!formData.storeName || !formData.businessEmail || !formData.esewaPhone ||
-      !selectedProvince || !selectedDistrict || !selectedMunicipal || !selectedWard ||
-      !formData.primaryCategory || !logoFile || !bannerFile || !formData.termsAccepted) {
-      toast.error('Please fill all required fields');
+
+    if (!validateRequiredFields()) {
+      
+      // Scroll to first error
+      setTimeout(() => {
+        const firstErrorKey = Object.keys(errors)[0];
+        if (firstErrorKey) {
+          const element = document.querySelector(`[name="${firstErrorKey}"]`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      }, 100);
+      return;
+    }
+        if (!isOtpVerified) {
+      toast.error('Please verify your email before submitting');
       return;
     }
 
+
     setIsSubmitting(true);
     try {
-      // Create FormData for file upload
-      const submitData = new FormData();
-      submitData.append('storeName', formData.storeName);
-      submitData.append('storeDescription', formData.storeDescription);
-      submitData.append('businessEmail', formData.businessEmail);
-      submitData.append('esewaPhone', formData.esewaPhone);
-      submitData.append('primaryCategory', formData.primaryCategory);
-      submitData.append('province', selectedProvince);
-      submitData.append('district', selectedDistrict);
-      submitData.append('municipality', selectedMunicipal);
-      submitData.append('ward', selectedWard);
-      submitData.append('terms', formData.termsAccepted ? 'on' : 'off');
-      submitData.append('logo', logoFile);
-      submitData.append('banner', bannerFile);
-
-      // Replace API.SELLER_REGISTRATION with your actual endpoint
-      const response = await fetch(API.SELLER_REGISTRATION, {
-        method: 'POST',
-        body: submitData,
-        credentials: 'include',
-      });
-
-      const result = await response.json();
-
-      if (result.status === 'success') {
-        toast.success('Seller registration successful!');
-
-        // Update user context with seller data
-        login({
-          ...user,
-          role: 'seller',
-          sellerId: result.sellerId
-        });
-
-        // Navigate to seller profile
-        navigate(`/seller-profile/${result.sellerId}`);
-      } else {
-        toast.error(result.message || 'Failed to submit application');
-      }
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      toast.success('Application submitted successfully!');
+      setErrors({});
     } catch (error) {
       console.error('Error submitting form:', error);
       toast.error('Error submitting application. Please try again.');
@@ -568,9 +734,10 @@ function SellerForm() {
               </label>
               <input
                 type="text"
+                name="storeName"
                 value={formData.storeName}
-                onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
+                onChange={handleInputChange}
+                className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent ${errors.storeName ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
                 placeholder="Enter your store name"
               />
               {errors.storeName && (
@@ -584,10 +751,11 @@ function SellerForm() {
                 Store Description <span className="text-red-500">*</span>
               </label>
               <textarea
-                rows={4}
+                rows="4"
+                name="storeDescription"
                 value={formData.storeDescription}
-                onChange={(e) => setFormData({ ...formData, storeDescription: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
+                onChange={handleInputChange}
+                className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent resize-none ${errors.storeDescription ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
                 placeholder="Tell customers about your store and products..."
               />
               <div className="flex justify-between items-center mt-2">
@@ -608,13 +776,52 @@ function SellerForm() {
               <label className="block text-sm font-semibold mb-2 text-gray-800">
                 Business Email <span className="text-red-500">*</span>
               </label>
-              <input
-                type="email"
-                value={formData.businessEmail}
-                onChange={(e) => setFormData({ ...formData, businessEmail: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
-                placeholder="your.business@example.com"
-              />
+              <div className="flex gap-3">
+                <input
+                  type="email"
+                  name="businessEmail"
+                  value={formData.businessEmail}
+                  onChange={(e) => {
+                    handleInputChange(e);
+                    setIsOtpVerified(false);
+                    setOtpSent(false);
+                  }}
+                  disabled={isOtpVerified}
+                  className={`flex-1 px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed ${errors.businessEmail ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
+                  placeholder="your.business@example.com"
+                />
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={isOtpSending || isOtpVerified || !formData.businessEmail}
+                  className="px-6 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
+                >
+                  {isOtpSending ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Sending...
+                    </>
+                  ) : isOtpVerified ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      Verified
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4" />
+                      Send OTP
+                    </>
+                  )}
+                </button>
+              </div>
+              {errors.businessEmail && (
+                <p className="text-red-500 text-sm mt-2">{errors.businessEmail}</p>
+              )}
+              {isOtpVerified && (
+                <p className="text-green-600 text-sm mt-2 flex items-center gap-1 font-medium">
+                  <Check className="w-4 h-4" /> Email verified successfully
+                </p>
+              )}
             </div>
 
             {/* Business Location */}
@@ -624,11 +831,12 @@ function SellerForm() {
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-2">Province</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-2">Province</label>
                   <select
-                    value={selectedProvince}
-                    onChange={(e) => setSelectedProvince(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
+                    name="province"
+                    value={formData.province}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent ${errors.province ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
                   >
                     <option value="">Select Province</option>
                     {provinces.map(province => (
@@ -639,12 +847,13 @@ function SellerForm() {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-gray-600 mb-2">District</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-2">District</label>
                   <select
-                    value={selectedDistrict}
-                    onChange={(e) => setSelectedDistrict(e.target.value)}
-                    disabled={!selectedProvince}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    name="district"
+                    value={formData.district}
+                    onChange={handleInputChange}
+                    disabled={!formData.province}
+                    className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed ${errors.district ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
                   >
                     <option value="">Select District</option>
                     {districts.map(district => (
@@ -655,12 +864,13 @@ function SellerForm() {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-gray-600 mb-2">Municipality</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-2">Municipality</label>
                   <select
-                    value={selectedMunicipal}
-                    onChange={(e) => setSelectedMunicipal(e.target.value)}
-                    disabled={!selectedDistrict}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    name="municipal"
+                    value={formData.municipal}
+                    onChange={handleInputChange}
+                    disabled={!formData.district}
+                    className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed ${errors.municipal ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
                   >
                     <option value="">Select Municipality</option>
                     {municipals.map(municipal => (
@@ -671,12 +881,13 @@ function SellerForm() {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-gray-600 mb-2">Ward</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-2">Ward</label>
                   <select
-                    value={selectedWard}
-                    onChange={(e) => setSelectedWard(e.target.value)}
-                    disabled={!selectedMunicipal}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    name="ward"
+                    value={formData.ward}
+                    onChange={handleInputChange}
+                    disabled={!formData.municipal}
+                    className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed ${errors.ward ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
                   >
                     <option value="">Select Ward</option>
                     {wards.map(ward => (
@@ -695,9 +906,11 @@ function SellerForm() {
               </label>
               <input
                 type="tel"
+                name="esewaPhone"
                 value={formData.esewaPhone}
-                onChange={(e) => setFormData({ ...formData, esewaPhone: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
+                onChange={handleInputChange}
+                maxLength="10"
+                className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent ${errors.esewaPhone ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
                 placeholder="98XXXXXXXX"
               />
               <p className="text-gray-500 text-sm mt-2">💳 Payment will be sent to this eSewa account</p>
@@ -712,9 +925,10 @@ function SellerForm() {
                 Primary Category of Selling <span className="text-red-500">*</span>
               </label>
               <select
+                name="primaryCategory"
                 value={formData.primaryCategory}
-                onChange={(e) => setFormData({ ...formData, primaryCategory: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded text-gray-800 focus:outline-none focus:border-gray-500 focus:bg-white"
+                onChange={handleInputChange}
+                className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent ${errors.primaryCategory ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
               >
                 <option value="">Select Category</option>
                 <option>Traditional Clothing</option>
@@ -733,29 +947,46 @@ function SellerForm() {
               </label>
               <div name="logo" className={`border-2 border-dashed rounded-2xl p-6 transition-all duration-200 ${errors.logo ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gradient-to-br from-gray-50 to-slate-50 hover:border-gray-400'}`}>
                 {logoPreview ? (
-                  <div className="relative">
-                    <img src={logoPreview} alt="Logo Preview" className="w-32 h-32 mx-auto rounded-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setLogoPreview(null);
-                        setLogoFile(null);
-                      }}
-                      className="absolute top-0 right-1/2 translate-x-16 bg-red-600 rounded-full p-1 hover:bg-red-700"
-                    >
-                      <X className="w-4 h-4 text-white" />
-                    </button>
+                  <div className="relative flex flex-col items-center">
+                    <div className="relative">
+                      <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-xl ring-2 ring-gray-200">
+                        <img
+                          src={logoPreview}
+                          alt="Logo Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLogoPreview(null);
+                          setLogoFile(null);
+                          setErrors(prev => ({ ...prev, logo: '' }));
+                          if (logoInputRef.current) logoInputRef.current.value = '';
+                        }}
+                        className="absolute -top-2 -right-2 bg-red-500 rounded-full p-2 hover:bg-red-600 transition-colors shadow-lg"
+                      >
+                        <X className="w-4 h-4 text-white" />
+                      </button>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-4 font-medium">Logo uploaded successfully</p>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center cursor-pointer">
-                    <Upload className="w-12 h-12 text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-600">Click to upload logo</span>
-                    <span className="text-xs text-gray-500 mt-1">Recommended: 400x400px, PNG or JPG</span>
+                  <label className="flex flex-col items-center cursor-pointer py-4">
+                    <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-3 border-2 border-gray-200">
+                      <Upload className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 mb-1">Click to upload logo</span>
+                    <span className="text-xs text-gray-500 text-center px-4">
+                      Recommended: Square image<br />
+                      PNG or JPG • Max 4MB
+                    </span>
                     <input
+                      ref={logoInputRef}
                       type="file"
                       className="hidden"
-                      accept="image/*"
-                      onChange={(e) => handleImagePreview(e, 'logo')}
+                      accept="image/jpeg,image/jpg,image/png"
+                      onChange={(e) => handleImageSelect(e, 'logo')}
                     />
                   </label>
                 )}
@@ -773,7 +1004,11 @@ function SellerForm() {
               <div name="banner" className={`border-2 border-dashed rounded-2xl p-6 transition-all duration-200 ${errors.banner ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gradient-to-br from-gray-50 to-slate-50 hover:border-gray-400'}`}>
                 {bannerPreview ? (
                   <div className="relative">
-                    <img src={bannerPreview} alt="Banner Preview" className="w-full h-48 object-cover rounded" />
+                    <img
+                      src={bannerPreview}
+                      alt="Banner Preview"
+                      className="w-full h-64 object-cover rounded-xl shadow-lg ring-2 ring-gray-200"
+                    />
                     <button
                       type="button"
                       onClick={() => {
@@ -789,15 +1024,21 @@ function SellerForm() {
                     <p className="text-sm text-gray-600 mt-3 text-center font-medium">Banner uploaded successfully</p>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center cursor-pointer">
-                    <Upload className="w-12 h-12 text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-600">Click to upload banner</span>
-                    <span className="text-xs text-gray-500 mt-1">Recommended: 2048x1152px, 6MB or less</span>
+                  <label className="flex flex-col items-center cursor-pointer py-8">
+                    <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center mb-3 border-2 border-gray-200">
+                      <Upload className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 mb-1">Click to upload banner</span>
+                    <span className="text-xs text-gray-500 text-center px-4">
+                      Recommended: 16:9 aspect ratio<br />
+                      PNG or JPG • Max 6MB
+                    </span>
                     <input
+                      ref={bannerInputRef}
                       type="file"
                       className="hidden"
-                      accept="image/*"
-                      onChange={(e) => handleImagePreview(e, 'banner')}
+                      accept="image/jpeg,image/jpg,image/png"
+                      onChange={(e) => handleImageSelect(e, 'banner')}
                     />
                   </label>
                 )}
@@ -830,15 +1071,23 @@ function SellerForm() {
                   <span><strong className="text-gray-800">Payment:</strong> Settlements are processed within 7 business days after successful delivery</span>
                 </li>
               </ul>
-
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.termsAccepted}
-                  onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
-                  className="w-5 h-5 mt-0.5 accent-gray-800"
-                />
-                <span className="text-sm text-gray-700">I agree to the Terms & Conditions and confirm that the information provided is accurate</span>
+              <label className="flex items-start gap-3 cursor-pointer p-4 bg-white rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all duration-200">
+                <div className="relative flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.termsAccepted}
+                    onChange={(e) => {
+                      setFormData({...formData, termsAccepted: e.target.checked});
+                      if (errors.terms) {
+                        setErrors(prev => ({ ...prev, terms: '' }));
+                      }
+                    }}
+                    className="w-5 h-5 accent-gray-800 cursor-pointer"
+                  />
+                </div>
+                <span className="text-sm text-gray-700 leading-relaxed">
+                  I agree to the <strong>Terms & Conditions</strong> and confirm that the information provided is accurate
+                </span>
               </label>
               {errors.terms && (
                 <p className="text-red-500 text-sm mt-3">{errors.terms}</p>

@@ -342,7 +342,6 @@ export default function SellerProductUpload() {
 
   const handleSubmit = useCallback(async () => {
     if (!validateRequiredFields()) {
-      toast.error("Please fix all errors before publishing");
       const firstErrorKey = Object.keys(errors)[0];
       if (firstErrorKey) {
         const element = document.querySelector(`[name="${firstErrorKey}"]`);
@@ -891,7 +890,9 @@ export default function SellerProductUpload() {
                           name="material"
                           value={formData.material}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none${
+                            errors.material ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                          }`}
                           placeholder="Silk, bamboo, cotton..."
                         />
                         {errors.material && (
@@ -911,7 +912,10 @@ export default function SellerProductUpload() {
                           name="dimensions"
                           value={formData.dimensions}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none
+                            ${
+                            errors.dimensions ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                          }`}
                           placeholder="L x W x H"
                         />
                         {errors.dimensions && (
@@ -932,7 +936,10 @@ export default function SellerProductUpload() {
                         value={formData.careInstructions}
                         onChange={handleInputChange}
                         rows="5"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+                        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none
+                          ${
+                            errors.careInstructions ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                          }`}
                         placeholder="How to care for this product..."
                       />
                       {errors.careInstructions && (
