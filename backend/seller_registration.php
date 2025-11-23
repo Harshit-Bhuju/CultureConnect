@@ -3,27 +3,13 @@ session_start();
 include("mail.php");
 include("header.php");
 
-// Utility function to send emails
-function send_email_template($to, $subject, $html_content)
-{
-    ignore_user_abort(true);
-    $response = json_encode(["status" => "success", "message" => "Email sent to $to"]);
-    header("Connection: close");
-    header("Content-Type: application/json");
-    header("Content-Length: " . strlen($response));
-    echo $response;
-    ob_flush();
-    flush();
-    sendemail_verify($to, $subject, $html_content);
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!isset($_SESSION['user_email'])) {
         echo json_encode(["status" => "error", "message" => "User not logged in"]);
         exit;
     }
-
+    
     $user_email = $_SESSION['user_email'];
 
     // Fetch user
@@ -103,8 +89,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </body>
             </html>
             ";
+            $response = json_encode(["status" => "success", "message" => "Email sent to $store_email"]);
 
-            send_email_template($store_email, $subject, $custom_template);
+            header("Connection: close");
+            header("Content-Type: application/json");
+            header("Content-Length: " . strlen($response));
+            echo $response;
+            ob_flush();
+            flush();
+
+            ignore_user_abort(true);
+            sendemail_verify($store_email, $subject, $custom_template);
             exit;
         }
     }
@@ -145,8 +140,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </body>
         </html>
         ";
+        $response = json_encode(["status" => "success", "message" => "Email sent to $store_email"]);
 
-        send_email_template($store_email, $subject, $custom_template);
+        header("Connection: close");
+        header("Content-Type: application/json");
+        header("Content-Length: " . strlen($response));
+        echo $response;
+        ob_flush();
+        flush();
+
+        ignore_user_abort(true);
+        sendemail_verify($store_email, $subject, $custom_template);
         exit;
     }
 
@@ -348,11 +352,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </html>
 
         ";
-            send_email_template($user_email, $subject, $custom_template);
+            $check_stmt = $conn->prepare("SELECT id FROM sellers WHERE user_id = ? LIMIT 1");
+            $check_stmt->bind_param("i", $user_id);
+            $check_stmt->execute();
+            $result = $check_stmt->get_result();
+            $row = $result->fetch_assoc();
 
-            echo json_encode([
+            $response = json_encode([
                 "status" => "success",
-                "seller" => [
+                "seller_profile" => [
+                    "seller_id" => $row["id"],
                     "name" => $store_name,
                     "email" => $store_email,
                     "category" => $primary_category,
@@ -370,6 +379,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     "store_banner" =>  $store_banner
                 ]
             ]);
+            header("Connection: close");
+            header("Content-Type: application/json");
+            header("Content-Length: " . strlen($response));
+            echo $response;
+            ob_flush();
+            flush();
+
+            ignore_user_abort(true);
+            sendemail_verify($user_email, $subject, $custom_template);
+
             exit;
         } else {
             echo json_encode(["status" => "error", "message" => "Failed to activate account. Please try again later."]);

@@ -7,7 +7,7 @@ $result = $stmt->get_result();
 
 $sliders = [];
 while ($row = $result->fetch_assoc()) {
-    $row['image'] = "http://localhost/CultureConnect/backend/sliders_image/" . $row['image'];
+    $row['image'] = $row['image'];
     $sliders[] = $row;
 }
 
