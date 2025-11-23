@@ -8,6 +8,7 @@ import FlowRoute from "./components/Auth/FlowRoute";
 import { Toaster } from "react-hot-toast";
 
 
+
 // Lazy load all pages
 const Home = lazy(() => import("./pages/Home/Home"));
 const Login = lazy(() => import("./pages/Login/Login"));
@@ -43,6 +44,7 @@ const Decorations = lazy(() => import("./pages/Marketplace/Decorations"));
 
 // Product Detail Page - ADD THIS
 const ProductDetailPage = lazy(() => import("./components/Products/ProductDetailPage"));
+const SellerProductUpload = lazy(() => import("./components/Products/SellerProductUpload"));
 
 // Settings pages
 const Settings = lazy(() => import("./pages/Settings/Settings"));
@@ -130,7 +132,7 @@ function App() {
             }
           />
               <Route
-            path="/sellerprofile"
+            path="/sellerprofile/:id"
             element={
               <ProtectedRoute>
                 <SellerProfile />
@@ -147,6 +149,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/add-product"
+            element={
+              <ProtectedRoute>
+                <SellerProductUpload />
+              </ProtectedRoute>
+            }
+          />
+
 
           {/* Learn Culture with nested routes */}
           <Route

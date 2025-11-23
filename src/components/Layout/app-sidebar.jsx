@@ -79,7 +79,7 @@ export default function AppSidebar({ children, ...props }) {
       },
     ],
     projects: [
-      { name: "Be a Seller/Vendor", url: "/seller", icon: TrendingUp },
+      { name: "Be a Seller/Vendor", url: "/sellerprofile/:id", icon: TrendingUp },
       { name: "Be a Teacher", url: "/teacher", icon: GraduationCap },
     ],
   };
