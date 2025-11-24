@@ -1,8 +1,8 @@
 <?php
-$servername = "localhost";
-$username = "CultureConnect";
+$servername = getenv("DB_SERVER");
+$username = getenv("DB_USER");
 $password = getenv("DB_PASS");
-$dbname = "cultureconnect";
+$dbname = getenv("DB_NAME");
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
