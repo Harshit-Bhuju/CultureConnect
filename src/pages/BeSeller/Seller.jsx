@@ -1,190 +1,97 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Store, Upload, X, Check, Mail, Shield } from 'lucide-react';
-import toast, { Toaster } from 'react-hot-toast';
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import {
+  Store,
+  Upload,
+  X,
+  Check,
+  Mail,
+  Shield,
+  Save,
+  Info,
+  ArrowLeft,
+} from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
-// Crop Modal Component
-const CropModal = ({
-  isOpen,
-  imageToCrop,
-  cropPosition,
-  zoom,
-  isDragging,
-  imageSize,
-  onMouseDown,
-  onMouseMove,
-  onMouseUp,
-  onWheel,
-  onZoomChange,
-  onSave,
-  onCancel,
-  cropImageRef,
-  cropContainerRef,
-  cropType
-}) => {
-  if (!isOpen || !imageToCrop) return null;
+import { useAuth } from "../../context/AuthContext";
+import default_logo from "../../assets/default-image.jpg";
+import useNepalAddress from "../../hooks/NepalAddress";
+import API from "../../Configs/ApiEndpoints";
+import CultureConnectLogo from "../../assets/logo/cultureconnect__fav.png";
 
-  const getImageDisplaySize = () => {
-    if (!imageSize.width || !imageSize.height) return { width: 0, height: 0 };
-    
-    const containerSize = cropType === 'logo' ? 320 : 500;
-    const aspectRatio = imageSize.width / imageSize.height;
-    
-    let width, height;
-    if (cropType === 'banner') {
-      // For banner, maintain aspect ratio in rectangle
-      if (aspectRatio > 16/9) {
-        width = containerSize;
-        height = width / aspectRatio;
-      } else {
-        width = containerSize;
-        height = width / (16/9);
-      }
-    } else {
-      // For logo (circular)
-      if (aspectRatio > 1) {
-        height = containerSize;
-        width = height * aspectRatio;
-      } else {
-        width = containerSize;
-        height = width / aspectRatio;
-      }
-    }
-    
-    return { width, height };
+
+// Reuse your existing components
+import EditModal from "../../profileSettings_Components/EditModal";
+import LocationForm from "../../profileSettings_Components/LocationForm";
+import CropModal from "../../profileSettings_Components/CropModal";
+const InlineLabel = ({ children }) => (
+  <label className="block text-sm font-semibold mb-2 text-gray-800">{children}</label>
+);
+
+// --- SellerForm Component ---
+function SellerForm() {
+  const { user: authUser } = useAuth?.() || { user: null }; 
+  const navigate = useNavigate();
+  const {
+    provinces,
+    districts,
+    municipals,
+    wards,
+    selectedProvince,
+    setSelectedProvince,
+    selectedDistrict,
+    setSelectedDistrict,
+    selectedMunicipal,
+    setSelectedMunicipal,
+  } = useNepalAddress?.() || {
+    provinces: [],
+    districts: [],
+    municipals: [],
+    wards: [],
+    selectedProvince: "",
+    setSelectedProvince: () => {},
+    selectedDistrict: "",
+    setSelectedDistrict: () => {},
+    selectedMunicipal: "",
+    setSelectedMunicipal: () => {},
   };
 
-  return (
-    <div className="fixed inset-0 flex items-center justify-center z-[1100] bg-black/95 backdrop-blur-sm">
-      <div className="w-full max-w-2xl mx-4">
-        <div className="flex justify-between items-center mb-4 px-4">
-          <h3 className="text-xl font-bold text-white">
-            Adjust Your {cropType === 'logo' ? 'Logo' : 'Banner'}
-          </h3>
-          <button
-            className="text-white hover:text-gray-300 transition-colors p-2 hover:bg-white/10 rounded-full"
-            onClick={onCancel}
-          >
-            <X size={24} />
-          </button>
-        </div>
+  const [selectedWard, setSelectedWard] = useState("");
 
-        <div 
-          ref={cropContainerRef}
-          className={`relative mx-auto bg-black/50 mb-6 overflow-hidden ${
-            cropType === 'logo' 
-              ? 'w-80 h-80 rounded-full' 
-              : 'w-full max-w-2xl h-64 rounded-2xl'
-          }`}
-          onWheel={onWheel}
-        >
-          <div className={`absolute inset-0 pointer-events-none z-10 ${
-            cropType === 'logo' ? 'rounded-full border-4 border-white/30' : 'rounded-2xl border-4 border-white/30'
-          }`}></div>
-
-          <div
-            className="absolute inset-0 flex items-center justify-center cursor-move select-none"
-            onMouseDown={onMouseDown}
-            onMouseMove={onMouseMove}
-            onMouseUp={onMouseUp}
-            onMouseLeave={onMouseUp}
-            onTouchStart={onMouseDown}
-            onTouchMove={onMouseMove}
-            onTouchEnd={onMouseUp}
-          >
-            <img
-              ref={cropImageRef}
-              src={imageToCrop}
-              alt="Crop preview"
-              className="block"
-              draggable="false"
-              style={{
-                width: `${getImageDisplaySize().width}px`,
-                height: `${getImageDisplaySize().height}px`,
-                transform: `translate(${cropPosition.x}px, ${cropPosition.y}px) scale(${zoom})`,
-                transition: isDragging ? 'none' : 'transform 0.1s ease-out'
-              }}
-            />
-          </div>
-        </div>
-
-        <p className="text-white/70 text-sm text-center mb-4 px-4">
-          Drag to reposition • Scroll to zoom • Use slider to zoom
-        </p>
-
-        <div className="px-4 mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <label className="text-white text-sm font-medium">Zoom</label>
-            <span className="text-white/70 text-sm">{zoom.toFixed(1)}x</span>
-          </div>
-          <input
-            type="range"
-            min="0.5"
-            max="3"
-            step="0.1"
-            value={zoom}
-            onChange={(e) => onZoomChange(parseFloat(e.target.value))}
-            className="w-full h-2 bg-gray-700 rounded-lg cursor-pointer slider-thumb"
-          />
-        </div>
-
-        <div className="flex gap-3 px-4">
-          <button
-            onClick={onCancel}
-            className="flex-1 bg-gray-700 text-white py-3 rounded-xl hover:bg-gray-600 transition-all duration-200 font-medium"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onSave}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium shadow-lg"
-          >
-            Save {cropType === 'logo' ? 'Logo' : 'Banner'}
-          </button>
-        </div>
-      </div>
-
-      <style>{`
-        .slider-thumb::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: #3b82f6;
-          cursor: pointer;
-          border: 2px solid white;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        .slider-thumb::-moz-range-thumb {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: #3b82f6;
-          cursor: pointer;
-          border: 2px solid white;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-      `}</style>
-    </div>
-  );
-};
-
-function SellerForm() {
-  const [bannerPreview, setBannerPreview] = useState(null);
-  const [logoPreview, setLogoPreview] = useState(null);
-  const [bannerFile, setBannerFile] = useState(null);
-  const [logoFile, setLogoFile] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // form state
+  const [formData, setFormData] = useState({
+    storeName: "",
+    storeDescription: "",
+    businessEmail: "",
+    esewaPhone: "",
+    primaryCategory: "",
+    length: "",
+    width: "",
+    height: "",
+    dimensionsUnit: "cm",
+    stock: "",
+    price: "",
+    province: "",
+    district: "",
+    municipality: "",   // renamed from 'municipal' -> 'municipality'
+    ward: "",
+    termsAccepted: false,
+  });
+  
+  // UI state
   const [errors, setErrors] = useState({});
-  const [showOtpModal, setShowOtpModal] = useState(false);
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // OTP state
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isOtpSending, setIsOtpSending] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
 
-  // Crop modal states
+  // crop modal + image upload
   const [showCropModal, setShowCropModal] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
   const [cropType, setCropType] = useState(null); // 'logo' or 'banner'
@@ -199,137 +106,144 @@ function SellerForm() {
   const logoInputRef = useRef(null);
   const bannerInputRef = useRef(null);
 
-  const [formData, setFormData] = useState({
-    storeName: '',
-    storeDescription: '',
-    businessEmail: '',
-    esewaPhone: '',
-    primaryCategory: '',
-    province: '',
-    district: '',
-    municipal: '',
-    ward: '',
-    termsAccepted: false
-  });
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
+  const [bannerFile, setBannerFile] = useState(null);
 
-  const provinces = ['Province 1', 'Bagmati Province', 'Gandaki Province'];
-  const districts = ['Kathmandu', 'Lalitpur', 'Bhaktapur'];
-  const municipals = ['Kathmandu Metro', 'Lalitpur Metro', 'Bhaktapur Metro'];
-  const wards = ['Ward 1', 'Ward 2', 'Ward 3', 'Ward 4', 'Ward 5'];
+  // Edit modal (for editing location or username like your Personal_Settings pattern)
+  const [editingField, setEditingField] = useState(null);
+  const [tempValue, setTempValue] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [usernameTakenError, setUsernameTakenError] = useState("");
+  const [usernameSuggestions, setUsernameSuggestions] = useState([]);
+  const [suggestionModalOpen, setSuggestionModalOpen] = useState(false);
 
-  const validateStoreName = (name) => {
-    if (!name.trim()) return 'Store name is required';
-    if (name.length < 3) return 'Store name must be at least 3 characters';
-    if (name.length > 100) return 'Store name must not exceed 100 characters';
-    if (!/^[a-zA-Z\s&]+$/.test(name)) return 'Only letters and & symbol are allowed';
-    return '';
-  };
+  // sync province/district selection to form when not using edit modal
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      province: selectedProvince || prev.province,
+      district: selectedDistrict || prev.district,
+      municipality: selectedMunicipal || prev.municipality, // updated key
+      ward: selectedWard || prev.ward,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProvince, selectedDistrict, selectedMunicipal, selectedWard]);
 
-  const validateStoreDescription = (desc) => {
-    if (!desc.trim()) return 'Description is required';
-    if (desc.trim() && desc.length < 10) return 'Description must be at least 10 characters';
-    if (desc.length > 500) return 'Description must not exceed 500 characters';
-    return '';
-  };
-
-  const validateEmail = (email) => {
-    if (!email.trim()) return 'Business email is required';
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) return 'Please enter a valid email address';
-    return '';
-  };
-
-  const validateEsewaPhone = (phone) => {
-    if (!phone.trim()) return 'eSewa phone number is required';
-    const phoneRegex = /^(98|97)\d{8}$/;
-    if (!phoneRegex.test(phone)) return 'Please enter a valid 10-digit Nepali phone number';
-    return '';
-  };
-
-  const validateCategory = (category) => {
-    if (!category) return 'Please select a primary category';
-    return '';
-  };
-
-  const validateField = (field) => {
-    if (!formData[field]) return `Please select a ${field}`;
-    return '';
-  };
-
-  const validateLogo = () => {
-    if (!logoFile) return 'Store logo is required';
-    return '';
-  };
-
-  const validateBanner = () => {
-    if (!bannerFile) return 'Store banner is required';
-    return '';
-  };
-
-  const validateTerms = () => {
-    if (!formData.termsAccepted) return 'You must accept the terms and conditions';
-    return '';
-  };
-
+  // resend timer for OTP
   useEffect(() => {
     if (resendTimer > 0) {
-      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
-      return () => clearTimeout(timer);
+      const t = setTimeout(() => setResendTimer((s) => s - 1), 1000);
+      return () => clearTimeout(t);
     }
   }, [resendTimer]);
 
-  const handleInputChange = useCallback((e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-  }, [errors]);
+  // ---------- Validation helpers ----------
+  const validateStoreName = (name) => {
+    if (!name || !name.trim()) return "Store name is required";
+    if (name.trim().length < 3) return "Store name must be at least 3 characters";
+    if (name.trim().length > 100) return "Store name must not exceed 100 characters";
+    if (!/^[a-zA-Z0-9\s&\-']+$/.test(name)) return "Only letters, numbers and & - ' allowed";
+    return "";
+  };
 
-  // Handle image file selection
+  const validateStoreDescription = (desc) => {
+    if (!desc || !desc.trim()) return "Description is required";
+    if (desc.trim().length < 10) return "Description must be at least 10 characters";
+    if (desc.length > 2000) return "Description must not exceed 2000 characters";
+    return "";
+  };
+
+  const validateEmail = (email) => {
+    if (!email || !email.trim()) return "Business email is required";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return "Please enter a valid email address";
+    return "";
+  };
+
+  const validateEsewaPhone = (phone) => {
+    if (!phone || !phone.trim()) return "eSewa phone number is required";
+    const phoneRegex = /^(98|97)\d{8}$/;
+    if (!phoneRegex.test(phone)) return "Please enter a valid 10-digit Nepali phone number";
+    return "";
+  };
+
+  const validateCategory = (cat) => (cat ? "" : "Please select a primary category");
+
+  const validatePrice = (p) => {
+    if (!p && p !== 0) return "Price is required";
+    if (isNaN(Number(p))) return "Price must be a number";
+    if (Number(p) < 0) return "Price can't be negative";
+    return "";
+  };
+
+  const validateStock = (s) => {
+    if (s === "" || s === null) return "Stock is required";
+    if (!/^\d+$/.test(String(s))) return "Stock must be a whole number";
+    return "";
+  };
+
+  const validateDimensions = (l, w, h) => {
+    if ((!l && l !== 0) || (!w && w !== 0) || (!h && h !== 0)) return "All dimensions required";
+    if (isNaN(Number(l)) || isNaN(Number(w)) || isNaN(Number(h))) return "Dimensions must be numbers";
+    return "";
+  };
+
+  const validateLogo = () => (logoFile ? "" : "Store logo is required");
+  const validateBanner = () => (bannerFile ? "" : "Store banner is required");
+  const validateLocation = (province, district, municipal, ward) => {
+    if (!province || !district || !municipal || !ward) return "Please select full location";
+    return "";
+  };
+
+  // ---------- Handlers ----------
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  // Image selection & crop
   const handleImageSelect = (e, type) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
-
-    const maxSize = type === 'banner' ? 6 : 4;
-    if (file.size > maxSize * 1024 * 1024) {
-      toast.error(`${type === 'banner' ? 'Banner' : 'Logo'} file size must not exceed ${maxSize}MB`);
+    const maxSizeMB = type === "banner" ? 6 : 4;
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      toast.error(`${type === "banner" ? "Banner" : "Logo"} must be <= ${maxSizeMB}MB`);
       return;
     }
-    if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
-      toast.error('Only JPG and PNG formats are allowed');
+    if (!["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
+      toast.error("Only JPG/PNG allowed");
       return;
     }
 
     const reader = new FileReader();
-    reader.onload = (event) => {
-      setImageToCrop(event.target.result);
+    reader.onload = (ev) => {
+      setImageToCrop(ev.target.result);
       setCropType(type);
       setShowCropModal(true);
       setCropPosition({ x: 0, y: 0 });
       setZoom(1);
 
       const img = new Image();
-      img.onload = () => {
-        setImageSize({ width: img.width, height: img.height });
-      };
-      img.src = event.target.result;
+      img.onload = () => setImageSize({ width: img.width, height: img.height });
+      img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
   };
 
-  // Handle crop and save
   const handleCropAndSave = () => {
     if (!imageToCrop) return;
-
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     const img = cropImageRef.current;
-
     if (!img) return;
 
-    if (cropType === 'logo') {
-      // Circular crop for logo
+    if (cropType === "logo") {
       const size = 400;
       canvas.width = size;
       canvas.height = size;
@@ -362,7 +276,7 @@ function SellerForm() {
 
       ctx.drawImage(img, sourceX, sourceY, sourceSize, sourceSize, 0, 0, size, size);
     } else {
-      // Rectangular crop for banner
+      // banner rectangular crop
       canvas.width = 2048;
       canvas.height = 1152;
 
@@ -391,29 +305,27 @@ function SellerForm() {
     }
 
     canvas.toBlob((blob) => {
-      const file = new File([blob], `${cropType}.jpg`, { type: 'image/jpeg' });
+      const file = new File([blob], `${cropType}.jpg`, { type: "image/jpeg" });
       const url = URL.createObjectURL(blob);
 
-      if (cropType === 'logo') {
+      if (cropType === "logo") {
         setLogoPreview(url);
         setLogoFile(file);
-        if (errors.logo) {
-          setErrors(prev => ({ ...prev, logo: '' }));
-        }
+        setErrors((p) => ({ ...p, logo: "" }));
+        if (logoInputRef.current) logoInputRef.current.value = "";
       } else {
         setBannerPreview(url);
         setBannerFile(file);
-        if (errors.banner) {
-          setErrors(prev => ({ ...prev, banner: '' }));
-        }
+        setErrors((p) => ({ ...p, banner: "" }));
+        if (bannerInputRef.current) bannerInputRef.current.value = "";
       }
 
       setShowCropModal(false);
       setImageToCrop(null);
-    }, 'image/jpeg', 0.95);
+    }, "image/jpeg", 0.95);
   };
 
-  // Drag handlers
+  // crop drag handlers
   const handleMouseDown = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -422,52 +334,40 @@ function SellerForm() {
       y: e.clientY || e.touches?.[0]?.clientY,
     });
   };
-
   const handleMouseMove = (e) => {
     if (!isDragging) return;
     e.preventDefault();
-
     const clientX = e.clientX || e.touches?.[0]?.clientX;
     const clientY = e.clientY || e.touches?.[0]?.clientY;
-
     const deltaX = clientX - dragStart.x;
     const deltaY = clientY - dragStart.y;
-
-    setCropPosition((prev) => ({
-      x: prev.x + deltaX,
-      y: prev.y + deltaY,
-    }));
-
+    setCropPosition((prev) => ({ x: prev.x + deltaX, y: prev.y + deltaY }));
     setDragStart({ x: clientX, y: clientY });
   };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
+  const handleMouseUp = () => setIsDragging(false);
   const handleWheel = (e) => {
     e.preventDefault();
     const delta = e.deltaY * -0.01;
     setZoom((prev) => Math.min(Math.max(0.5, prev + delta * 0.5), 3));
   };
 
+  // OTP handlers
   const handleSendOtp = async () => {
     const emailError = validateEmail(formData.businessEmail);
     if (emailError) {
-      setErrors(prev => ({ ...prev, businessEmail: emailError }));
+      setErrors((p) => ({ ...p, businessEmail: emailError }));
       return;
     }
-
     setIsOtpSending(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Simulate API call or call your backend
+      await new Promise((res) => setTimeout(res, 1000));
       setOtpSent(true);
       setShowOtpModal(true);
       setResendTimer(60);
-      toast.success('OTP sent to your email!');
-    } catch (error) {
-      console.error('Error sending OTP:', error);
-      toast.error('Failed to send OTP. Please try again.');
+      toast.success("OTP sent to your email");
+    } catch (err) {
+      toast.error("Failed to send OTP");
     } finally {
       setIsOtpSending(false);
     }
@@ -475,16 +375,14 @@ function SellerForm() {
 
   const handleResendOtp = async () => {
     if (resendTimer > 0) return;
-    
     setIsOtpSending(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((res) => setTimeout(res, 1000));
       setResendTimer(60);
-      setOtp(['', '', '', '', '', '']);
-      toast.success('OTP resent to your email!');
-    } catch (error) {
-      console.error('Error resending OTP:', error);
-      toast.error('Failed to resend OTP. Please try again.');
+      setOtp(["", "", "", "", "", ""]);
+      toast.success("OTP resent");
+    } catch (err) {
+      toast.error("Failed to resend OTP");
     } finally {
       setIsOtpSending(false);
     }
@@ -492,11 +390,9 @@ function SellerForm() {
 
   const handleOtpChange = (index, value) => {
     if (!/^\d*$/.test(value)) return;
-    
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-
+    const next = [...otp];
+    next[index] = value;
+    setOtp(next);
     if (value && index < 5) {
       const nextInput = document.getElementById(`otp-${index + 1}`);
       if (nextInput) nextInput.focus();
@@ -505,280 +401,264 @@ function SellerForm() {
 
   const handleOtpPaste = (e) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').slice(0, 6);
-    if (!/^\d+$/.test(pastedData)) return;
-    
-    const newOtp = pastedData.split('');
-    while (newOtp.length < 6) newOtp.push('');
-    setOtp(newOtp);
+    const pasted = e.clipboardData.getData("text").slice(0, 6);
+    if (!/^\d+$/.test(pasted)) return;
+    const arr = pasted.split("");
+    while (arr.length < 6) arr.push("");
+    setOtp(arr);
   };
 
   const handleVerifyOtp = async () => {
-    const otpValue = otp.join('');
-    if (otpValue.length !== 6) {
-      toast.error('Please enter complete 6-digit OTP');
+    const code = otp.join("");
+    if (code.length !== 6) {
+      toast.error("Enter 6-digit OTP");
       return;
     }
-
     setIsVerifyingOtp(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((res) => setTimeout(res, 1000));
       setIsOtpVerified(true);
       setShowOtpModal(false);
-      toast.success('Email verified successfully!');
-    } catch (error) {
-      console.error('Error verifying OTP:', error);
-      toast.error('Invalid OTP. Please try again.');
+      toast.success("Email verified");
+    } catch (err) {
+      toast.error("Invalid OTP");
     } finally {
       setIsVerifyingOtp(false);
     }
   };
 
-  const handleOtpKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-${index - 1}`);
-      if (prevInput) prevInput.focus();
+  // ----- Edit modal for location/username -----
+  const openEditPopup = (field) => {
+    setEditingField(field);
+    if (field === "location") {
+      // populate selected values from current formData
+      setSelectedProvince(formData.province || "");
+      setSelectedDistrict(formData.district || "");
+      setSelectedMunicipal(formData.municipality || "");
+      setSelectedWard(formData.ward || "");
+    } else if (field === "username") {
+      setTempValue(authUser?.name || "");
+    } else {
+      setTempValue(formData[field] || "");
+    }
+    setUsernameError("");
+    setUsernameTakenError("");
+    setSuggestionModalOpen(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingField(null);
+    setTempValue("");
+    setUsernameError("");
+    setUsernameTakenError("");
+    setSuggestionModalOpen(false);
+    // reset selection to current
+    setSelectedProvince(formData.province || "");
+    setSelectedDistrict(formData.district || "");
+    setSelectedMunicipal(formData.municipality || "");
+    setSelectedWard(formData.ward || "");
+  };
+
+  const isSaveDisabled = () => {
+    if (!editingField) return true;
+    if (editingField === "location") {
+      return !selectedProvince || !selectedDistrict || !selectedMunicipal || !selectedWard;
+    }
+    if (editingField === "username") {
+      return !tempValue || usernameError || usernameTakenError;
+    }
+    return false;
+  };
+
+  const handleSaveEdit = async () => {
+    if (editingField === "location") {
+      if (!selectedProvince || !selectedDistrict || !selectedMunicipal || !selectedWard) {
+        toast.error("Select all location fields");
+        return;
+      }
+      setFormData((p) => ({
+        ...p,
+        province: selectedProvince,
+        district: selectedDistrict,
+        municipality: selectedMunicipal, // updated key
+        ward: selectedWard,
+      }));
+      setEditingField(null);
+      toast.success("Location updated (local)");
+      return;
+    }
+    if (editingField === "username") {
+      if (!tempValue.trim()) {
+        toast.error("Enter username");
+        return;
+      }
+      // call API to update username if needed - simulated here
+      setEditingField(null);
+      toast.success("Username updated");
     }
   };
 
+  // username suggestions refresh (optional real API)
+  const refreshSuggestions = async () => {
+    // placeholder: fetch suggestions from your API
+    setUsernameSuggestions([`${authUser?.name || "seller"}123`, `${authUser?.name || "seller"}_art`]);
+  };
+
+  // ---------- Form submission ----------
   const validateRequiredFields = useCallback(() => {
     const newErrors = {};
+    const storeNameErr = validateStoreName(formData.storeName);
+    if (storeNameErr) newErrors.storeName = storeNameErr;
 
-    const storeNameError = validateStoreName(formData.storeName);
-    if (storeNameError) newErrors.storeName = storeNameError;
+    const descErr = validateStoreDescription(formData.storeDescription);
+    if (descErr) newErrors.storeDescription = descErr;
 
-    const storeDescError = validateStoreDescription(formData.storeDescription);
-    if (storeDescError) newErrors.storeDescription = storeDescError;
+    const emailErr = validateEmail(formData.businessEmail);
+    if (emailErr) newErrors.businessEmail = emailErr;
 
-    const emailError = validateEmail(formData.businessEmail);
-    if (emailError) newErrors.businessEmail = emailError;
+    const phoneErr = validateEsewaPhone(formData.esewaPhone);
+    if (phoneErr) newErrors.esewaPhone = phoneErr;
 
-    const phoneError = validateEsewaPhone(formData.esewaPhone);
-    if (phoneError) newErrors.esewaPhone = phoneError;
+    const catErr = validateCategory(formData.primaryCategory);
+    if (catErr) newErrors.primaryCategory = catErr;
 
-    const categoryError = validateCategory(formData.primaryCategory);
-    if (categoryError) newErrors.primaryCategory = categoryError;
+    const dimsErr = validateDimensions(formData.length, formData.width, formData.height);
+    if (dimsErr) newErrors.dimensions = dimsErr;
 
-    const provinceError = validateField('province');
-    if (provinceError) newErrors.province = provinceError;
+    const stockErr = validateStock(formData.stock);
+    if (stockErr) newErrors.stock = stockErr;
 
-    const districtError = validateField('district');
-    if (districtError) newErrors.district = districtError;
+    const priceErr = validatePrice(formData.price);
+    if (priceErr) newErrors.price = priceErr;
 
-    const municipalError = validateField('municipal');
-    if (municipalError) newErrors.municipal = municipalError;
+    const logoErr = validateLogo();
+    if (logoErr) newErrors.logo = logoErr;
 
-    const wardError = validateField('ward');
-    if (wardError) newErrors.ward = wardError;
+    const bannerErr = validateBanner();
+    if (bannerErr) newErrors.banner = bannerErr;
 
-    const logoError = validateLogo();
-    if (logoError) newErrors.logo = logoError;
+    const locErr = validateLocation(formData.province, formData.district, formData.municipality, formData.ward);
+    if (locErr) newErrors.location = locErr;
 
-    const bannerError = validateBanner();
-    if (bannerError) newErrors.banner = bannerError;
-
-    const termsError = validateTerms();
-    if (termsError) newErrors.terms = termsError;
+    const termsErr = formData.termsAccepted ? "" : "You must accept the terms and conditions";
+    if (termsErr) newErrors.terms = termsErr;
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formData, logoFile, bannerFile]);
 
   const handleSubmit = async () => {
-
     if (!validateRequiredFields()) {
-      
-      // Scroll to first error
-      setTimeout(() => {
-        const firstErrorKey = Object.keys(errors)[0];
-        if (firstErrorKey) {
-          const element = document.querySelector(`[name="${firstErrorKey}"]`);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }
-      }, 100);
-      return;
-    }
-        if (!isOtpVerified) {
-      toast.error('Please verify your email before submitting');
+      // scroll to first error field if present
+      const firstKey = Object.keys(errors)[0];
+      if (firstKey) {
+        const el = document.querySelector(`[name="${firstKey}"]`);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
       return;
     }
 
+    if (!isOtpVerified) {
+      toast.error("Please verify your email before submitting");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.success('Application submitted successfully!');
+      // Build final FormData
+      const body = new FormData();
+      body.append("storeName", formData.storeName);
+      body.append("storeDescription", formData.storeDescription);
+      body.append("email", formData.businessEmail);
+      body.append("esewaPhone", formData.esewaPhone);
+      body.append("primaryCategory", formData.primaryCategory);
+      body.append("length", formData.length);
+      body.append("width", formData.width);
+      body.append("height", formData.height);
+      body.append("dimensionsUnit", formData.dimensionsUnit);
+      body.append("stock", formData.stock);
+      body.append("price", formData.price);
+      body.append("province", formData.province);
+      body.append("district", formData.district);
+      body.append("municipality", formData.municipality); // updated to use 'municipality'
+      body.append("ward", formData.ward);
+      if (logoFile) body.append("logo", logoFile);
+      if (bannerFile) body.append("banner", bannerFile);
+
+      // Replace with your API call (example)
+      // const response = await fetch(API.SELLER_REGISTER, { method: "POST", body, credentials: "include" });
+      // const result = await response.json();
+      await new Promise((r) => setTimeout(r, 1200)); // simulate
+      toast.success("Application submitted successfully");
       setErrors({});
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast.error('Error submitting application. Please try again.');
+    } catch (err) {
+      console.error("Submit error", err);
+      toast.error("Error submitting application");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // ---------- Render ----------
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 py-12 px-4">
       <Toaster position="top-center" />
-      
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-3 rounded-2xl shadow-lg">
-              <Store className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-              CultureConnect
-            </h1>
-          </div>
-          <h2 className="text-3xl font-bold mb-3 text-gray-800">Seller Registration</h2>
-          <p className="text-gray-600 text-lg">Join our community of cultural artisans and sellers</p>
+      <div className="max-w-5xl mx-auto">
+        <div className="flex items-center justify-start mb-6">
+          <button
+            type="button"
+            onClick={() => navigate('/', { replace: true })}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 shadow-sm"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="font-medium">Back</span>
+          </button>
         </div>
 
-        {/* OTP Modal */}
-        {showOtpModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative">
-              <button onClick={() => setShowOtpModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                <X className="w-6 h-6" />
-              </button>
+        <div className="text-center mb-10">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Seller Application</h1>
+          <p className="text-gray-600 text-lg">Register your store and list products</p>
+        </div>
 
-              <div className="text-center mb-6">
-                <div className="bg-gradient-to-br from-blue-500 to-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Shield className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">Verify Your Email</h3>
-                <p className="text-gray-600 text-sm">
-                  We've sent a 6-digit code to<br />
-                  <span className="font-semibold text-gray-800">{formData.businessEmail}</span>
-                </p>
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-3 text-center">Enter OTP Code</label>
-                <div className="flex gap-2 justify-center" onPaste={handleOtpPaste}>
-                  {otp.map((digit, index) => (
-                    <input
-                      key={index}
-                      id={`otp-${index}`}
-                      type="text"
-                      maxLength="1"
-                      value={digit}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <button
-                onClick={handleVerifyOtp}
-                disabled={isVerifyingOtp || otp.join('').length !== 6}
-                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed mb-4"
-              >
-                {isVerifyingOtp ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Verifying...
-                  </div>
-                ) : 'Verify OTP'}
-              </button>
-
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-2">Didn't receive the code?</p>
-                <button
-                  onClick={handleResendOtp}
-                  disabled={resendTimer > 0 || isOtpSending}
-                  className="text-sm font-semibold text-blue-600 hover:text-blue-700 disabled:text-gray-400 disabled:cursor-not-allowed"
-                >
-                  {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend OTP'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Crop Modal */}
-        <CropModal
-          isOpen={showCropModal}
-          imageToCrop={imageToCrop}
-          cropPosition={cropPosition}
-          zoom={zoom}
-          isDragging={isDragging}
-          imageSize={imageSize}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onWheel={handleWheel}
-          onZoomChange={setZoom}
-          onSave={handleCropAndSave}
-          onCancel={() => {
-            setShowCropModal(false);
-            setImageToCrop(null);
-          }}
-          cropImageRef={cropImageRef}
-          cropContainerRef={cropContainerRef}
-          cropType={cropType}
-        />
-
-        {/* Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10 border border-gray-100">
           <div className="space-y-8">
-            {/* Store Name */}
+            {/* Basic Info */}
             <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-800">
-                Store Name <span className="text-red-500">*</span>
-              </label>
+              <InlineLabel>Store Name <span className="text-red-500">*</span></InlineLabel>
               <input
-                type="text"
                 name="storeName"
                 value={formData.storeName}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent ${errors.storeName ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
-                placeholder="Enter your store name"
+                className={`w-full px-4 py-3.5 border-2 rounded-xl ${errors.storeName ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`}
+                placeholder="Enter store name"
               />
-              {errors.storeName && (
-                <p className="text-red-500 text-sm mt-2">{errors.storeName}</p>
-              )}
+              {errors.storeName && <p className="text-red-500 text-sm mt-2">{errors.storeName}</p>}
             </div>
 
-            {/* Store Description */}
+            {/* Description */}
             <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-800">
-                Store Description <span className="text-red-500">*</span>
-              </label>
+              <InlineLabel>Store Description <span className="text-red-500">*</span></InlineLabel>
               <textarea
-                rows="4"
                 name="storeDescription"
                 value={formData.storeDescription}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent resize-none ${errors.storeDescription ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
-                placeholder="Tell customers about your store and products..."
+                rows="5"
+                className={`w-full px-4 py-3.5 border-2 rounded-xl resize-none ${errors.storeDescription ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`}
+                placeholder="Describe your store and products..."
               />
-              <div className="flex justify-between items-center mt-2">
-                <p className="text-gray-500 text-sm">
-                  {formData.storeDescription.length > 0 && formData.storeDescription.length < 10 && '⚠ Minimum 10 characters'}
-                </p>
-                <p className="text-gray-500 text-sm font-medium">
-                  {formData.storeDescription.length}/500
-                </p>
+              <div className="flex justify-between mt-2">
+                <p className="text-gray-500 text-sm">{formData.storeDescription.length < 10 ? "⚠ Minimum 10 characters" : ""}</p>
+                <p className="text-gray-500 text-sm">{formData.storeDescription.length}/2000</p>
               </div>
-              {errors.storeDescription && (
-                <p className="text-red-500 text-sm mt-1">{errors.storeDescription}</p>
-              )}
+              {errors.storeDescription && <p className="text-red-500 text-sm mt-1">{errors.storeDescription}</p>}
             </div>
 
-            {/* Business Email with OTP */}
+            {/* Business Email + OTP */}
             <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-800">
-                Business Email <span className="text-red-500">*</span>
-              </label>
+              <InlineLabel>Business Email <span className="text-red-500">*</span></InlineLabel>
               <div className="flex gap-3">
                 <input
-                  type="email"
                   name="businessEmail"
                   value={formData.businessEmail}
                   onChange={(e) => {
@@ -786,346 +666,404 @@ function SellerForm() {
                     setIsOtpVerified(false);
                     setOtpSent(false);
                   }}
-                  disabled={isOtpVerified}
-                  className={`flex-1 px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed ${errors.businessEmail ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
+                  className={`flex-1 px-4 py-3.5 border-2 rounded-xl ${errors.businessEmail ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`}
                   placeholder="your.business@example.com"
                 />
                 <button
                   type="button"
                   onClick={handleSendOtp}
                   disabled={isOtpSending || isOtpVerified || !formData.businessEmail}
-                  className="px-6 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
+                  className="px-6 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed"
                 >
-                  {isOtpSending ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Sending...
-                    </>
-                  ) : isOtpVerified ? (
-                    <>
-                      <Check className="w-4 h-4" />
-                      Verified
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="w-4 h-4" />
-                      Send OTP
-                    </>
-                  )}
+                  {isOtpSending ? <div className="flex items-center gap-2"><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>Sending...</div>
+                    : isOtpVerified ? <><Check className="w-4 h-4 inline" /> Verified</>
+                    : <><Mail className="w-4 h-4 inline" /> Send OTP</>}
                 </button>
               </div>
-              {errors.businessEmail && (
-                <p className="text-red-500 text-sm mt-2">{errors.businessEmail}</p>
-              )}
-              {isOtpVerified && (
-                <p className="text-green-600 text-sm mt-2 flex items-center gap-1 font-medium">
-                  <Check className="w-4 h-4" /> Email verified successfully
-                </p>
-              )}
+              {errors.businessEmail && <p className="text-red-500 text-sm mt-2">{errors.businessEmail}</p>}
+              {isOtpVerified && <p className="text-green-600 text-sm mt-2 flex items-center gap-1"><Check className="w-4 h-4" /> Email verified</p>}
             </div>
 
-            {/* Business Location */}
-            <div>
-              <label className="block text-sm font-semibold mb-4 text-gray-800">
-                Business Location <span className="text-red-500">*</span>
-              </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-2">Province</label>
-                  <select
-                    name="province"
-                    value={formData.province}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent ${errors.province ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
-                  >
-                    <option value="">Select Province</option>
-                    {provinces.map(province => (
-                      <option key={province} value={province}>{province}</option>
-                    ))}
-                  </select>
-                  {errors.province && <p className="text-red-500 text-xs mt-1">{errors.province}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-2">District</label>
-                  <select
-                    name="district"
-                    value={formData.district}
-                    onChange={handleInputChange}
-                    disabled={!formData.province}
-                    className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed ${errors.district ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
-                  >
-                    <option value="">Select District</option>
-                    {districts.map(district => (
-                      <option key={district} value={district}>{district}</option>
-                    ))}
-                  </select>
-                  {errors.district && <p className="text-red-500 text-xs mt-1">{errors.district}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-2">Municipality</label>
-                  <select
-                    name="municipal"
-                    value={formData.municipal}
-                    onChange={handleInputChange}
-                    disabled={!formData.district}
-                    className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed ${errors.municipal ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
-                  >
-                    <option value="">Select Municipality</option>
-                    {municipals.map(municipal => (
-                      <option key={municipal} value={municipal}>{municipal}</option>
-                    ))}
-                  </select>
-                  {errors.municipal && <p className="text-red-500 text-xs mt-1">{errors.municipal}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-2">Ward</label>
-                  <select
-                    name="ward"
-                    value={formData.ward}
-                    onChange={handleInputChange}
-                    disabled={!formData.municipal}
-                    className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed ${errors.ward ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
-                  >
-                    <option value="">Select Ward</option>
-                    {wards.map(ward => (
-                      <option key={ward} value={ward}>{ward}</option>
-                    ))}
-                  </select>
-                  {errors.ward && <p className="text-red-500 text-xs mt-1">{errors.ward}</p>}
+            {/* Location (inline selectors) */}
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => openEditPopup("location")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openEditPopup("location");
+              }
+            }}
+            aria-invalid={!!errors.location}
+            className={`w-full text-left px-4 py-3.5 rounded-xl border transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-200 ${
+              errors.location
+                ? "border-red-300 bg-red-50 text-red-800"
+                : formData.province || formData.district || formData.municipality || formData.ward
+                ? "border-gray-200 bg-gray-50 text-gray-800"
+                : "border-dashed border-gray-300 bg-white text-gray-500"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold text-gray-700">Location</div>
+                <div className="text-sm truncate mt-1">
+                  {formData.province || formData.district || formData.municipality || formData.ward
+                    ? [
+                        formData.province,
+                        formData.district,
+                        formData.municipality,
+                        formData.ward,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")
+                    : "Add Location (click to edit)"}
                 </div>
               </div>
+              <div className="text-blue-600 ml-4 font-medium">Edit</div>
             </div>
+          </div>
+          {errors.location && <p className="text-red-500 text-sm mt-2">{errors.location}</p>}
 
-            {/* eSewa Phone Number */}
+            {/* eSewa phone */}
             <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-800">
-                eSewa Phone Number <span className="text-red-500">*</span>
-              </label>
+              <InlineLabel>eSewa Phone Number <span className="text-red-500">*</span></InlineLabel>
               <input
-                type="tel"
                 name="esewaPhone"
                 value={formData.esewaPhone}
                 onChange={handleInputChange}
                 maxLength="10"
-                className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent ${errors.esewaPhone ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
                 placeholder="98XXXXXXXX"
+                className={`w-full px-4 py-3.5 border-2 rounded-xl ${errors.esewaPhone ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`}
               />
-              <p className="text-gray-500 text-sm mt-2">💳 Payment will be sent to this eSewa account</p>
-              {errors.esewaPhone && (
-                <p className="text-red-500 text-sm mt-1">{errors.esewaPhone}</p>
-              )}
+              <p className="text-gray-500 text-sm mt-2">Payment will be sent to this eSewa account</p>
+              {errors.esewaPhone && <p className="text-red-500 text-sm mt-1">{errors.esewaPhone}</p>}
             </div>
 
             {/* Primary Category */}
             <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-800">
-                Primary Category of Selling <span className="text-red-500">*</span>
-              </label>
+              <InlineLabel>Primary Category <span className="text-red-500">*</span></InlineLabel>
               <select
                 name="primaryCategory"
                 value={formData.primaryCategory}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-3.5 border-2 rounded-xl text-gray-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent ${errors.primaryCategory ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
+                className={`w-full px-4 py-3.5 border-2 rounded-xl ${errors.primaryCategory ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`}
               >
                 <option value="">Select Category</option>
                 <option>Traditional Clothing</option>
                 <option>Musical Instruments</option>
                 <option>Arts & Decors</option>
+                <option>Handmade Crafts</option>
               </select>
-              {errors.primaryCategory && (
-                <p className="text-red-500 text-sm mt-2">{errors.primaryCategory}</p>
-              )}
+              {errors.primaryCategory && <p className="text-red-500 text-sm mt-2">{errors.primaryCategory}</p>}
             </div>
 
-            {/* Store Logo Upload - CIRCULAR */}
+            {/* Dimensions */}
             <div>
-              <label className="block text-sm font-semibold mb-3 text-gray-800">
-                Store Logo <span className="text-red-500">*</span>
-              </label>
-              <div name="logo" className={`border-2 border-dashed rounded-2xl p-6 transition-all duration-200 ${errors.logo ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gradient-to-br from-gray-50 to-slate-50 hover:border-gray-400'}`}>
-                {logoPreview ? (
-                  <div className="relative flex flex-col items-center">
-                    <div className="relative">
-                      <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-xl ring-2 ring-gray-200">
-                        <img
-                          src={logoPreview}
-                          alt="Logo Preview"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setLogoPreview(null);
-                          setLogoFile(null);
-                          setErrors(prev => ({ ...prev, logo: '' }));
-                          if (logoInputRef.current) logoInputRef.current.value = '';
-                        }}
-                        className="absolute -top-2 -right-2 bg-red-500 rounded-full p-2 hover:bg-red-600 transition-colors shadow-lg"
-                      >
-                        <X className="w-4 h-4 text-white" />
-                      </button>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-4 font-medium">Logo uploaded successfully</p>
-                  </div>
-                ) : (
-                  <label className="flex flex-col items-center cursor-pointer py-4">
-                    <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-3 border-2 border-gray-200">
-                      <Upload className="w-8 h-8 text-gray-400" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-700 mb-1">Click to upload logo</span>
-                    <span className="text-xs text-gray-500 text-center px-4">
-                      Recommended: Square image<br />
-                      PNG or JPG • Max 4MB
-                    </span>
-                    <input
-                      ref={logoInputRef}
-                      type="file"
-                      className="hidden"
-                      accept="image/jpeg,image/jpg,image/png"
-                      onChange={(e) => handleImageSelect(e, 'logo')}
-                    />
-                  </label>
-                )}
+              <InlineLabel>Dimensions ({formData.dimensionsUnit}) <span className="text-red-500">*</span></InlineLabel>
+              <div className="grid grid-cols-3 gap-3">
+                <input name="length" value={formData.length} onChange={handleInputChange} placeholder="Length" className={`px-4 py-3.5 border-2 rounded-xl border-gray-200 bg-gray-50 ${errors.stock ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`} />
+                <input name="width" value={formData.width} onChange={handleInputChange} placeholder="Width" className={`px-4 py-3.5 border-2 rounded-xl border-gray-200 bg-gray-50 ${errors.stock ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}` } />
+                <input name="height" value={formData.height} onChange={handleInputChange} placeholder="Height" className={`px-4 py-3.5 border-2 rounded-xl border-gray-200 bg-gray-50 ${errors.stock ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}` } />
               </div>
-              {errors.logo && (
-                <p className="text-red-500 text-sm mt-2">{errors.logo}</p>
-              )}
+              <div className="mt-2 flex items-center gap-3">
+                <label className="text-sm text-gray-600">Unit</label>
+                <select name="dimensionsUnit" value={formData.dimensionsUnit} onChange={handleInputChange} className="px-3 py-2 border rounded">
+                  <option value="cm">cm</option>
+                  <option value="in">in</option>
+                </select>
+              </div>
+              {errors.dimensions && <p className="text-red-500 text-sm mt-2">{errors.dimensions}</p>}
             </div>
 
-            {/* Store Banner Upload - Full Width */}
+            {/* Stock & Price */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <InlineLabel>Stock <span className="text-red-500">*</span></InlineLabel>
+                <input name="stock" value={formData.stock} onChange={handleInputChange} placeholder="e.g., 10" className={`w-full px-4 py-3.5 border-2 rounded-xl ${errors.stock ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`} />
+                {errors.stock && <p className="text-red-500 text-sm mt-2">{errors.stock}</p>}
+              </div>
+              <div>
+                <InlineLabel>Price (NPR) <span className="text-red-500">*</span></InlineLabel>
+                <input name="price" value={formData.price} onChange={handleInputChange} placeholder="e.g., 1500" className={`w-full px-4 py-3.5 border-2 rounded-xl ${errors.price ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`} />
+                {errors.price && <p className="text-red-500 text-sm mt-2">{errors.price}</p>}
+              </div>
+            </div>
+
+            {/* Logo Upload */}
+           {/* Banner Upload - YouTube Style Light */}
+            {/* Banner Upload - YouTube Style Light */}
             <div>
-              <label className="block text-sm font-semibold mb-3 text-gray-800">
-                Store Banner <span className="text-red-500">*</span>
-              </label>
-              <div name="banner" className={`border-2 border-dashed rounded-2xl p-6 transition-all duration-200 ${errors.banner ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gradient-to-br from-gray-50 to-slate-50 hover:border-gray-400'}`}>
-                {bannerPreview ? (
-                  <div className="relative">
-                    <img
-                      src={bannerPreview}
-                      alt="Banner Preview"
-                      className="w-full h-64 object-cover rounded-xl shadow-lg ring-2 ring-gray-200"
-                    />
+              <div className="mb-2">
+                <h3 className="text-lg font-bold text-gray-800">Banner image</h3>
+                <p className="text-sm text-gray-600">This image will appear across the top of your channel</p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-8 border border-gray-200">
+                <div className="flex flex-col md:flex-row gap-6 items-start">
+                  {/* Preview Area */}
+                  <div className="flex-shrink-0">
+                    {bannerPreview ? (
+                      <div className="w-full md:w-80 h-44 bg-white rounded-lg overflow-hidden border-4 border-gray-200 shadow-sm">
+                        <img src={bannerPreview} alt="banner" className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-full md:w-80 h-44 bg-white rounded-lg border-4 border-gray-200 flex items-center justify-center shadow-sm">
+                        <div className="text-center">
+                          <div className="w-16 h-16 bg-red-600 rounded-lg mx-auto mb-2"></div>
+                          <div className="w-12 h-8 bg-gray-300 rounded mx-auto"></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Upload Info */}
+                  <div className="flex-1">
+                    <p className="text-gray-600 text-sm mb-4">
+                      For the best results on all devices, use an image that's at least 2048 x 1152 pixels and 6MB or less.
+                    </p>
                     <button
                       type="button"
-                      onClick={() => {
-                        setBannerPreview(null);
-                        setBannerFile(null);
-                        setErrors(prev => ({ ...prev, banner: '' }));
-                        if (bannerInputRef.current) bannerInputRef.current.value = '';
-                      }}
-                      className="absolute top-2 right-2 bg-red-500 rounded-full p-2 hover:bg-red-600 transition-colors shadow-lg"
+                      onClick={() => bannerInputRef.current && bannerInputRef.current.click()}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-medium transition-colors shadow-sm"
                     >
-                      <X className="w-4 h-4 text-white" />
+                      Upload
                     </button>
-                    <p className="text-sm text-gray-600 mt-3 text-center font-medium">Banner uploaded successfully</p>
-                  </div>
-                ) : (
-                  <label className="flex flex-col items-center cursor-pointer py-8">
-                    <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center mb-3 border-2 border-gray-200">
-                      <Upload className="w-8 h-8 text-gray-400" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-700 mb-1">Click to upload banner</span>
-                    <span className="text-xs text-gray-500 text-center px-4">
-                      Recommended: 16:9 aspect ratio<br />
-                      PNG or JPG • Max 6MB
-                    </span>
-                    <input
-                      ref={bannerInputRef}
-                      type="file"
-                      className="hidden"
-                      accept="image/jpeg,image/jpg,image/png"
-                      onChange={(e) => handleImageSelect(e, 'banner')}
+                    <input 
+                      ref={bannerInputRef} 
+                      type="file" 
+                      accept="image/jpeg,image/jpg,image/png" 
+                      className="hidden" 
+                      onChange={(e) => handleImageSelect(e, "banner")} 
                     />
-                  </label>
-                )}
-              </div>
-              {errors.banner && (
-                <p className="text-red-500 text-sm mt-2">{errors.banner}</p>
-              )}
-            </div>
-
-            {/* Terms & Conditions */}
-            <div name="terms" className={`border-2 rounded-2xl p-6 transition-all duration-200 ${errors.terms ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gradient-to-br from-slate-50 to-gray-50'}`}>
-              <h3 className="font-bold mb-4 text-lg text-gray-800 flex items-center gap-2">
-                📋 Terms & Conditions for Sellers
-              </h3>
-              <ul className="space-y-3 text-sm text-gray-700 mb-5">
-                <li className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100">
-                  <span className="text-gray-800 font-bold mt-0.5">•</span>
-                  <span><strong className="text-gray-800">Commission:</strong> A 1% commission will be deducted from each successful sale</span>
-                </li>
-                <li className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100">
-                  <span className="text-gray-800 font-bold mt-0.5">•</span>
-                  <span><strong className="text-gray-800">Delivery:</strong> Buyers are responsible for all delivery charges. Sellers incur no delivery costs</span>
-                </li>
-                <li className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100">
-                  <span className="text-gray-800 font-bold mt-0.5">•</span>
-                  <span><strong className="text-gray-800">Shipping:</strong> Products must be shipped to the nearest branch location selected by the buyer at checkout</span>
-                </li>
-                <li className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100">
-                  <span className="text-gray-800 font-bold mt-0.5">•</span>
-                  <span><strong className="text-gray-800">Payment:</strong> Settlements are processed within 7 business days after successful delivery</span>
-                </li>
-              </ul>
-              <label className="flex items-start gap-3 cursor-pointer p-4 bg-white rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all duration-200">
-                <div className="relative flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.termsAccepted}
-                    onChange={(e) => {
-                      setFormData({...formData, termsAccepted: e.target.checked});
-                      if (errors.terms) {
-                        setErrors(prev => ({ ...prev, terms: '' }));
-                      }
-                    }}
-                    className="w-5 h-5 accent-gray-800 cursor-pointer"
-                  />
+                  </div>
                 </div>
-                <span className="text-sm text-gray-700 leading-relaxed">
-                  I agree to the <strong>Terms & Conditions</strong> and confirm that the information provided is accurate
-                </span>
-              </label>
-              {errors.terms && (
-                <p className="text-red-500 text-sm mt-3">{errors.terms}</p>
-              )}
+              </div>
+              {errors.banner && <p className="text-red-500 text-sm mt-2">{errors.banner}</p>}
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-gray-800 to-gray-900 text-white font-bold py-4 rounded-xl hover:from-gray-900 hover:to-black transition-all duration-300 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-lg"
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <Check className="w-5 h-5" />
-                  Submit Application
-                </>
-              )}
-            </button>
+            {/* Logo Upload - YouTube Style Light */}
+            <div>
+              <div className="mb-2">
+                <h3 className="text-lg font-bold text-gray-800">Picture</h3>
+                <p className="text-sm text-gray-600">Your profile picture will appear where your channel is presented on CultureConnect, like next to your products and store info</p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-8 border border-gray-200">
+                <div className="flex flex-col md:flex-row gap-6 items-start">
+                  {/* Preview Area */}
+                  <div className="flex-shrink-0">
+                    <div className="w-40 h-40 rounded-full overflow-hidden bg-white border-4 border-gray-200 flex items-center justify-center shadow-sm">
+                      {logoPreview ? (
+                        <img src={logoPreview} alt="logo" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center">
+                          <div className="w-8 h-10 bg-white" style={{clipPath: 'polygon(50% 0%, 0% 40%, 30% 40%, 30% 100%, 70% 100%, 70% 40%, 100% 40%)'}}></div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Upload Info */}
+                  <div className="flex-1">
+                    <p className="text-gray-600 text-sm mb-4">
+                      It's recommended to use a picture that's at least 98 x 98 pixels and 4MB or less. Use a PNG or GIF (no animations) file. Make sure your picture follows the YouTube Community Guidelines.
+                    </p>
+                    <div className="flex gap-3">
+                      {logoPreview ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => logoInputRef.current && logoInputRef.current.click()}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-medium transition-colors shadow-sm"
+                          >
+                            Change
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setLogoPreview(null);
+                              setLogoFile(null);
+                            }}
+                            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2.5 rounded-full font-medium transition-colors"
+                          >
+                            Remove
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => logoInputRef.current && logoInputRef.current.click()}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-medium transition-colors shadow-sm"
+                        >
+                          Upload
+                        </button>
+                      )}
+                    </div>
+                    <input 
+                      ref={logoInputRef} 
+                      type="file" 
+                      accept="image/jpeg,image/jpg,image/png" 
+                      className="hidden" 
+                      onChange={(e) => handleImageSelect(e, "logo")} 
+                    />
+                  </div>
+                </div>
+              </div>
+              {errors.logo && <p className="text-red-500 text-sm mt-2">{errors.logo}</p>}
+            </div>
+            {/* Terms */}
+            <div className={`border-2 rounded-2xl p-6 ${errors.terms ? "border-red-300 bg-red-50" : "border-gray-200 bg-gradient-to-br from-slate-50 to-gray-50"}`}>
+              <h3 className="font-bold mb-4 text-lg text-gray-800 flex items-center gap-2">📋 Terms & Conditions</h3>
+              <ul className="space-y-2 text-sm text-gray-700 mb-4">
+                <li className="p-3 bg-white rounded-lg border">• Commission: 1% per sale</li>
+                <li className="p-3 bg-white rounded-lg border">• Delivery: Buyers pay delivery</li>
+                <li className="p-3 bg-white rounded-lg border">• Settlement: Processed within 7 business days after delivery</li>
+              </ul>
+              <label className="flex items-start gap-3 cursor-pointer p-4 bg-white rounded-xl border-2 border-gray-200">
+                <input type="checkbox" name="termsAccepted" checked={formData.termsAccepted} onChange={handleInputChange} className="w-5 h-5" />
+                <span className="text-sm text-gray-700 leading-relaxed">I agree to the Terms & Conditions and confirm information is accurate</span>
+              </label>
+              {errors.terms && <p className="text-red-500 text-sm mt-3">{errors.terms}</p>}
+            </div>
+
+            {/* Submit */}
+            <div>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                aria-disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-gray-800 to-gray-900 text-white font-bold py-4 rounded-xl disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed shadow-lg"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span
+                      className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                    <span>Submitting...</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <Check className="w-5 h-5" aria-hidden="true" />
+                    <span>Submit Application</span>
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Footer Note */}
-        <div className="text-center mt-8">
-          <p className="text-gray-500 text-sm">
-            Need help? Contact our support team at{' '}
-            <a href="mailto:support@cultureconnect.com" className="text-gray-800 font-semibold hover:underline">
-              support@cultureconnect.com
-            </a>
-          </p>
+        {/* Footer */}
+        <div className="text-center mt-6">
+          <p className="text-gray-500 text-sm">Need help? Contact <a href="mailto:support@cultureconnect.com" className="text-gray-800 font-semibold">support@cultureconnect.com</a></p>
         </div>
       </div>
+
+      {/* --- OTP Modal --- */}
+      {showOtpModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative">
+            <button onClick={() => setShowOtpModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X className="w-6 h-6" /></button>
+            <div className="text-center mb-6">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">Verify Your Email</h3>
+              <p className="text-gray-600 text-sm">We've sent a 6-digit code to <span className="font-semibold">{formData.businessEmail}</span></p>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-3 text-center">Enter OTP Code</label>
+              <div className="flex gap-2 justify-center" onPaste={handleOtpPaste}>
+                {otp.map((digit, i) => (
+                  <input key={i} id={`otp-${i}`} value={digit} maxLength="1" onChange={(e) => handleOtpChange(i, e.target.value)} onKeyDown={(e) => {
+                    if (e.key === "Backspace" && !otp[i] && i > 0) {
+                      const prev = document.getElementById(`otp-${i-1}`);
+                      if (prev) prev.focus();
+                    }
+                  }} className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200" />
+                ))}
+              </div>
+            </div>
+
+            <button onClick={handleVerifyOtp} disabled={isVerifyingOtp || otp.join("").length !== 6} className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed mb-4">
+              {isVerifyingOtp ? "Verifying..." : "Verify OTP"}
+            </button>
+
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-2">Didn't receive the code?</p>
+              <button onClick={handleResendOtp} disabled={resendTimer > 0 || isOtpSending} className="text-sm font-semibold text-blue-600 disabled:text-gray-400">
+                {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend OTP'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- Crop Modal (reused component) --- */}
+      <CropModal
+        isOpen={showCropModal}
+        imageToCrop={imageToCrop}
+        cropPosition={cropPosition}
+        zoom={zoom}
+        isDragging={isDragging}
+        imageSize={imageSize}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onWheel={handleWheel}
+        onZoomChange={setZoom}
+        onSave={handleCropAndSave}
+        onCancel={() => { setShowCropModal(false); setImageToCrop(null); }}
+        cropImageRef={cropImageRef}
+        cropContainerRef={cropContainerRef}
+        cropType={cropType}
+      />
+
+      <EditModal
+        isOpen={!!editingField && !suggestionModalOpen}
+        field={editingField}
+        value={tempValue}
+        onChange={setTempValue}
+        onSave={handleSaveEdit}
+        onCancel={handleCancelEdit}
+        error={usernameError}
+        takenError={usernameTakenError}
+        isSaveDisabled={isSaveDisabled()}
+        onOpenSuggestions={() => setSuggestionModalOpen(true)}
+      >
+        {editingField === "location" ? (
+          <LocationForm
+            provinces={provinces}
+            districts={districts}
+            municipals={municipals}
+            wards={wards}
+            selectedProvince={selectedProvince}
+            selectedDistrict={selectedDistrict}
+            selectedMunicipal={selectedMunicipal}
+            selectedWard={selectedWard}
+            onProvinceChange={setSelectedProvince}
+            onDistrictChange={setSelectedDistrict}
+            onMunicipalChange={setSelectedMunicipal}
+            onWardChange={setSelectedWard}
+          />
+        ) : (
+          // a minimal username input when editing username
+          <div>
+            <input value={tempValue} onChange={(e) => {
+              setTempValue(e.target.value);
+              setUsernameError("");
+              setUsernameTakenError("");
+            }} onKeyDown={(e) => {
+              if (e.key === "Enter" && !isSaveDisabled()) handleSaveEdit();
+              if (e.key === "Escape") handleCancelEdit();
+            }} className="w-full px-4 py-3 border-2 rounded-xl" />
+            {usernameError && <p className="text-red-500 text-sm mt-2">{usernameError}</p>}
+            {usernameTakenError && <p className="text-red-500 text-sm mt-2">{usernameTakenError}</p>}
+          </div>
+        )}
+      </EditModal>
     </div>
   );
 }

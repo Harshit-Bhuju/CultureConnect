@@ -124,7 +124,7 @@ function App() {
 
           {/* Be a Seller */}
           <Route
-            path="/seller"
+            path="/seller-registration"
             element={
               <ProtectedRoute>
                 <Seller />

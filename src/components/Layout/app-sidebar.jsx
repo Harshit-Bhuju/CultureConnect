@@ -6,7 +6,6 @@ import {
   GraduationCap,
   House,
   PanelLeftIcon,
-  Settings2,
   Store,
   TrendingUp,
 } from "lucide-react";
@@ -39,11 +38,61 @@ export default function AppSidebar({ children, ...props }) {
     name: "Guest",
     email: "guest@example.com",
     avatar: default_logo,
+    role: "user"
   };
+let roleBasedProjects = [];
 
-  console.log("User from AuthContext:", user);
+if (userData.role === "seller") {
+  roleBasedProjects = [
+    {
+      name: "Seller Profile",
+      url: `/sellerprofile/${userData.sellerid}`,
+      icon: TrendingUp,
+    },
+  ];
+}
 
-  // Sample data
+else if (userData.role === "teacher") {
+  roleBasedProjects = [
+    {
+      name: "Teacher Profile",
+      url: `/teacher/${userData.id}`,
+      icon: GraduationCap,
+    },
+  ];
+}
+
+else if (userData.role === "seller_teacher") {
+  roleBasedProjects = [
+    {
+      name: "Seller Profile",
+      url: `/sellerprofile/${userData.id}`,
+      icon: TrendingUp,
+    },
+    {
+      name: "Teacher Profile",
+      url: `/teacher/${userData.id}`,
+      icon: GraduationCap,
+    },
+  ];
+}
+
+else if (userData.role === "user") {
+  roleBasedProjects = [
+    {
+      name: "Be a Seller",
+      url: "/seller-registration",
+      icon: TrendingUp,
+    },
+    {
+      name: "Be a Teacher",
+      url: "/teacher-registration",
+      icon: GraduationCap,
+    },
+  ];
+}
+
+
   const data = {
     user: userData,
     teams: [
@@ -78,10 +127,8 @@ export default function AppSidebar({ children, ...props }) {
         ],
       },
     ],
-    projects: [
-      { name: "Be a Seller/Vendor", url: "/sellerprofile/:id", icon: TrendingUp },
-      { name: "Be a Teacher", url: "/teacher", icon: GraduationCap },
-    ],
+  projects: roleBasedProjects,
+
   };
 
   return (
