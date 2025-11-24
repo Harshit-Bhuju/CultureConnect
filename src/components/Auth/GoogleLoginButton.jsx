@@ -28,14 +28,12 @@ export default function GoogleLoginButton({ isAddingAccount = false }) {
       formData.append("email", email);
       formData.append("picture", picture);
 
-      const response = await fetch(API.GOOGLE_LOGIN,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          credentials: "include",
-          body: formData.toString(),
-        }
-      );
+      const response = await fetch(API.GOOGLE_LOGIN, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        credentials: "include",
+        body: formData.toString(),
+      });
 
       const result = await response.json();
 
@@ -44,7 +42,7 @@ export default function GoogleLoginButton({ isAddingAccount = false }) {
         toast.success("Please set your password.");
         navigate("/setpassword", {
           state: { 
-            email: result.user.email,
+            email: loginEmail,
             isAddingAccount,
             originalUserEmail: currentUserEmail,
           },
@@ -77,14 +75,12 @@ export default function GoogleLoginButton({ isAddingAccount = false }) {
           saveFormData.append("original_user_email", currentUserEmail);
           saveFormData.append("account_email", loginEmail);
 
-          const saveResponse = await fetch(API.SAVE_ACCOUNT,
-            {
-              method: "POST",
-              credentials: "include",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
-              body: saveFormData.toString(),
-            }
-          );
+          const saveResponse = await fetch(API.SAVE_ACCOUNT, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: saveFormData.toString(),
+          });
 
           const saveResult = await saveResponse.json();
           if (saveResult.status !== "success" && saveResult.status !== "exists") {
@@ -93,33 +89,28 @@ export default function GoogleLoginButton({ isAddingAccount = false }) {
             return;
           }
 
-          // Switch back to original user
-         // Stay logged in as the NEW account
-// Check session to ensure sync
-const checkRes = await fetch(API.CHECK_SESSION,
-  {
-    method: "GET",
-    credentials: "include",
-  }
-);
-const checkResult = await checkRes.json();
+          // Stay logged in as the NEW account
+          // Check session to ensure sync
+          const checkRes = await fetch(API.CHECK_SESSION, {
+            method: "GET",
+            credentials: "include",
+          });
+          const checkResult = await checkRes.json();
 
-
-
-if (checkResult.status === "success" && checkResult.logged_in) {
-  await login(checkResult.user, true);
-  
-  setTimeout(async () => {
-    await loadSavedAccounts();
-  }, 100);
-  
-  toast.success("Account added and logged in successfully!");
-  navigate("/", { replace: true });
-} else {
-  toast.error("Session sync failed");
-}
+          if (checkResult.status === "success" && checkResult.logged_in) {
+            await login(checkResult.user, true);
+            
+            setTimeout(async () => {
+              await loadSavedAccounts();
+            }, 100);
+            
+            toast.success("Account added and logged in successfully!");
+            navigate("/", { replace: true });
+          } else {
+            toast.error("Session sync failed");
+          }
         } else {
-          // Normal login
+          // Normal login - PHP already set session
           await login(result.user);
           toast.success("Logged in successfully!");
           navigate("/", { replace: true });

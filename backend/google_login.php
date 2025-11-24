@@ -41,12 +41,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     "name" => $row['username'],
                     "gender" => $row['gender'],
                     "location" => [
-                        "province" => $user['province'] ?? '',
-                        "district" => $user['district'] ?? '',
-                        "municipality" => $user['municipality'] ?? '',
-                        "ward" => $user['ward'] ?? ''
+                        "province" => $row['province'] ?? '',
+                        "district" => $row['district'] ?? '',
+                        "municipality" => $row['municipality'] ?? '',
+                        "ward" => $row['ward'] ?? ''
                     ],
                     "avatar" => $row['profile_pic'],
+                    "role" => $row['role']
                 ]
             ]);
             exit;
@@ -73,13 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $_SESSION['google_email'] = $email;
 
-    echo json_encode([
-        "status" => "null",
-        "user" => [
-            "email" => $email,
-            "avatar" => $picture
-        ]
-    ]);
+    echo json_encode(["status" => "null"]);
 }
 
 $conn->close();

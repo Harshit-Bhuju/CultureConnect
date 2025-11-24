@@ -359,25 +359,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $row = $result->fetch_assoc();
 
             $response = json_encode([
-                "status" => "success",
-                "seller_profile" => [
-                    "seller_id" => $row["id"],
-                    "name" => $store_name,
-                    "email" => $store_email,
-                    "category" => $primary_category,
-                    "payment" => [
-                        "esewa" => $esewa_phone
-                    ],
-                    "location" => [
-                        "province" => $province,
-                        "district" => $district,
-                        "municipality" => $municipality,
-                        "ward" => $ward
-                    ],
-                    "description" => $store_description,
-                    "store_logo" => $store_logo,
-                    "store_banner" =>  $store_banner
-                ]
+                "status" => "success"
             ]);
             header("Connection: close");
             header("Content-Type: application/json");
