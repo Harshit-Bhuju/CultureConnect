@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(["status" => "error", "message" => "User not logged in"]);
         exit;
     }
-    
+
     $user_email = $_SESSION['user_email'];
 
     // Fetch user
@@ -221,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
 
-            $emailSafe = preg_replace('/[^a-z0-9]/', '', $store_email);
+            $emailSafe = preg_replace('/[^a-z]/', '', explode('@', $user_email)[0]);
             $store_logo = 'logo_' . $emailSafe . '_' . bin2hex(random_bytes(8)) . '.' . $fileExt;
             if (!move_uploaded_file($file['tmp_name'], $uploadDir . $store_logo)) {
                 echo json_encode(['status' => 'error', 'message' => 'Logo upload failed']);
@@ -250,7 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
 
-            $emailSafe = preg_replace('/[^a-z0-9]/', '', $store_email);
+            $emailSafe = preg_replace('/[^a-z]/', '', explode('@', $user_email)[0]);
             $store_banner = 'banner_' . $emailSafe . '_' . bin2hex(random_bytes(8)) . '.' . $fileExt;
             if (!move_uploaded_file($file['tmp_name'], $uploadDir . $store_banner)) {
                 echo json_encode(['status' => 'error', 'message' => 'Banner upload failed']);
