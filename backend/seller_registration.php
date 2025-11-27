@@ -58,48 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute();
             $stmt->close();
 
-            $subject = 'Verify Your CultureConnect Seller Account';
-            $custom_template = "
-            <html>
-            <head>
-                <style>
-                    .code-box {
-                        display: inline-block;
-                        background-color: #f0f0f0;
-                        padding: 15px 25px;
-                        font-size: 24px;
-                        font-weight: bold;
-                        letter-spacing: 6px;
-                        border-radius: 8px;
-                        user-select: all;
-                        margin-top: 20px;
-                    }
-                </style>
-            </head>
-            <body style='font-family: Arial, sans-serif; line-height: 1.6; font-size: 15px; max-width: 600px; margin: auto; padding: 20px;'>
-                <h1 style='font-size: 26px; margin-bottom: 15px; font-weight: bold; color: #4a90e2;'>
-                    Verify Your CultureConnect Seller Account
-                </h1>
-                <p>To complete your seller registration, please use the verification code below:</p>
-                <div class='code-box'>{$verify_token}</div>
-                <p style='margin-top: 20px; font-size: 14px; color: #555;'>
-                    If you did not create a seller account, no action is required.
-                </p>
-                <p>Thanks for joining as a seller on <strong>CultureConnect</strong>!<br>- The <span style='color:red;'>CultureConnect</span> Team</p>
-            </body>
-            </html>
-            ";
-            $response = json_encode(["status" => "success", "message" => "Email sent to $store_email"]);
-
-            header("Connection: close");
-            header("Content-Type: application/json");
-            header("Content-Length: " . strlen($response));
-            echo $response;
-            ob_flush();
-            flush();
-
-            ignore_user_abort(true);
-            sendemail_verify($store_email, $subject, $custom_template);
+            $response = ["status" => "success", "message" => "Email sent to $store_email"];
+            sendResponseAndContinue($response);
+            sendSellerVerifyEmail($store_email, $verify_token);
             exit;
         }
     }
@@ -112,45 +73,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         $stmt->close();
 
-        $subject = 'Verify Your CultureConnect Seller Account';
-        $custom_template = "
-        <html>
-        <head>
-            <style>
-                .code-box {
-                    display: inline-block;
-                    background-color: #f0f0f0;
-                    padding: 15px 25px;
-                    font-size: 24px;
-                    font-weight: bold;
-                    letter-spacing: 6px;
-                    border-radius: 8px;
-                    user-select: all;
-                    margin-top: 20px;
-                }
-            </style>
-        </head>
-        <body style='font-family: Arial, sans-serif; line-height: 1.6; font-size: 15px; max-width: 600px; margin: auto; padding: 20px;'>
-            <h1 style='font-size: 26px; margin-bottom: 15px; font-weight: bold; color: #4a90e2;'>
-                Verify Your CultureConnect Seller Account
-            </h1>
-            <p>To complete your seller registration, please use the verification code below:</p>
-            <div class='code-box'>{$verify_token}</div>
-            <p style='margin-top: 20px; font-size: 14px; color: #555;'>If you did not create a seller account, no action is required.</p>
-        </body>
-        </html>
-        ";
-        $response = json_encode(["status" => "success", "message" => "Email sent to $store_email"]);
 
-        header("Connection: close");
-        header("Content-Type: application/json");
-        header("Content-Length: " . strlen($response));
-        echo $response;
-        ob_flush();
-        flush();
+        $response = json_encode(["status" => "success", "message" => "Email resent to $store_email"]);
 
-        ignore_user_abort(true);
-        sendemail_verify($store_email, $subject, $custom_template);
+        sendResponseAndContinue($response);
+        sendSellerVerifyEmail($store_email, $verify_token);
+
         exit;
     }
 
@@ -281,96 +209,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $update_role_stmt->execute();
             $update_role_stmt->close();
 
-            $subject = 'Your CultureConnect Account is Ready';
-            $custom_template = "   <html>
-    <head>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                background: #f2f5f7;
-                margin: 0;
-                padding: 0;
-            }
-            .container {
-                max-width: 600px;
-                margin: 40px auto;
-                padding: 20px;
-            }
-            .card {
-                background: #ffffff;
-                border-radius: 14px;
-                box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-                padding: 40px 30px;
-                text-align: center;
-            }
-            .title {
-                font-size: 30px;
-                font-weight: bold;
-                color: #4a90e2;
-                margin-bottom: 20px;
-            }
-            .message {
-                font-size: 16px;
-                color: #555555;
-                margin-bottom: 30px;
-                line-height: 1.6;
-            }
-            .highlight-box {
-                display: inline-block;
-                background: linear-gradient(90deg, #6cd97c, #3c763d);
-                color: #ffffff;
-                padding: 18px 40px;
-                font-size: 20px;
-                font-weight: bold;
-                border-radius: 10px;
-                letter-spacing: 1px;
-                box-shadow: 0 5px 12px rgba(0,0,0,0.2);
-            }
-            .footer {
-                margin-top: 35px;
-                font-size: 14px;
-                color: #777777;
-                line-height: 1.5;
-            }
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            <div class='card'>
-                <div class='title'>Your CultureConnect Seller Account is Ready!</div>
-                <div class='message'>
-                    Congratulations! Your seller account has been successfully created. You can now list your products and manage your store efficiently on <strong>CultureConnect</strong>.
-                </div>
-                <div class='highlight-box'>Account Successfully Created ✅</div>
-                <div class='footer'>
-                    If you did not create this account, please contact our support immediately to secure your information.<br>
-                    Welcome aboard!<br>- The <span style='color:red;'>CultureConnect</span> Team
-                </div>
-            </div>
-        </div>
-    </body>
-</html>
-
-        ";
             $check_stmt = $conn->prepare("SELECT id FROM sellers WHERE user_id = ? LIMIT 1");
             $check_stmt->bind_param("i", $user_id);
             $check_stmt->execute();
             $result = $check_stmt->get_result();
             $row = $result->fetch_assoc();
 
-            $response = json_encode([
-                "status" => "success"
-            ]);
-            header("Connection: close");
-            header("Content-Type: application/json");
-            header("Content-Length: " . strlen($response));
-            echo $response;
-            ob_flush();
-            flush();
-
-            ignore_user_abort(true);
-            sendemail_verify($user_email, $subject, $custom_template);
-
+            $response = ["status" => "success"];
+            sendResponseAndContinue($response);
+            sendSellerAccountCreatedEmail($user_email);
             exit;
         } else {
             echo json_encode(["status" => "error", "message" => "Failed to activate account. Please try again later."]);
