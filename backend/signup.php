@@ -30,36 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   $password = trim($_POST['password']);
   $hash = password_hash($password, PASSWORD_ARGON2ID);
   $verify_token = random_int(100000, 999999);
-  $subject = 'Your CultureConnect Account is Almost Ready';
-  $custom_template = "
-  <html>
-  <head>
-    <style>
-      .code-box {
-        display: inline-block;
-        background-color: #f0f0f0;
-        padding: 15px 25px;
-        font-size: 24px;
-        font-weight: bold;
-        letter-spacing: 6px;
-        border-radius: 8px;
-        user-select: all;
-        margin-top: 20px;
-      }
-    </style>
-  </head>
-  <body style='font-family: Arial, sans-serif; line-height: 1.6; font-size: 15px; max-width: 600px; margin: auto; padding: 20px;'>
-    <h1 style='font-size: 26px; margin-bottom: 15px; font-weight: bold; color: #4a90e2;'>Verify Your New CultureConnect Account</h1>
-    <p>To complete your registration, please use the following verification code to confirm your email address:</p>
-    <div class='code-box'>{$verify_token}</div>
-    <p style='margin-top: 20px; font-size: 14px; color: #555;'>
-      If you did not create this account, no further action is needed. Your information will remain secure with us.
-    </p>
-    <p>Thanks for signing up for <strong>CultureConnect</strong>!<br>- The <span style='color:red;'>CultureConnect</span> Team</p>
-  </body>
-  </html>
-    ";
-
 
   // Check if email exists in pending_users
   $stmt = $conn->prepare("SELECT email FROM pending_users WHERE email = ? LIMIT 1");
@@ -85,23 +55,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   $insert_stmt->close();
 
   if ($insert_success) {
-
     $_SESSION['pending_email'] = $email;
     $_SESSION['pending_verification'] = true;
-
-    $response = json_encode(["status" => "success"]);
-
-    header("Connection: close");
-    header("Content-Type: application/json");
-    header("Content-Length: " . strlen($response));
-    echo $response;
-    ob_flush();
-    flush();
-    ignore_user_abort(true);
-    sendemail_verify($email, $subject, $custom_template);
-    // Summary:
-    // After a successful signup, respond instantly to the user and then continue running
-    // in the background to send the verification email, even if the user leaves the page.
+    sendResponseAndContinue(["status" => "success"]);
+    sendOTPEmail($email, $verify_token);
     exit();
   } else {
     echo json_encode([
