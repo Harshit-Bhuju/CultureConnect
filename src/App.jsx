@@ -7,8 +7,6 @@ import PublicRoute from "./components/Auth/PublicRoute";
 import FlowRoute from "./components/Auth/FlowRoute";
 import { Toaster } from "react-hot-toast";
 
-
-
 // Lazy load all pages
 const Home = lazy(() => import("./pages/Home/Home"));
 const Login = lazy(() => import("./pages/Login/Login"));
@@ -42,9 +40,16 @@ const Instruments = lazy(() => import("./pages/Marketplace/Instruments"));
 const Arts = lazy(() => import("./pages/Marketplace/Arts"));
 const Decorations = lazy(() => import("./pages/Marketplace/Decorations"));
 
-// Product Detail Page - ADD THIS
-const ProductDetailPage = lazy(() => import("./components/Products/ProductDetailPage"));
-const SellerProductUpload = lazy(() => import("./components/Products/SellerProductUpload"));
+// Product Pages
+const ProductDetailPage = lazy(() => 
+  import("./components/Products/ProductDetailPage")
+);
+const SellerProductUpload = lazy(() => 
+  import("./components/ManageProducts/CardHandling/SellerProductUpload")
+);
+const SellerProductDetailPage = lazy(() => 
+  import("./components/ManageProducts/CardHandling/SellerProductDetailPage")
+);
 
 // Settings pages
 const Settings = lazy(() => import("./pages/Settings/Settings"));
@@ -62,9 +67,11 @@ const AdminProtectedRoute = lazy(() =>
 );
 const AdminPanel = lazy(() => import("./admin/AdminPanel"));
 
-// NEW: BeSeller page
+// Seller pages
 const Seller = lazy(() => import("./pages/BeSeller/Seller"));
 const SellerProfile = lazy(() => import("./pages/BeSeller/SellerProfile"));
+const CustomizeProfile = lazy(() => import("./pages/BeSeller/CustomiseProfile"));
+const ProductManagement = lazy(() => import("./pages/BeSeller/ProductManagement"));
 
 // Home Route Wrapper - Redirects admin to admin panel
 function HomeRoute() {
@@ -92,10 +99,10 @@ function App() {
       <Toaster position="top-center" reverseOrder={false} />
       <Suspense fallback={<Loading message="Loading page..." />}>
         <Routes>
-          {/* ---------------------- Home Route with Admin Redirect -------- */}
+          {/* ==================== Home Route ==================== */}
           <Route path="/" element={<HomeRoute />} />
 
-          {/* ---------------------- Admin Panel --------------------------- */}
+          {/* ==================== Admin Panel ==================== */}
           <Route
             path="/admin"
             element={
@@ -105,8 +112,7 @@ function App() {
             }
           />
 
-          {/* ---------------------- Protected Routes ---------------------- */}
-          {/* Marketplace with nested routes */}
+          {/* ==================== Marketplace Routes ==================== */}
           <Route
             path="/marketplace"
             element={
@@ -122,25 +128,7 @@ function App() {
             <Route path="decorations" element={<Decorations />} />
           </Route>
 
-          {/* Be a Seller */}
-          <Route
-            path="/seller-registration"
-            element={
-              <ProtectedRoute>
-                <Seller />
-              </ProtectedRoute>
-            }
-          />
-              <Route
-            path="/sellerprofile/:id"
-            element={
-              <ProtectedRoute>
-                <SellerProfile />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* ---------------------- Product Detail Route - ADD THIS ------ */}
+          {/* Customer Product Detail View */}
           <Route
             path="/product/:id"
             element={
@@ -149,8 +137,51 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* ==================== Seller Routes ==================== */}
+          {/* Seller Registration */}
           <Route
-            path="/add-product"
+            path="/seller-registration"
+            element={
+              <ProtectedRoute>
+                <Seller />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Seller Profile (Public View) */}
+          <Route
+            path="/sellerprofile/:id"
+            element={
+              <ProtectedRoute>
+                <SellerProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Customize Seller Profile */}
+          <Route
+            path="/customiseprofile"
+            element={
+              <ProtectedRoute>
+                <CustomizeProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Product Management Dashboard */}
+          <Route
+            path="/manageproducts"
+            element={
+              <ProtectedRoute>
+                <ProductManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Add New Product */}
+          <Route
+            path="/seller/products/new"
             element={
               <ProtectedRoute>
                 <SellerProductUpload />
@@ -158,8 +189,27 @@ function App() {
             }
           />
 
+          {/* Edit Existing Product */}
+          <Route
+            path="/seller/products/:id/edit"
+            element={
+              <ProtectedRoute>
+                <SellerProductUpload />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Learn Culture with nested routes */}
+          {/* Seller Product Detail (Management View) */}
+          <Route
+            path="/seller/products/:id"
+            element={
+              <ProtectedRoute>
+                <SellerProductDetailPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ==================== Learn Culture Routes ==================== */}
           <Route
             path="/learnculture"
             element={
@@ -175,7 +225,7 @@ function App() {
             <Route path="art" element={<ArtCrafts />} />
           </Route>
 
-          {/* Settings with nested routes */}
+          {/* ==================== Settings Routes ==================== */}
           <Route
             path="/settings"
             element={
@@ -190,7 +240,7 @@ function App() {
             <Route path="delete" element={<Delete_Accounts />} />
           </Route>
 
-          {/* ---------------------- Public Routes ------------------------- */}
+          {/* ==================== Public Routes ==================== */}
           <Route
             path="/login"
             element={
@@ -216,7 +266,7 @@ function App() {
             }
           />
 
-          {/* ---------------------- Flow-Based Routes -------------------- */}
+          {/* ==================== Flow-Based Routes ==================== */}
           <Route
             path="/setpassword"
             element={
@@ -250,7 +300,7 @@ function App() {
             }
           />
 
-          {/* ---------------------- Fallback ---------------------------- */}
+          {/* ==================== Fallback ==================== */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

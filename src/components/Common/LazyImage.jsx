@@ -12,7 +12,7 @@ export default function LazyImage({ src, alt, className, height, width, placehol
       height={height}
       width={width}
       effect="blur"
-      placeholderSrc={placeholder} // optional placeholder image
+      placeholderSrc={placeholder}
     />
   );
 }

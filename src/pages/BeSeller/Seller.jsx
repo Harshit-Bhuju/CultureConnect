@@ -10,7 +10,7 @@ import {
   Info,
   ArrowLeft,
 } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
@@ -18,7 +18,6 @@ import default_logo from "../../assets/default-image.jpg";
 import useNepalAddress from "../../hooks/NepalAddress";
 import API from "../../Configs/ApiEndpoints";
 import CultureConnectLogo from "../../assets/logo/cultureconnect__fav.png";
-
 
 // Reuse your existing components
 import EditModal from "../../profileSettings_Components/EditModal";
@@ -58,22 +57,15 @@ function SellerForm() {
 
   const [selectedWard, setSelectedWard] = useState("");
 
-  // form state
   const [formData, setFormData] = useState({
     storeName: "",
     storeDescription: "",
     businessEmail: "",
     esewaPhone: "",
     primaryCategory: "",
-    length: "",
-    width: "",
-    height: "",
-    dimensionsUnit: "cm",
-    stock: "",
-    price: "",
     province: "",
     district: "",
-    municipality: "",   // renamed from 'municipal' -> 'municipality'
+    municipality: "",
     ward: "",
     termsAccepted: false,
   });
@@ -125,7 +117,7 @@ function SellerForm() {
       ...prev,
       province: selectedProvince || prev.province,
       district: selectedDistrict || prev.district,
-      municipality: selectedMunicipal || prev.municipality, // updated key
+      municipality: selectedMunicipal || prev.municipality,
       ward: selectedWard || prev.ward,
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -170,25 +162,6 @@ function SellerForm() {
   };
 
   const validateCategory = (cat) => (cat ? "" : "Please select a primary category");
-
-  const validatePrice = (p) => {
-    if (!p && p !== 0) return "Price is required";
-    if (isNaN(Number(p))) return "Price must be a number";
-    if (Number(p) < 0) return "Price can't be negative";
-    return "";
-  };
-
-  const validateStock = (s) => {
-    if (s === "" || s === null) return "Stock is required";
-    if (!/^\d+$/.test(String(s))) return "Stock must be a whole number";
-    return "";
-  };
-
-  const validateDimensions = (l, w, h) => {
-    if ((!l && l !== 0) || (!w && w !== 0) || (!h && h !== 0)) return "All dimensions required";
-    if (isNaN(Number(l)) || isNaN(Number(w)) || isNaN(Number(h))) return "Dimensions must be numbers";
-    return "";
-  };
 
   const validateLogo = () => (logoFile ? "" : "Store logo is required");
   const validateBanner = () => (bannerFile ? "" : "Store banner is required");
@@ -480,7 +453,7 @@ function SellerForm() {
         ...p,
         province: selectedProvince,
         district: selectedDistrict,
-        municipality: selectedMunicipal, // updated key
+        municipality: selectedMunicipal,
         ward: selectedWard,
       }));
       setEditingField(null);
@@ -521,15 +494,6 @@ function SellerForm() {
 
     const catErr = validateCategory(formData.primaryCategory);
     if (catErr) newErrors.primaryCategory = catErr;
-
-    const dimsErr = validateDimensions(formData.length, formData.width, formData.height);
-    if (dimsErr) newErrors.dimensions = dimsErr;
-
-    const stockErr = validateStock(formData.stock);
-    if (stockErr) newErrors.stock = stockErr;
-
-    const priceErr = validatePrice(formData.price);
-    if (priceErr) newErrors.price = priceErr;
 
     const logoErr = validateLogo();
     if (logoErr) newErrors.logo = logoErr;
@@ -572,15 +536,9 @@ function SellerForm() {
       body.append("email", formData.businessEmail);
       body.append("esewaPhone", formData.esewaPhone);
       body.append("primaryCategory", formData.primaryCategory);
-      body.append("length", formData.length);
-      body.append("width", formData.width);
-      body.append("height", formData.height);
-      body.append("dimensionsUnit", formData.dimensionsUnit);
-      body.append("stock", formData.stock);
-      body.append("price", formData.price);
       body.append("province", formData.province);
       body.append("district", formData.district);
-      body.append("municipality", formData.municipality); // updated to use 'municipality'
+      body.append("municipality", formData.municipality);
       body.append("ward", formData.ward);
       if (logoFile) body.append("logo", logoFile);
       if (bannerFile) body.append("banner", bannerFile);
@@ -602,7 +560,6 @@ function SellerForm() {
   // ---------- Render ----------
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 py-12 px-4">
-      <Toaster position="top-center" />
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-start mb-6">
           <button
@@ -758,41 +715,7 @@ function SellerForm() {
               {errors.primaryCategory && <p className="text-red-500 text-sm mt-2">{errors.primaryCategory}</p>}
             </div>
 
-            {/* Dimensions */}
-            <div>
-              <InlineLabel>Dimensions ({formData.dimensionsUnit}) <span className="text-red-500">*</span></InlineLabel>
-              <div className="grid grid-cols-3 gap-3">
-                <input name="length" value={formData.length} onChange={handleInputChange} placeholder="Length" className={`px-4 py-3.5 border-2 rounded-xl border-gray-200 bg-gray-50 ${errors.stock ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`} />
-                <input name="width" value={formData.width} onChange={handleInputChange} placeholder="Width" className={`px-4 py-3.5 border-2 rounded-xl border-gray-200 bg-gray-50 ${errors.stock ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}` } />
-                <input name="height" value={formData.height} onChange={handleInputChange} placeholder="Height" className={`px-4 py-3.5 border-2 rounded-xl border-gray-200 bg-gray-50 ${errors.stock ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}` } />
-              </div>
-              <div className="mt-2 flex items-center gap-3">
-                <label className="text-sm text-gray-600">Unit</label>
-                <select name="dimensionsUnit" value={formData.dimensionsUnit} onChange={handleInputChange} className="px-3 py-2 border rounded">
-                  <option value="cm">cm</option>
-                  <option value="in">in</option>
-                </select>
-              </div>
-              {errors.dimensions && <p className="text-red-500 text-sm mt-2">{errors.dimensions}</p>}
-            </div>
-
-            {/* Stock & Price */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <InlineLabel>Stock <span className="text-red-500">*</span></InlineLabel>
-                <input name="stock" value={formData.stock} onChange={handleInputChange} placeholder="e.g., 10" className={`w-full px-4 py-3.5 border-2 rounded-xl ${errors.stock ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`} />
-                {errors.stock && <p className="text-red-500 text-sm mt-2">{errors.stock}</p>}
-              </div>
-              <div>
-                <InlineLabel>Price (NPR) <span className="text-red-500">*</span></InlineLabel>
-                <input name="price" value={formData.price} onChange={handleInputChange} placeholder="e.g., 1500" className={`w-full px-4 py-3.5 border-2 rounded-xl ${errors.price ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`} />
-                {errors.price && <p className="text-red-500 text-sm mt-2">{errors.price}</p>}
-              </div>
-            </div>
-
-            {/* Logo Upload */}
-           {/* Banner Upload - YouTube Style Light */}
-            {/* Banner Upload - YouTube Style Light */}
+            {/* Banner Upload */}
             <div>
               <div className="mb-2">
                 <h3 className="text-lg font-bold text-gray-800">Banner image</h3>
@@ -841,7 +764,7 @@ function SellerForm() {
               {errors.banner && <p className="text-red-500 text-sm mt-2">{errors.banner}</p>}
             </div>
 
-            {/* Logo Upload - YouTube Style Light */}
+            {/* Logo Upload */}
             <div>
               <div className="mb-2">
                 <h3 className="text-lg font-bold text-gray-800">Picture</h3>
@@ -910,6 +833,7 @@ function SellerForm() {
               </div>
               {errors.logo && <p className="text-red-500 text-sm mt-2">{errors.logo}</p>}
             </div>
+
             {/* Terms */}
             <div className={`border-2 rounded-2xl p-6 ${errors.terms ? "border-red-300 bg-red-50" : "border-gray-200 bg-gradient-to-br from-slate-50 to-gray-50"}`}>
               <h3 className="font-bold mb-4 text-lg text-gray-800 flex items-center gap-2">📋 Terms & Conditions</h3>

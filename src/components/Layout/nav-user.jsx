@@ -10,6 +10,7 @@ import {
   Users,
   Settings2,
   User,
+  ShoppingCart,
 } from "lucide-react";
 
 import { Avatar, AvatarImage } from "../ui/avatar";
@@ -274,12 +275,8 @@ export function NavUser({ user }) {
             {/* Account Options */}
             <DropdownMenuGroup>
               <DropdownMenuItem className="cursor-pointer">
-                <User className="w-4 h-4 mr-2" />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <CreditCard className="w-4 h-4 mr-2" />
-                Billing
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Cart
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">
                 <Bell className="w-4 h-4 mr-2" />

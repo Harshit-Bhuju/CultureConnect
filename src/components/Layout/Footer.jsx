@@ -1,5 +1,4 @@
 import React from "react";
-import { Truck, CreditCard, DollarSign, Clock } from "lucide-react";
 import "./Footer.css";
 import Facebook from "../../assets/brands-logo/facebook.svg";
 import Instagram from "../../assets/brands-logo/instagram.svg";
@@ -25,63 +24,8 @@ const navLinks = [
 export default function Footer() {
   return (
     <div className=" bg-gray-50 ">
-      {/* Features Section */}
-      <section className="py-10 px-4 bg-white hidden md:block">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-4 gap-8">
-            {/* Fast & Free Delivery */}
-            <div className="flex flex-col items-center text-center side-border">
-              <div className="mb-4">
-                <Truck className="w-12 h-12 text-gray-700" strokeWidth={1.5} />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">
-                Fast & Free Delivery
-              </h3>
-            </div>
-
-            {/* Secure Payment */}
-            <div className="flex flex-col items-center text-center side-border">
-              <div className="mb-4">
-                <CreditCard
-                  className="w-12 h-12 text-gray-700"
-                  strokeWidth={1.5}
-                />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">
-                Secure Payment
-              </h3>
-            </div>
-
-            {/* Money Back Guarantee */}
-            <div className="flex flex-col items-center text-center side-border">
-              <div className="mb-4">
-                <DollarSign
-                  className="w-12 h-12 text-gray-700"
-                  strokeWidth={1.5}
-                />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">
-                Money Back Guarantee
-              </h3>
-            </div>
-
-            {/* Online Support */}
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-4">
-                <Clock className="w-12 h-12 text-gray-700" strokeWidth={1.5} />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">
-                Online Support
-              </h3>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer Section */}
-      <footer className="bg-black text-white py-8 px-4">
+          <footer className="bg-black text-white py-8 px-4">
         <div className="max-w-6xl mx-auto">
-          {/* Navigation Links */}
 
           <nav className="flex justify-center gap-4 md:gap-8 mb-6 flex-wrap">
             {navLinks.map((link, index) =>

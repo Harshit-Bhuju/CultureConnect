@@ -13,8 +13,14 @@ import {
   Info,
   AlertCircle,
 } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+
+// Inside your component:
+
 
 export default function SellerProductUpload() {
+  const navigate = useNavigate();
   const [images, setImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(0);
   const [draggedIndex, setDraggedIndex] = useState(null);
@@ -387,6 +393,13 @@ export default function SellerProductUpload() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
+<button
+  onClick={() => navigate(-1)}
+  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+>
+  <ArrowLeft className="w-5 h-5" />
+  Back to Products
+</button>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Add New Product
               </h1>
