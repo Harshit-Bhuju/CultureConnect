@@ -50,8 +50,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $fileTmpPath = $file['tmp_name'];
         $info = pathinfo($file['name']);
         $fileExt = strtolower($info['extension']);
-
-        $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
+        //very important to check if the file is an image
+        if (!getimagesize($_FILES['avatar']['tmp_name'])) {
+            echo json_encode(["status" => "error", "message" => "Not a valid image."]);
+            exit;
+        }
+        $allowedExts = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'];
         if (!in_array($fileExt, $allowedExts)) {
             echo json_encode(['status' => 'error', 'message' => 'Invalid file type.']);
             exit;
@@ -61,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo json_encode(['status' => 'error', 'message' => 'Logo file too large. Maximum 5MB']);
             exit;
         }
-        
+
         if (!empty($existingUser['profile_pic']) && file_exists(__DIR__ . '/uploads/' . $existingUser['profile_pic'])) {
             if ($existingUser['profile_pic'] !== 'default-image.jpg') {
                 unlink(__DIR__ . '/uploads/' . $existingUser['profile_pic']);

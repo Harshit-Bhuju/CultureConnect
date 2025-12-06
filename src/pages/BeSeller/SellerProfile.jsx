@@ -115,21 +115,23 @@ const SellerProfile = () => {
             <div className="flex flex-col md:flex-row md:justify-between items-start md:items-center">
               <div>
                 <h1 className="text-3xl font-bold text-gray-800">{sellerData.name}</h1>
-                <p className="text-gray-600 mt-2">{sellerData.description}</p>
+
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center gap-6 text-gray-500">
                     <div className="flex items-center gap-1">
                       <Heart className="w-4 h-4" />
-                      <span>{sellerData.followers_count || 0} followers</span>
+                      <span>{sellerData.followers_count || 0} Followers</span>
                     </div>
                     <div>
                       <span>Products ({sellerData.products_count || 0})</span>
                     </div>
                   </div>
-                  <div className="text-gray-500 text-sm">
-                    <span>Joined {new Date(sellerData.created_at).toLocaleDateString()}</span>
+                  <div className="text-gray-600 text-md">
+                    <span className="font-bold">Primary Category: </span><span>{sellerData.category}</span>
                   </div>
-                  <p className="text-gray-600 text-sm">Category: {sellerData.category}</p>
+                  <div className="text-gray-600 text-md">
+                    <span className="font-bold">Joined: </span><span> {sellerData.created_at}</span>
+                  </div>
                 </div>
               </div>
 
@@ -164,21 +166,19 @@ const SellerProfile = () => {
               <nav className="flex gap-4 text-gray-600">
                 <button
                   onClick={() => setActiveTab("products")}
-                  className={`py-3 px-2 font-medium transition-colors ${
-                    activeTab === "products"
-                      ? "border-b-2 border-blue-600 text-blue-600"
-                      : "hover:text-gray-800"
-                  }`}
+                  className={`py-3 px-2 font-medium transition-colors ${activeTab === "products"
+                    ? "border-b-2 border-blue-600 text-blue-600"
+                    : "hover:text-gray-800"
+                    }`}
                 >
                   Products
                 </button>
                 <button
                   onClick={() => setActiveTab("about")}
-                  className={`py-3 px-2 font-medium transition-colors ${
-                    activeTab === "about"
-                      ? "border-b-2 border-blue-600 text-blue-600"
-                      : "hover:text-gray-800"
-                  }`}
+                  className={`py-3 px-2 font-medium transition-colors ${activeTab === "about"
+                    ? "border-b-2 border-blue-600 text-blue-600"
+                    : "hover:text-gray-800"
+                    }`}
                 >
                   About
                 </button>
@@ -194,13 +194,6 @@ const SellerProfile = () => {
                   ) : (
                     <div className="col-span-full text-center py-12">
                       <p className="text-gray-500 mb-2">No products yet</p>
-                      {isOwnProfile && (
-                        <Link to="/manageproducts">
-                          <button className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                            Add Your First Product
-                          </button>
-                        </Link>
-                      )}
                     </div>
                   )}
                 </div>

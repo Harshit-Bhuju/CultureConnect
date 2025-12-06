@@ -40,9 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if ($row && $row['verify_token'] == $code) {
     $hash = $row['password'];
-
-    $stmt = $conn->prepare("INSERT INTO users (email, username, password) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $email, $username, $hash);
+    $picture = "default-image.jpg";
+    $stmt = $conn->prepare("INSERT INTO users (email, username, password, profile_pic) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $email, $username, $hash, $picture);
     $inserted = $stmt->execute();
     $stmt->close();
 
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $result = $stmt->get_result();
       $new_user = $result->fetch_assoc();
       $stmt->close();
-
+      session_regenerate_id(true);
       $_SESSION['user_email'] = $email;
       $_SESSION['logged_in'] = true;
       unset($_SESSION['pending_email']);

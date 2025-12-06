@@ -40,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Set session
+    session_regenerate_id(true);
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['logged_in'] = true;
 
