@@ -40,57 +40,68 @@ export default function AppSidebar({ children, ...props }) {
     avatar: default_logo,
     role: "user"
   };
-let roleBasedProjects = [];
+  // Inside AppSidebar component
+  let roleBasedProjects = [];
 
-if (userData.role === "seller") {
-  roleBasedProjects = [
-    {
-      name: "Seller Profile",
-      url: `/sellerprofile/${userData.sellerid}`,
-      icon: TrendingUp,
-    },
-  ];
-}
+  if (userData.role === "seller" && userData.seller_id) {
+    roleBasedProjects = [
+      {
+        name: "Seller Profile",
+        url: `/sellerprofile/${userData.seller_id}`, // ✅ FIXED: Use seller_id
+        icon: TrendingUp,
+      },
+      {
+        name: "Be a Teacher",
+        url: "/teacher-registration",
+        icon: GraduationCap,
+      },
+    ];
+  }
 
-else if (userData.role === "teacher") {
-  roleBasedProjects = [
-    {
-      name: "Teacher Profile",
-      url: `/teacher/${userData.id}`,
-      icon: GraduationCap,
-    },
-  ];
-}
+  else if (userData.role === "teacher" && userData.teacher_id) {
+    roleBasedProjects = [
+      {
+        name: "Be a Seller",
+        url: "/seller-registration",
+        icon: TrendingUp,
+      },
+      {
+        name: "Teacher Profile",
+        url: `/teacher/${userData.teacher_id}`, // ✅ Use teacher_id when available
+        icon: GraduationCap,
+      },
+    ];
+  }
 
-else if (userData.role === "seller_teacher") {
-  roleBasedProjects = [
-    {
-      name: "Seller Profile",
-      url: `/sellerprofile/${userData.id}`,
-      icon: TrendingUp,
-    },
-    {
-      name: "Teacher Profile",
-      url: `/teacher/${userData.id}`,
-      icon: GraduationCap,
-    },
-  ];
-}
+  else if (userData.role === "seller_teacher" && userData.teacher_id && userData.seller_id) {
+    roleBasedProjects = [
+      {
+        name: "Seller Profile",
+        url: `/sellerprofile/${userData.seller_id}`, // ✅ FIXED
+        icon: TrendingUp,
+      },
+      {
+        name: "Teacher Profile",
+        url: `/teacher/${userData.teacher_id}`, // ✅ Use teacher_id
+        icon: GraduationCap,
+      },
+    ];
+  }
 
-else if (userData.role === "user") {
-  roleBasedProjects = [
-    {
-      name: "Be a Seller",
-      url: "/seller-registration",
-      icon: TrendingUp,
-    },
-    {
-      name: "Be a Teacher",
-      url: "/teacher-registration",
-      icon: GraduationCap,
-    },
-  ];
-}
+  else if (userData.role === "user") {
+    roleBasedProjects = [
+      {
+        name: "Be a Seller",
+        url: "/seller-registration",
+        icon: TrendingUp,
+      },
+      {
+        name: "Be a Teacher",
+        url: "/teacher-registration",
+        icon: GraduationCap,
+      },
+    ];
+  }
 
 
   const data = {
@@ -127,7 +138,7 @@ else if (userData.role === "user") {
         ],
       },
     ],
-  projects: roleBasedProjects,
+    projects: roleBasedProjects,
 
   };
 
@@ -136,7 +147,7 @@ else if (userData.role === "user") {
       <Sidebar collapsible="icon" {...props}>
         <SidebarHeader className="flex items-center justify-between">
           <TeamSwitcher teams={data.teams} />
-          {isCollapsed && <SidebarTrigger className="w-8 h-8 p-3" ><PanelLeftIcon/></SidebarTrigger>}
+          {isCollapsed && <SidebarTrigger className="w-8 h-8 p-3" ><PanelLeftIcon /></SidebarTrigger>}
         </SidebarHeader>
 
         <SidebarContent>

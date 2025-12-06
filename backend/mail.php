@@ -95,13 +95,7 @@ function sendSellerAccountCreatedEmail($email)
 
     return sendEmail($email, $subject, $body);
 }
-function sendSellerVerifyEmail($email, $otp)
-{
-    $subject = 'Verify Your CultureConnect Seller Account';
 
-    $body =  getSellerVerify($otp);
-    return sendEmail($email, $subject, $body);
-}
 function sendAccountDeletedEmail($email)
 {
     date_default_timezone_set('Asia/Kathmandu');
@@ -324,39 +318,6 @@ function getAccountDeletedTemplate($deleted_at)
 }
 
 
-function getSellerVerify($verify_token)
-{
-    return "
-            <html>
-            <head>
-                <style>
-                    .code-box {
-                        display: inline-block;
-                        background-color: #f0f0f0;
-                        padding: 15px 25px;
-                        font-size: 24px;
-                        font-weight: bold;
-                        letter-spacing: 6px;
-                        border-radius: 8px;
-                        user-select: all;
-                        margin-top: 20px;
-                    }
-                </style>
-            </head>
-            <body style='font-family: Arial, sans-serif; line-height: 1.6; font-size: 15px; max-width: 600px; margin: auto; padding: 20px;'>
-                <h1 style='font-size: 26px; margin-bottom: 15px; font-weight: bold; color: #4a90e2;'>
-                    Verify Your CultureConnect Seller Account
-                </h1>
-                <p>To complete your seller registration, please use the verification code below:</p>
-                <div class='code-box'>{$verify_token}</div>
-                <p style='margin-top: 20px; font-size: 14px; color: #555;'>
-                    If you did not create a seller account, no action is required.
-                </p>
-                <p>Thanks for joining as a seller on <strong>CultureConnect</strong>!<br>- The <span style='color:red;'>CultureConnect</span> Team</p>
-            </body>
-            </html>
-            ";
-}
 function getSellerAccountCreatedTemplate()
 {
     return "<html>
@@ -418,7 +379,7 @@ function getSellerAccountCreatedTemplate()
                 <div class='message'>
                     Congratulations! Your seller account has been successfully created. You can now list your products and manage your store efficiently on <strong>CultureConnect</strong>.
                 </div>
-                <div class='highlight-box'>Account Successfully Created ✅</div>
+                <div class='highlight-box'>Seller Account Successfully Created ✅</div>
                 <div class='footer'>
                     If you did not create this account, please contact our support immediately to secure your information.<br>
                     Welcome aboard!<br>- The <span style='color:red;'>CultureConnect</span> Team

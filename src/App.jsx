@@ -41,17 +41,14 @@ const Arts = lazy(() => import("./pages/Marketplace/Arts"));
 const Decorations = lazy(() => import("./pages/Marketplace/Decorations"));
 
 // Product Pages
-const ProductDetailPage = lazy(() =>
+const ProductDetailPage = lazy(() => 
   import("./components/Products/ProductDetailPage")
 );
-const SellerProductUpload = lazy(() =>
+const SellerProductUpload = lazy(() => 
   import("./components/ManageProducts/CardHandling/SellerProductUpload")
 );
-const SellerProductDetailPage = lazy(() =>
+const SellerProductDetailPage = lazy(() => 
   import("./components/ManageProducts/CardHandling/SellerProductDetailPage")
-);
-const SellerProductEditPage = lazy(() =>
-  import("./components/ManageProducts/CardHandling/SellerProductEditPage")
 );
 
 // Settings pages
@@ -62,21 +59,24 @@ const Personal_Settings = lazy(() =>
 const Password_Settings = lazy(() =>
   import("./pages/Settings/Password_Settings")
 );
-const Delete_Accounts = lazy(() => import("./pages/Settings/Delete_Accounts"));
+const Delete_Accounts = lazy(() =>
+  import("./pages/Settings/Delete_Accounts")
+);
 const AdminProtectedRoute = lazy(() =>
   import("./components/Auth/Route/AdminProtectedRoute")
 );
 const AdminPanel = lazy(() => import("./admin/AdminPanel"));
-
+const ProtectedSellerRoute = lazy(() => 
+  import("./components/Auth/Route/ProtectedSellerRoute")
+);
+const SellerRegistrationRoute = lazy(() => 
+  import("./components/Auth/Route/SellerRegistrationRoute")
+);
 // Seller pages
 const Seller = lazy(() => import("./pages/BeSeller/Seller"));
 const SellerProfile = lazy(() => import("./pages/BeSeller/SellerProfile"));
-const CustomizeProfile = lazy(() =>
-  import("./pages/BeSeller/CustomiseProfile")
-);
-const ProductManagement = lazy(() =>
-  import("./pages/BeSeller/ProductManagement")
-);
+const CustomizeProfile = lazy(() => import("./pages/BeSeller/CustomiseProfile"));
+const ProductManagement = lazy(() => import("./pages/BeSeller/ProductManagement"));
 
 // Home Route Wrapper - Redirects admin to admin panel
 function HomeRoute() {
@@ -124,7 +124,8 @@ function App() {
               <ProtectedRoute>
                 <MarketPlace />
               </ProtectedRoute>
-            }>
+            }
+          >
             <Route index element={<Navigate to="traditional" />} />
             <Route path="traditional" element={<TraditionalClothing />} />
             <Route path="instruments" element={<Instruments />} />
@@ -144,81 +145,81 @@ function App() {
 
           {/* ==================== Seller Routes ==================== */}
           {/* Seller Registration */}
-          <Route
-            path="/seller-registration"
-            element={
-              <ProtectedRoute>
-                <Seller />
-              </ProtectedRoute>
-            }
-          />
+         <Route
+  path="/seller-registration"
+  element={
+    <SellerRegistrationRoute>
+      <Seller />
+    </SellerRegistrationRoute>
+  }
+/>
 
-          {/* Seller Profile (Public View) */}
-          <Route
-            path="/sellerprofile/:id"
-            element={
-              <ProtectedRoute>
-                <SellerProfile />
-              </ProtectedRoute>
-            }
-          />
+{/* Seller Profile (Public View) - Anyone logged in can view */}
+<Route
+  path="/sellerprofile/:id"
+  element={
+    <ProtectedRoute>
+      <SellerProfile />
+    </ProtectedRoute>
+  }
+/>
 
-          {/* Customize Seller Profile */}
-          <Route
-            path="/customiseprofile"
-            element={
-              <ProtectedRoute>
-                
-                  <CustomizeProfile />
-               
-              </ProtectedRoute>
-            }
-          />
+{/* Customize Seller Profile - Only for sellers */}
+<Route
+  path="/customiseprofile"
+  element={
+    <ProtectedSellerRoute>
+      <CustomizeProfile />
+    </ProtectedSellerRoute>
+  }
+/>
 
-          {/* Product Management Dashboard */}
-          <Route
-            path="/manageproducts"
-            element={
-              <ProtectedRoute>
-                
-                  <ProductManagement />
-               
-              </ProtectedRoute>
-            }
-          />
+{/* Product Management Dashboard - Only for sellers */}
+<Route
+  path="/manageproducts"
+  element={
+    <ProtectedSellerRoute>
+      <ProductManagement />
+    </ProtectedSellerRoute>
+  }
+/>
 
-          {/* Add New Product */}
-          <Route
-            path="/seller/products/new"
-            element={
-              <ProtectedRoute>
-                
-                  <SellerProductUpload />
-               
-              </ProtectedRoute>
-            }
-          />
+{/* Add New Product - Only for sellers */}
+<Route
+  path="/seller/products/new"
+  element={
+    <ProtectedSellerRoute>
+      <SellerProductUpload />
+    </ProtectedSellerRoute>
+  }
+/>
 
-          {/* Edit Existing Product */}
-          <Route
-            path="/seller/products/edit/:id"
-            element={
-              <ProtectedRoute>
-                
-                  <SellerProductEditPage />
-               
-              </ProtectedRoute>
-            }
-          />
+{/* Edit Existing Product - Only for sellers */}
+<Route
+  path="/seller/products/:id/edit"
+  element={
+    <ProtectedSellerRoute>
+      <SellerProductUpload />
+    </ProtectedSellerRoute>
+  }
+/>
+
+{/* Seller Product Detail (Management View) - Only for sellers */}
+<Route
+  path="/seller/products/:id"
+  element={
+    <ProtectedSellerRoute>
+      <SellerProductDetailPage />
+    </ProtectedSellerRoute>
+  }
+/>
 
           {/* Seller Product Detail (Management View) */}
           <Route
             path="/seller/products/:id"
             element={
               <ProtectedRoute>
-                
-                  <SellerProductDetailPage />
-               
+                <SellerProductDetailPage />
               </ProtectedRoute>
             }
           />
@@ -230,7 +231,8 @@ function App() {
               <ProtectedRoute>
                 <LearnCulture />
               </ProtectedRoute>
-            }>
+            }
+          >
             <Route index element={<Navigate to="dances" />} />
             <Route path="dances" element={<Dances />} />
             <Route path="singing" element={<Singing />} />
@@ -245,7 +247,8 @@ function App() {
               <ProtectedRoute>
                 <Settings />
               </ProtectedRoute>
-            }>
+            }
+          >
             <Route index element={<Navigate to="personal" />} />
             <Route path="personal" element={<Personal_Settings />} />
             <Route path="security" element={<Password_Settings />} />

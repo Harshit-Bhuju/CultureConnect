@@ -1,8 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   User,
   Camera,
-  Mail,
   Phone,
   MapPin,
   Save,
@@ -21,21 +20,20 @@ import CropModal from "../../profileSettings_Components/CropModal";
 import useNepalAddress from "../../hooks/NepalAddress";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import Loading from "../../components/Common/Loading";
+import API, { BASE_URL } from "../../Configs/ApiEndpoints";
 
 // Simulated user data
 const initialUserData = {
-  province: "Bagmati",
-  district: "Kathmandu",
-  municipality: "Kathmandu",
-  ward: "5",
-  // Seller fields
-  storeName: "Hello",
-  storeDescription: "HUYDgeywdgf uwegdfgy uqsydqw dfygasdf xd",
-  businessEmail: "harshitbhuju123@gmail.com",
-  esewaPhone: "98765456789",
-  primaryCategory: "Musical Instruments",
+  province: "",
+  district: "",
+  municipality: "",
+  ward: "",
+  storeName: "",
+  storeDescription: "",
+  esewaPhone: "",
+  primaryCategory: "",
 };
-
 
 // Main Profile Component
 function CustomiseProfile() {
@@ -55,6 +53,9 @@ function CustomiseProfile() {
   const [bannerFile, setBannerFile] = useState(null);
   const bannerInputRef = useRef(null);
 
+  // Track initial data for comparison
+  const [initialData, setInitialData] = useState(initialUserData);
+
   const [showCropModal, setShowCropModal] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
   const [cropType, setCropType] = useState(null); // 'profile' | 'logo' | 'banner'
@@ -68,6 +69,52 @@ function CustomiseProfile() {
   const cropImageRef = useRef(null);
   const cropContainerRef = useRef(null);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchSellerProfile = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(API.GET_SELLER_PROFILE, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        const profile = result.seller_profile;
+        const loadedData = {
+          province: profile.location?.province || "",
+          district: profile.location?.district || "",
+          municipality: profile.location?.municipality || "",
+          ward: profile.location?.ward || "",
+          storeName: profile.name || "",
+          storeDescription: profile.description || "",
+          esewaPhone: profile.esewa_phone || "",
+          primaryCategory: profile.category || "",
+        };
+        
+        setUserData(loadedData);
+        setInitialData(loadedData); // Store initial data for comparison
+
+        if (profile.store_logo) {
+          setProfilePreview(`${BASE_URL}/seller_img_datas/seller_logos/${profile.store_logo}`);
+        }
+        if (profile.store_banner) {
+          setBannerPreview(`${BASE_URL}/seller_img_datas/seller_banners/${profile.store_banner}`);
+        }
+      }
+    } catch (err) {
+      console.error("Fetch profile error:", err);
+      toast.error("Error loading seller profile");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSellerProfile();
+  }, []);
 
   // Nepal address hook (reused from Seller)
   const {
@@ -204,7 +251,6 @@ function CustomiseProfile() {
         setImageToCrop(null);
       }, "image/jpeg", 0.95);
     } else {
-   
       canvas.width = 2048;
       canvas.height = 1152;
 
@@ -245,7 +291,6 @@ function CustomiseProfile() {
   const handleFieldChange = (field, value) => {
     setUserData((prev) => ({ ...prev, [field]: value }));
   };
-
 
   const openEditModal = (field) => {
     setEditingField(field);
@@ -304,94 +349,146 @@ function CustomiseProfile() {
     setEditingField(null);
     setTempValue("");
   };
+
   const validateRequiredFields = () => {
-  const newErrors = {};
+    const newErrors = {};
 
-  // Store Name
-  if (!userData.storeName?.trim()) {
-    newErrors.storeName = "Store name is required";
+    // Store Name
+    if (!userData.storeName?.trim()) {
+      newErrors.storeName = "Store name is required";
+    }
+
+    // Store Description
+    if (!userData.storeDescription?.trim()) {
+      newErrors.storeDescription = "Store description is required";
+    } else if (userData.storeDescription.length > 2000) {
+      newErrors.storeDescription = "Description cannot exceed 2000 characters";
+    } else if (userData.storeDescription.length < 10) {
+      newErrors.storeDescription = "Description must be atleast 10 characters";
+    }
+
+    // eSewa Phone Number
+    const phoneRegex = /^98\d{8}$/;
+    if (!userData.esewaPhone?.trim()) {
+      newErrors.esewaPhone = "eSewa phone number is required";
+    } else if (!/^\d{10}$/.test(userData.esewaPhone)) {
+      newErrors.esewaPhone = "Phone number must be exactly 10 digits";
+    } else if (!phoneRegex.test(userData.esewaPhone)) {
+      newErrors.esewaPhone = "Phone number must start with 98";
+    }
+
+    // Primary Category
+    if (!userData.primaryCategory?.trim()) {
+      newErrors.primaryCategory = "Please select a primary category";
+    }
+
+    // Location
+    if (!userData.province || !userData.district || !userData.municipality || !userData.ward) {
+      newErrors.location = "Complete location (Province, District, Municipality, Ward) is required";
+    }
+
+    // Profile Picture & Banner - only required if not already set
+    if (!profileFile && !profilePreview) {
+      newErrors.profile = "Profile picture is required";
+    }
+    if (!bannerFile && !bannerPreview) {
+      newErrors.banner = "Banner image is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Check if any changes have been made
+  const hasChanges = () => {
+    // Check if userData fields have changed
+    const dataChanged = Object.keys(userData).some(
+      key => userData[key] !== initialData[key]
+    );
+    
+    // Check if new images have been uploaded (File objects indicate new uploads)
+    const imagesChanged = (profileFile instanceof File) || (bannerFile instanceof File);
+    
+    return dataChanged || imagesChanged;
+  };
+
+  const handleSaveAll = async () => {
+    if (!validateRequiredFields()) {
+      toast.error("Please fix all errors before saving");
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("storeName", userData.storeName);
+      formData.append("storeDescription", userData.storeDescription);
+      formData.append("esewaPhone", userData.esewaPhone);
+      formData.append("primaryCategory", userData.primaryCategory);
+      formData.append("province", userData.province);
+      formData.append("district", userData.district);
+      formData.append("municipality", userData.municipality);
+      formData.append("ward", userData.ward);
+
+      // Only append files if they're newly selected (File objects)
+      if (profileFile && profileFile instanceof File) {
+        formData.append("logo", profileFile);
+      }
+      if (bannerFile && bannerFile instanceof File) {
+        formData.append("banner", bannerFile);
+      }
+
+      const response = await fetch(API.UPDATE_SELLER_PROFILE, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      // Check if response is actually JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        console.error("Non-JSON response:", text);
+        throw new Error("Server returned non-JSON response. Check server logs.");
+      }
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        const sellerId = result.data?.seller_id;
+        
+        if (!sellerId) {
+          console.error("No seller_id in response:", result);
+          toast.error("Profile updated but couldn't redirect");
+          return;
+        }
+
+        toast.success("Profile updated successfully!");
+        
+        // Wait a moment for toast to show, then navigate
+        setTimeout(() => {
+          navigate(`/sellerprofile/${sellerId}`);
+        }, 500);
+      } else {
+        toast.error(result.message || "Failed to update profile");
+      }
+    } catch (err) {
+      console.error("Update error:", err);
+      toast.error(err.message || "Error updating profile");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return <Loading message="Loading profile..." />;
   }
-
-  // Store Description
-  if (!userData.storeDescription?.trim()) {
-    newErrors.storeDescription = "Store description is required";
-  } else if (userData.storeDescription.length > 2000) {
-    newErrors.storeDescription = "Description cannot exceed 2000 characters";
-  }else if (userData.storeDescription.length < 10) {
-    newErrors.storeDescription = "Description must be atleast 10 characters";
-  }
-
-  // Business Email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!userData.businessEmail?.trim()) {
-    newErrors.businessEmail = "Business email is required";
-  } else if (!emailRegex.test(userData.businessEmail)) {
-    newErrors.businessEmail = "Please enter a valid email address";
-  }
-
-  // eSewa Phone Number
-  const phoneRegex = /^98\d{8}$/; // Must start with 98 and be exactly 10 digits
-  if (!userData.esewaPhone?.trim()) {
-    newErrors.esewaPhone = "eSewa phone number is required";
-  } else if (!/^\d{10}$/.test(userData.esewaPhone)) {
-    newErrors.esewaPhone = "Phone number must be exactly 10 digits";
-  } else if (!phoneRegex.test(userData.esewaPhone)) {
-    newErrors.esewaPhone = "Phone number must start with 98";
-  }
-
-  // Primary Category
-  if (!userData.primaryCategory?.trim()) {
-    newErrors.primaryCategory = "Please select a primary category";
-  }
-
-  // Location (all 4 fields required)
-  if (!userData.province || !userData.district || !userData.municipality || !userData.ward) {
-    newErrors.location = "Complete location (Province, District, Municipality, Ward) is required";
-  }
-
-  // Profile Picture (optional - you can make it required if needed)
-  if (!profileFile) newErrors.profile = "Profile picture is required";
-
-  // Banner Image (optional - or make required)
-  if (!bannerFile) newErrors.banner = "Banner image is required";   
-
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
-  
-const handleSaveAll = () => {
-  if (!validateRequiredFields()) {
-    toast.error("Please fix all errors before saving");
-    return;
-  }
-
-  setIsSaving(true);
-
-  // Simulate API call
-  setTimeout(() => {
-
-    setUserData((prev) => ({
-      ...prev,
-      province: selectedProvince || prev.province,
-      district: selectedDistrict || prev.district,
-      municipality: selectedMunicipal || prev.municipality,
-      ward: selectedWard || prev.ward,
-    }));
-
-    setIsSaving(false);
-    toast.success("Profile updated successfully!");
-
-
-    navigate(`/sellerprofile/:id`);
-  }, 1000);
-};
 
   const districts = hookDistricts || [];
   const municipalities = municipals || [];
 
   return (
-  
-    <div className=" bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 py-12 px-4">
+    <div className="bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-start mb-6">
@@ -458,7 +555,6 @@ const handleSaveAll = () => {
                     >
                       {profilePreview ? "Change" : "Upload"}
                     </button>
-               
                   </div>
                   <input
                     ref={profileInputRef}
@@ -470,10 +566,10 @@ const handleSaveAll = () => {
                 </div>
               </div>
             </div>
-             {errors.profile && <p className="text-red-500 text-sm mt-2">{errors.profile}</p>}
+            {errors.profile && <p className="text-red-500 text-sm mt-2">{errors.profile}</p>}
           </div>
 
-          {/* Banner Section (new) */}
+          {/* Banner Section */}
           <div className="mb-10">
             <h3 className="text-lg font-bold text-gray-800 mb-2">Banner Image</h3>
             <p className="text-sm text-gray-600 mb-6">
@@ -484,7 +580,7 @@ const handleSaveAll = () => {
               <div className="flex flex-col md:flex-row gap-6 items-center">
                 {/* Banner Image Preview */}
                 <div className="flex-shrink-0">
-                  <div className="w-60  sm:w-80 h-44 rounded-lg overflow-hidden bg-white border-4 border-gray-200 flex items-center justify-center shadow-sm relative group">
+                  <div className="w-60 sm:w-80 h-44 rounded-lg overflow-hidden bg-white border-4 border-gray-200 flex items-center justify-center shadow-sm relative group">
                     {bannerPreview ? (
                       <>
                         <img
@@ -492,7 +588,7 @@ const handleSaveAll = () => {
                           alt="Banner"
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
+                        <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
                           <Camera className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                       </>
@@ -517,7 +613,6 @@ const handleSaveAll = () => {
                     >
                       {bannerPreview ? "Change" : "Upload"}
                     </button>
-            
                   </div>
                   <input
                     ref={bannerInputRef}
@@ -529,9 +624,8 @@ const handleSaveAll = () => {
                 </div>
               </div>
             </div>
-               {errors.banner && <p className="text-red-500 text-sm mt-2">{errors.banner}</p>}
-               </div>
-         
+            {errors.banner && <p className="text-red-500 text-sm mt-2">{errors.banner}</p>}
+          </div>
 
           {/* Seller Information */}
           <div className="space-y-6">
@@ -554,7 +648,7 @@ const handleSaveAll = () => {
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white focus:border-gray-400 focus:outline-none transition-all"
                 placeholder="Enter store name"
               />
-                {errors.storeName && <p className="text-red-500 text-sm mb-2">{errors.storeName}</p>}
+              {errors.storeName && <p className="text-red-500 text-sm mt-2">{errors.storeName}</p>}
             </div>
 
             {/* Store Description */}
@@ -573,30 +667,11 @@ const handleSaveAll = () => {
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white focus:border-gray-400 focus:outline-none transition-all resize-none"
               />
               <p className="text-gray-500 text-sm mt-2">{userData.storeDescription.length}/2000 characters</p>
-               {errors.storeDescription && <p className="text-red-500 text-sm mb-2">{errors.storeDescription}</p>}
-            </div>
-
-            {/* Business Email */}
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-              {errors.businessEmail && <p className="text-red-500 text-sm mb-2">{errors.businessEmail}</p>}
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-gray-700" />
-                </div>
-                <p className="text-sm font-semibold text-gray-700">Business Email</p>
-              </div>
-              <input
-                type="email"
-                value={userData.businessEmail}
-                onChange={(e) => handleFieldChange("businessEmail", e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white focus:border-gray-400 focus:outline-none transition-all"
-                placeholder="business@example.com"
-              />
+              {errors.storeDescription && <p className="text-red-500 text-sm mt-2">{errors.storeDescription}</p>}
             </div>
 
             {/* eSewa Phone */}
             <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-             
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                   <DollarSign className="w-5 h-5 text-gray-700" />
@@ -611,12 +686,11 @@ const handleSaveAll = () => {
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white focus:border-gray-400 focus:outline-none transition-all"
                 placeholder="98XXXXXXXX"
               />
-               {errors.esewaPhone && <p className="text-red-500 text-sm mb-2">{errors.esewaPhone}</p>}
+              {errors.esewaPhone && <p className="text-red-500 text-sm mt-2">{errors.esewaPhone}</p>}
             </div>
 
             {/* Primary Category */}
             <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-            
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                   <Package className="w-5 h-5 text-gray-700" />
@@ -631,14 +705,12 @@ const handleSaveAll = () => {
                 <option value="" hidden>Select Category</option>
                 <option>Traditional Clothing</option>
                 <option>Musical Instruments</option>
-                <option>Arts & Decors</option>
-                <option>Handmade Crafts</option>
+                <option>Handicraft & Decors</option>
               </select>
-                {errors.primaryCategory && <p className="text-red-500 text-sm mb-2">{errors.primaryCategory}</p>}
+              {errors.primaryCategory && <p className="text-red-500 text-sm mt-2">{errors.primaryCategory}</p>}
             </div>
 
-            {/* Banner */}
-           
+            {/* Location */}
             <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
@@ -646,7 +718,7 @@ const handleSaveAll = () => {
                 </div>
                 <p className="text-sm font-semibold text-gray-700">Location</p>
               </div>
-             {errors.location && <p className="text-red-500 text-sm mb-2">{errors.location}</p>}
+              {errors.location && <p className="text-red-500 text-sm mb-2">{errors.location}</p>}
               <div
                 onClick={() => openEditModal("location")}
                 className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-gray-300 cursor-pointer transition-all flex items-center justify-between"
@@ -654,7 +726,7 @@ const handleSaveAll = () => {
                 <div>
                   <p className="text-sm text-gray-600">Current</p>
                   <p className="text-gray-800 font-medium">
-                    {[userData.province, userData.district, userData.municipality, userData.ward ? `Ward ${userData.ward}` : null]
+                    {[userData.province, userData.district, userData.municipality, userData.ward ? `${userData.ward}` : null]
                       .filter(Boolean)
                       .join(", ")}
                   </p>
@@ -663,13 +735,12 @@ const handleSaveAll = () => {
               </div>
             </div>
           </div>
-             
 
           {/* Save Button */}
           <div className="mt-10">
             <button
               onClick={handleSaveAll}
-              disabled={isSaving}
+              disabled={isSaving || !hasChanges()}
               className="w-full bg-gradient-to-r from-gray-800 to-gray-900 text-white py-4 rounded-xl font-semibold hover:from-gray-700 hover:to-gray-800 transition-all shadow-lg disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSaving ? (
@@ -685,62 +756,62 @@ const handleSaveAll = () => {
               )}
             </button>
           </div>
-      
+        </div>
+
+        {/* Crop Modal */}
+        <CropModal
+          isOpen={showCropModal}
+          imageToCrop={imageToCrop}
+          cropPosition={cropPosition}
+          zoom={zoom}
+          isDragging={isDragging}
+          imageSize={imageSize}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onWheel={handleWheel}
+          onZoomChange={setZoom}
+          onSave={handleCropAndSave}
+          onCancel={() => {
+            setShowCropModal(false);
+            setImageToCrop(null);
+            setCropType(null);
+          }}
+          cropImageRef={cropImageRef}
+          cropContainerRef={cropContainerRef}
+          cropType={cropType}
+        />
+
+        {/* Edit Modal (location-only) */}
+        <EditModal
+          isOpen={!!editingField}
+          title={`Edit ${editingField === "location" ? "Location" : editingField?.charAt(0).toUpperCase() + editingField?.slice(1)}`}
+          onSave={handleSaveEdit}
+          onCancel={handleCancelEdit}
+          isSaveDisabled={isSaveDisabled() || isSaving}
+        >
+          {editingField === "location" ? (
+            <LocationForm
+              provinces={provinces}
+              districts={districts}
+              municipals={municipalities}
+              wards={wards}
+              selectedProvince={selectedProvince}
+              selectedDistrict={selectedDistrict}
+              selectedMunicipal={selectedMunicipal}
+              selectedWard={selectedWard}
+              onProvinceChange={(v) => { setSelectedProvince(v); setSelectedDistrict(""); setSelectedMunicipal(""); setSelectedWard(""); }}
+              onDistrictChange={(v) => { setSelectedDistrict(v); setSelectedMunicipal(""); setSelectedWard(""); }}
+              onMunicipalChange={(v) => { setSelectedMunicipal(v); setSelectedWard(""); }}
+              onWardChange={(v) => setSelectedWard(v)}
+              initialLocation={`${userData.province}, ${userData.district}, ${userData.municipality}, ${userData.ward}`}  
+            />
+          ) : (
+            <div />
+          )}
+        </EditModal>
       </div>
-
-      {/* Crop Modal */}
-      <CropModal
-        isOpen={showCropModal}
-        imageToCrop={imageToCrop}
-        cropPosition={cropPosition}
-        zoom={zoom}
-        isDragging={isDragging}
-        imageSize={imageSize}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onWheel={handleWheel}
-        onZoomChange={setZoom}
-        onSave={handleCropAndSave}
-        onCancel={() => {
-          setShowCropModal(false);
-          setImageToCrop(null);
-          setCropType(null);
-        }}
-        cropImageRef={cropImageRef}
-        cropContainerRef={cropContainerRef}
-        cropType={cropType}
-      />
-
-      {/* Edit Modal (location-only) */}
-      <EditModal
-        isOpen={!!editingField}
-        title={`Edit ${editingField === "location" ? "Location" : editingField?.charAt(0).toUpperCase() + editingField?.slice(1)}`}
-        onSave={handleSaveEdit}
-        onCancel={handleCancelEdit}
-        isSaveDisabled={isSaveDisabled() || isSaving}
-      >
-        {editingField === "location" ? (
-          <LocationForm
-            provinces={provinces}
-            districts={districts}
-            municipals={municipalities}
-            wards={wards}
-            selectedProvince={selectedProvince}
-            selectedDistrict={selectedDistrict}
-            selectedMunicipal={selectedMunicipal}
-            selectedWard={selectedWard}
-            onProvinceChange={(v) => { setSelectedProvince(v); setSelectedDistrict(""); setSelectedMunicipal(""); setSelectedWard(""); }}
-            onDistrictChange={(v) => { setSelectedDistrict(v); setSelectedMunicipal(""); setSelectedWard(""); }}
-            onMunicipalChange={(v) => { setSelectedMunicipal(v); setSelectedWard(""); }}
-            onWardChange={(v) => setSelectedWard(v)}
-          />
-        ) : (
-          <div />
-        )}
-      </EditModal>
     </div>
-   </div>
   );
 }
 

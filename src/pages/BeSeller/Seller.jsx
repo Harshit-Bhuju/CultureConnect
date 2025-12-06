@@ -4,8 +4,6 @@ import {
   Upload,
   X,
   Check,
-  Mail,
-  Shield,
   Save,
   Info,
   ArrowLeft,
@@ -29,7 +27,10 @@ const InlineLabel = ({ children }) => (
 
 // --- SellerForm Component ---
 function SellerForm() {
-  const { user: authUser } = useAuth?.() || { user: null }; 
+  const { user: authUser, checkSession } = useAuth?.() || {
+    user: null,
+    checkSession: async () => { }
+  };
   const navigate = useNavigate();
   const {
     provinces,
@@ -48,11 +49,11 @@ function SellerForm() {
     municipals: [],
     wards: [],
     selectedProvince: "",
-    setSelectedProvince: () => {},
+    setSelectedProvince: () => { },
     selectedDistrict: "",
-    setSelectedDistrict: () => {},
+    setSelectedDistrict: () => { },
     selectedMunicipal: "",
-    setSelectedMunicipal: () => {},
+    setSelectedMunicipal: () => { },
   };
 
   const [selectedWard, setSelectedWard] = useState("");
@@ -60,7 +61,6 @@ function SellerForm() {
   const [formData, setFormData] = useState({
     storeName: "",
     storeDescription: "",
-    businessEmail: "",
     esewaPhone: "",
     primaryCategory: "",
     province: "",
@@ -69,19 +69,12 @@ function SellerForm() {
     ward: "",
     termsAccepted: false,
   });
-  
+
   // UI state
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // OTP state
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [isOtpSending, setIsOtpSending] = useState(false);
-  const [isOtpVerified, setIsOtpVerified] = useState(false);
-  const [showOtpModal, setShowOtpModal] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-  const [resendTimer, setResendTimer] = useState(0);
+  // (OTP/email verification removed)
 
   // crop modal + image upload
   const [showCropModal, setShowCropModal] = useState(false);
@@ -123,13 +116,7 @@ function SellerForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProvince, selectedDistrict, selectedMunicipal, selectedWard]);
 
-  // resend timer for OTP
-  useEffect(() => {
-    if (resendTimer > 0) {
-      const t = setTimeout(() => setResendTimer((s) => s - 1), 1000);
-      return () => clearTimeout(t);
-    }
-  }, [resendTimer]);
+  // (resend timer removed)
 
   // ---------- Validation helpers ----------
   const validateStoreName = (name) => {
@@ -147,12 +134,7 @@ function SellerForm() {
     return "";
   };
 
-  const validateEmail = (email) => {
-    if (!email || !email.trim()) return "Business email is required";
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) return "Please enter a valid email address";
-    return "";
-  };
+  // (email validation removed)
 
   const validateEsewaPhone = (phone) => {
     if (!phone || !phone.trim()) return "eSewa phone number is required";
@@ -323,82 +305,7 @@ function SellerForm() {
     const delta = e.deltaY * -0.01;
     setZoom((prev) => Math.min(Math.max(0.5, prev + delta * 0.5), 3));
   };
-
-  // OTP handlers
-  const handleSendOtp = async () => {
-    const emailError = validateEmail(formData.businessEmail);
-    if (emailError) {
-      setErrors((p) => ({ ...p, businessEmail: emailError }));
-      return;
-    }
-    setIsOtpSending(true);
-    try {
-      // Simulate API call or call your backend
-      await new Promise((res) => setTimeout(res, 1000));
-      setOtpSent(true);
-      setShowOtpModal(true);
-      setResendTimer(60);
-      toast.success("OTP sent to your email");
-    } catch (err) {
-      toast.error("Failed to send OTP");
-    } finally {
-      setIsOtpSending(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    if (resendTimer > 0) return;
-    setIsOtpSending(true);
-    try {
-      await new Promise((res) => setTimeout(res, 1000));
-      setResendTimer(60);
-      setOtp(["", "", "", "", "", ""]);
-      toast.success("OTP resent");
-    } catch (err) {
-      toast.error("Failed to resend OTP");
-    } finally {
-      setIsOtpSending(false);
-    }
-  };
-
-  const handleOtpChange = (index, value) => {
-    if (!/^\d*$/.test(value)) return;
-    const next = [...otp];
-    next[index] = value;
-    setOtp(next);
-    if (value && index < 5) {
-      const nextInput = document.getElementById(`otp-${index + 1}`);
-      if (nextInput) nextInput.focus();
-    }
-  };
-
-  const handleOtpPaste = (e) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData("text").slice(0, 6);
-    if (!/^\d+$/.test(pasted)) return;
-    const arr = pasted.split("");
-    while (arr.length < 6) arr.push("");
-    setOtp(arr);
-  };
-
-  const handleVerifyOtp = async () => {
-    const code = otp.join("");
-    if (code.length !== 6) {
-      toast.error("Enter 6-digit OTP");
-      return;
-    }
-    setIsVerifyingOtp(true);
-    try {
-      await new Promise((res) => setTimeout(res, 1000));
-      setIsOtpVerified(true);
-      setShowOtpModal(false);
-      toast.success("Email verified");
-    } catch (err) {
-      toast.error("Invalid OTP");
-    } finally {
-      setIsVerifyingOtp(false);
-    }
-  };
+  
 
   // ----- Edit modal for location/username -----
   const openEditPopup = (field) => {
@@ -457,7 +364,6 @@ function SellerForm() {
         ward: selectedWard,
       }));
       setEditingField(null);
-      toast.success("Location updated (local)");
       return;
     }
     if (editingField === "username") {
@@ -486,9 +392,6 @@ function SellerForm() {
     const descErr = validateStoreDescription(formData.storeDescription);
     if (descErr) newErrors.storeDescription = descErr;
 
-    const emailErr = validateEmail(formData.businessEmail);
-    if (emailErr) newErrors.businessEmail = emailErr;
-
     const phoneErr = validateEsewaPhone(formData.esewaPhone);
     if (phoneErr) newErrors.esewaPhone = phoneErr;
 
@@ -511,9 +414,8 @@ function SellerForm() {
     return Object.keys(newErrors).length === 0;
   }, [formData, logoFile, bannerFile]);
 
-  const handleSubmit = async () => {
+ const handleSubmit = async () => {
     if (!validateRequiredFields()) {
-      // scroll to first error field if present
       const firstKey = Object.keys(errors)[0];
       if (firstKey) {
         const el = document.querySelector(`[name="${firstKey}"]`);
@@ -522,18 +424,13 @@ function SellerForm() {
       return;
     }
 
-    if (!isOtpVerified) {
-      toast.error("Please verify your email before submitting");
-      return;
-    }
+    // (Email OTP verification removed)
 
     setIsSubmitting(true);
     try {
-      // Build final FormData
       const body = new FormData();
       body.append("storeName", formData.storeName);
       body.append("storeDescription", formData.storeDescription);
-      body.append("email", formData.businessEmail);
       body.append("esewaPhone", formData.esewaPhone);
       body.append("primaryCategory", formData.primaryCategory);
       body.append("province", formData.province);
@@ -543,12 +440,31 @@ function SellerForm() {
       if (logoFile) body.append("logo", logoFile);
       if (bannerFile) body.append("banner", bannerFile);
 
-      // Replace with your API call (example)
-      // const response = await fetch(API.SELLER_REGISTER, { method: "POST", body, credentials: "include" });
-      // const result = await response.json();
-      await new Promise((r) => setTimeout(r, 1200)); // simulate
-      toast.success("Application submitted successfully");
-      setErrors({});
+      const response = await fetch(API.SELLER_REGISTRATION, {
+        method: "POST",
+        credentials: "include",
+        body: body,
+      });
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        toast.success("Application submitted successfully!");
+        setErrors({});
+        
+        // ✅ CRITICAL FIX: Refresh session BEFORE navigation
+        console.log("Refreshing session to get updated seller_id...");
+        await checkSession();
+        
+        // ✅ Wait a bit more for state to update
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // ✅ Navigate to seller profile
+        console.log("Navigating to seller profile:", result.seller_id);
+        navigate(`/sellerprofile/${result.seller_id}`, { replace: true });
+      } else {
+        toast.error(result.message || "Failed to submit application");
+      }
     } catch (err) {
       console.error("Submit error", err);
       toast.error("Error submitting application");
@@ -574,7 +490,7 @@ function SellerForm() {
         </div>
 
         <div className="text-center mb-10">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Seller Application</h1>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Seller Application</h1>
           <p className="text-gray-600 text-lg">Register your store and list products</p>
         </div>
 
@@ -611,62 +527,33 @@ function SellerForm() {
               {errors.storeDescription && <p className="text-red-500 text-sm mt-1">{errors.storeDescription}</p>}
             </div>
 
-            {/* Business Email + OTP */}
-            <div>
-              <InlineLabel>Business Email <span className="text-red-500">*</span></InlineLabel>
-              <div className="flex gap-3">
-                <input
-                  name="businessEmail"
-                  value={formData.businessEmail}
-                  onChange={(e) => {
-                    handleInputChange(e);
-                    setIsOtpVerified(false);
-                    setOtpSent(false);
-                  }}
-                  className={`flex-1 px-4 py-3.5 border-2 rounded-xl ${errors.businessEmail ? "border-red-300 bg-red-50" : "border-gray-200 bg-gray-50"}`}
-                  placeholder="your.business@example.com"
-                />
-                <button
-                  type="button"
-                  onClick={handleSendOtp}
-                  disabled={isOtpSending || isOtpVerified || !formData.businessEmail}
-                  className="px-6 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed"
-                >
-                  {isOtpSending ? <div className="flex items-center gap-2"><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>Sending...</div>
-                    : isOtpVerified ? <><Check className="w-4 h-4 inline" /> Verified</>
-                    : <><Mail className="w-4 h-4 inline" /> Send OTP</>}
-                </button>
-              </div>
-              {errors.businessEmail && <p className="text-red-500 text-sm mt-2">{errors.businessEmail}</p>}
-              {isOtpVerified && <p className="text-green-600 text-sm mt-2 flex items-center gap-1"><Check className="w-4 h-4" /> Email verified</p>}
-            </div>
+            {/* Business email / OTP removed */}
 
             {/* Location (inline selectors) */}
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => openEditPopup("location")}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                openEditPopup("location");
-              }
-            }}
-            aria-invalid={!!errors.location}
-            className={`w-full text-left px-4 py-3.5 rounded-xl border transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-200 ${
-              errors.location
-                ? "border-red-300 bg-red-50 text-red-800"
-                : formData.province || formData.district || formData.municipality || formData.ward
-                ? "border-gray-200 bg-gray-50 text-gray-800"
-                : "border-dashed border-gray-300 bg-white text-gray-500"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm font-semibold text-gray-700">Location</div>
-                <div className="text-sm truncate mt-1">
-                  {formData.province || formData.district || formData.municipality || formData.ward
-                    ? [
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => openEditPopup("location")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  openEditPopup("location");
+                }
+              }}
+              aria-invalid={!!errors.location}
+              className={`w-full text-left px-4 py-3.5 rounded-xl border transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-200 ${errors.location
+                  ? "border-red-300 bg-red-50 text-red-800"
+                  : formData.province || formData.district || formData.municipality || formData.ward
+                    ? "border-gray-200 bg-gray-50 text-gray-800"
+                    : "border-dashed border-gray-300 bg-white text-gray-500"
+                }`}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-semibold text-gray-700">Location</div>
+                  <div className="text-sm truncate mt-1">
+                    {formData.province || formData.district || formData.municipality || formData.ward
+                      ? [
                         formData.province,
                         formData.district,
                         formData.municipality,
@@ -674,13 +561,13 @@ function SellerForm() {
                       ]
                         .filter(Boolean)
                         .join(", ")
-                    : "Add Location (click to edit)"}
+                      : "Add Location (click to edit)"}
+                  </div>
                 </div>
+                <div className="text-blue-600 ml-4 font-medium">Edit</div>
               </div>
-              <div className="text-blue-600 ml-4 font-medium">Edit</div>
             </div>
-          </div>
-          {errors.location && <p className="text-red-500 text-sm mt-2">{errors.location}</p>}
+            {errors.location && <p className="text-red-500 text-sm mt-2">{errors.location}</p>}
 
             {/* eSewa phone */}
             <div>
@@ -709,8 +596,7 @@ function SellerForm() {
                 <option value="">Select Category</option>
                 <option>Traditional Clothing</option>
                 <option>Musical Instruments</option>
-                <option>Arts & Decors</option>
-                <option>Handmade Crafts</option>
+                <option>Handicraft & Decors</option>
               </select>
               {errors.primaryCategory && <p className="text-red-500 text-sm mt-2">{errors.primaryCategory}</p>}
             </div>
@@ -744,19 +630,41 @@ function SellerForm() {
                     <p className="text-gray-600 text-sm mb-4">
                       For the best results on all devices, use an image that's at least 2048 x 1152 pixels and 6MB or less.
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => bannerInputRef.current && bannerInputRef.current.click()}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-medium transition-colors shadow-sm"
-                    >
-                      Upload
-                    </button>
-                    <input 
-                      ref={bannerInputRef} 
-                      type="file" 
-                      accept="image/jpeg,image/jpg,image/png" 
-                      className="hidden" 
-                      onChange={(e) => handleImageSelect(e, "banner")} 
+                    {bannerPreview ? (
+                  <>
+                          <button
+                            type="button"
+                            onClick={() => bannerInputRef.current && bannerInputRef.current.click()}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-medium transition-colors shadow-sm"
+                          >
+                            Change
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setLogoPreview(null);
+                              setLogoFile(null);
+                            }}
+                            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2.5 rounded-full font-medium transition-colors"
+                          >
+                            Remove
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => bannerInputRef.current && bannerInputRef.current.click()}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-medium transition-colors shadow-sm"
+                        >
+                          Upload
+                        </button>
+                      )}
+                    <input
+                      ref={bannerInputRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png"
+                      className="hidden"
+                      onChange={(e) => handleImageSelect(e, "banner")}
                     />
                   </div>
                 </div>
@@ -779,7 +687,7 @@ function SellerForm() {
                         <img src={logoPreview} alt="logo" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center">
-                          <div className="w-8 h-10 bg-white" style={{clipPath: 'polygon(50% 0%, 0% 40%, 30% 40%, 30% 100%, 70% 100%, 70% 40%, 100% 40%)'}}></div>
+                          <div className="w-8 h-10 bg-white" style={{ clipPath: 'polygon(50% 0%, 0% 40%, 30% 40%, 30% 100%, 70% 100%, 70% 40%, 100% 40%)' }}></div>
                         </div>
                       )}
                     </div>
@@ -821,12 +729,12 @@ function SellerForm() {
                         </button>
                       )}
                     </div>
-                    <input 
-                      ref={logoInputRef} 
-                      type="file" 
-                      accept="image/jpeg,image/jpg,image/png" 
-                      className="hidden" 
-                      onChange={(e) => handleImageSelect(e, "logo")} 
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png"
+                      className="hidden"
+                      onChange={(e) => handleImageSelect(e, "logo")}
                     />
                   </div>
                 </div>
@@ -884,46 +792,7 @@ function SellerForm() {
         </div>
       </div>
 
-      {/* --- OTP Modal --- */}
-      {showOtpModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative">
-            <button onClick={() => setShowOtpModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X className="w-6 h-6" /></button>
-            <div className="text-center mb-6">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">Verify Your Email</h3>
-              <p className="text-gray-600 text-sm">We've sent a 6-digit code to <span className="font-semibold">{formData.businessEmail}</span></p>
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-3 text-center">Enter OTP Code</label>
-              <div className="flex gap-2 justify-center" onPaste={handleOtpPaste}>
-                {otp.map((digit, i) => (
-                  <input key={i} id={`otp-${i}`} value={digit} maxLength="1" onChange={(e) => handleOtpChange(i, e.target.value)} onKeyDown={(e) => {
-                    if (e.key === "Backspace" && !otp[i] && i > 0) {
-                      const prev = document.getElementById(`otp-${i-1}`);
-                      if (prev) prev.focus();
-                    }
-                  }} className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200" />
-                ))}
-              </div>
-            </div>
-
-            <button onClick={handleVerifyOtp} disabled={isVerifyingOtp || otp.join("").length !== 6} className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed mb-4">
-              {isVerifyingOtp ? "Verifying..." : "Verify OTP"}
-            </button>
-
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-2">Didn't receive the code?</p>
-              <button onClick={handleResendOtp} disabled={resendTimer > 0 || isOtpSending} className="text-sm font-semibold text-blue-600 disabled:text-gray-400">
-                {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend OTP'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* OTP modal removed */}
 
       {/* --- Crop Modal (reused component) --- */}
       <CropModal
