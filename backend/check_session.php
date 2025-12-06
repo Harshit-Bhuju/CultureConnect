@@ -2,7 +2,6 @@
 include("session_helper.php");
 include("header.php");
 
-
 $current_user_email = $_SESSION['user_email'] ?? null;
 $device_id = getDeviceId();
 
@@ -36,9 +35,30 @@ $stmt->close();
 
 $current_user_data = null;
 if ($current_user_email) {
-    $stmt = $conn->prepare("SELECT email, username, profile_pic, gender, province, district, municipality, ward, role FROM users WHERE email=? LIMIT 1");
+
+    // Fetch full user info + seller_id in a single query
+    $stmt = $conn->prepare("
+        SELECT 
+            u.id,
+            u.email,
+            u.username,
+            u.profile_pic,
+            u.gender,
+            u.province,
+            u.district,
+            u.municipality,
+            u.ward,
+            u.role,
+            s.id AS seller_id
+        FROM users u
+        LEFT JOIN sellers s ON u.id = s.user_id
+        WHERE u.email = ?
+        LIMIT 1
+    ");
+
     $stmt->bind_param("s", $current_user_email);
     $stmt->execute();
+
     $row = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
@@ -54,10 +74,13 @@ if ($current_user_email) {
                 "municipality" => $row['municipality'],
                 "ward" => $row['ward']
             ],
-            "role" => $row['role']
+            "role" => $row['role'],
+            "seller_id" => $row['seller_id'] ?? null,
+            "teacher_id" => null
         ];
     }
 }
+
 
 echo json_encode([
     "status" => "success",
@@ -68,3 +91,4 @@ echo json_encode([
 
 $conn->close();
 exit;
+?>

@@ -76,9 +76,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "province" => $new_user['province'] ?? '',
             "district" => $new_user['district'] ?? '',
             "municipality" => $new_user['municipality'] ?? '',
-            "ward" => $new_user['ward'] ?? ''
+            "ward" => $new_user['ward'] ?? '',
           ],
-          "avatar" => $new_user['profile_pic'] ?? ''
+          "avatar" => $new_user['profile_pic'] ?? '',
+          "seller_id" =>  null,
+          "teacher_id" => null
         ]
       ];
       sendResponseAndContinue($response);

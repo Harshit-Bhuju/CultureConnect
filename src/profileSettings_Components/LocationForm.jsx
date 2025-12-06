@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 const LocationForm = ({
   provinces,
@@ -12,8 +12,23 @@ const LocationForm = ({
   onProvinceChange,
   onDistrictChange,
   onMunicipalChange,
-  onWardChange
+  onWardChange,
+  initialLocation // Add this prop to receive the current location
 }) => {
+  
+  // Parse and set initial location when modal opens
+  useEffect(() => {
+    if (initialLocation && initialLocation !== "Add Location") {
+      const locationParts = initialLocation.split(", ");
+      if (locationParts.length === 4) {
+        onProvinceChange(locationParts[0]);
+        onDistrictChange(locationParts[1]);
+        onMunicipalChange(locationParts[2]);
+        onWardChange(locationParts[3]);
+      }
+    }
+  }, [initialLocation]);
+  
   return (
     <div className="space-y-4">
       {/* Province Dropdown */}
@@ -24,7 +39,7 @@ const LocationForm = ({
           onChange={(e) => onProvinceChange(e.target.value)}
           className="border-2 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 border-gray-200 bg-white"
         >
-          <option value="" hidden>Select Province</option>
+          <option value="">Select Province</option>
           {provinces.map((province) => (
             <option key={province} value={province}>
               {province}
@@ -42,7 +57,7 @@ const LocationForm = ({
           disabled={!selectedProvince}
           className="border-2 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 border-gray-200 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
-          <option value="" hidden>Select District</option>
+          <option value="">Select District</option>
           {districts.map((district) => (
             <option key={district} value={district}>
               {district}
@@ -60,7 +75,7 @@ const LocationForm = ({
           disabled={!selectedDistrict}
           className="border-2 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 border-gray-200 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
-          <option value="" hidden>Select Municipality</option>
+          <option value="">Select Municipality</option>
           {municipals.map((municipal) => (
             <option key={municipal} value={municipal}>
               {municipal}
@@ -78,7 +93,7 @@ const LocationForm = ({
           disabled={!selectedMunicipal}
           className="border-2 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 border-gray-200 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
-          <option value="" hidden>Select Ward</option>
+          <option value="">Select Ward</option>
           {wards.map((ward) => (
             <option key={ward} value={ward}>
               {ward}

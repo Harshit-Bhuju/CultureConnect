@@ -10,7 +10,7 @@ export const useAuth = () => {
   return context;
 };
 
-// Normalize user data
+
 const normalizeUserData = (userData) => {
   if (!userData) return null;
 
@@ -26,29 +26,28 @@ const normalizeUserData = (userData) => {
     avatarUrl = `${BASE_URL}/uploads/${avatarUrl}`;
   }
 
-  // ⭐ IMPROVED: Handle location as either object or string
+  // Handle location as either object or string
   let location = "";
   if (userData.location) {
     if (typeof userData.location === "object" && userData.location !== null) {
-      // Backend sends nested object - format it as string
       const parts = [];
-      
-      if (userData.location.ward) {
-        parts.push(`Ward ${userData.location.ward}`);
-      }
-      if (userData.location.municipality) {
-        parts.push(userData.location.municipality);
-      }
-      if (userData.location.district) {
-        parts.push(userData.location.district);
-      }
-      if (userData.location.province) {
+          if (userData.location.province) {
         parts.push(userData.location.province);
       }
+       if (userData.location.district) {
+        parts.push(userData.location.district);
+      }
+   if (userData.location.municipality) {
+        parts.push(userData.location.municipality);
+      }
+      if (userData.location.ward) {
+        parts.push(`${userData.location.ward}`);
+      }
+     
+     
       
       location = parts.filter(Boolean).join(", ");
     } else if (typeof userData.location === "string") {
-      // Already a string - use as is
       location = userData.location.trim();
     }
   }
@@ -60,6 +59,9 @@ const normalizeUserData = (userData) => {
     gender: userData.gender || "",
     location: location,
     role: userData.role || "user",
+    // ✅ ADD: Include seller_id and teacher_id
+    seller_id: userData.seller_id || null,
+    teacher_id: userData.teacher_id || null,
   };
 
   console.log("Normalized user data:", normalized);

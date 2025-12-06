@@ -589,6 +589,7 @@ const Personal_Settings = () => {
             onDistrictChange={setSelectedDistrict}
             onMunicipalChange={setSelectedMunicipal}
             onWardChange={setSelectedWard}
+             initialLocation={user.location}
           />
         ) : (
           <UsernameInput

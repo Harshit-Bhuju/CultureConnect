@@ -26,87 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $user_id = $user['id'];
-    $action = $_POST['action'] ?? '';
-    $store_email = strtolower(trim(filter_input(INPUT_POST, "businessEmail", FILTER_SANITIZE_EMAIL)));
 
-    if (!filter_var($store_email, FILTER_VALIDATE_EMAIL)) {
-        echo json_encode(["status" => "error", "message" => "Invalid email format"]);
-        exit;
-    }
-
-    // SEND OTP
-    if ($action === 'send') {
-        $stmt = $conn->prepare("SELECT * FROM seller_unverified_email WHERE user_id = ? LIMIT 1");
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $pending_seller = $result->fetch_assoc();
-        $stmt->close();
-
-        if ($result->num_rows > 0) {
-            if ($pending_seller["unverified_email"] !== $store_email) {
-                $stmt = $conn->prepare("UPDATE seller_unverified_email SET unverified_email = ? WHERE user_id = ?");
-                $stmt->bind_param("si", $store_email, $user_id);
-                $stmt->execute();
-                $stmt->close();
-            }
-        } else {
-            $verify_token = random_int(100000, 999999);
-
-            $stmt = $conn->prepare("INSERT INTO seller_unverified_email (user_id, unverified_email, verify_token) VALUES (?, ?, ?)");
-            $stmt->bind_param("isi", $user_id, $store_email, $verify_token);
-            $stmt->execute();
-            $stmt->close();
-
-            $response = ["status" => "success", "message" => "Email sent to $store_email"];
-            sendResponseAndContinue($response);
-            sendSellerVerifyEmail($store_email, $verify_token);
-            exit;
-        }
-    }
-
-    // RESEND OTP
-    if ($action === 'resend') {
-        $verify_token = random_int(100000, 999999);
-        $stmt = $conn->prepare("UPDATE seller_unverified_email SET verify_token = ? WHERE user_id = ?");
-        $stmt->bind_param("ii", $verify_token, $user_id);
-        $stmt->execute();
-        $stmt->close();
-
-
-        $response = json_encode(["status" => "success", "message" => "Email resent to $store_email"]);
-
-        sendResponseAndContinue($response);
-        sendSellerVerifyEmail($store_email, $verify_token);
-
-        exit;
-    }
-
-    // VERIFY OTP
-    if ($action === 'otp_verify') {
-        $code = trim($_POST['code'] ?? '');
-        $stmt = $conn->prepare("SELECT * FROM seller_unverified_email WHERE user_id = ? LIMIT 1");
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $row = $result->fetch_assoc();
-        $stmt->close();
-
-        if ($row && $row['verify_token'] == $code) {
-            echo json_encode(["status" => "email_verified"]);
-            $del_stmt = $conn->prepare("DELETE FROM seller_unverified_email WHERE user_id = ?");
-            $del_stmt->bind_param("i", $user_id);
-            $del_stmt->execute();
-            $del_stmt->close();
-            exit;
-        }
-        echo json_encode(["status" => "error", "message" => "Incorrect OTP. Please enter the correct one!"]);
-        exit;
-    }
-
-    // REGISTER SELLER
-    if ($action === 'register') {
-        $store_name = trim($_POST['storeName'] ?? '');
+        $store_name = ucwords(strtolower(trim($_POST['storeName'] ?? '')));
         $store_description = trim($_POST['storeDescription'] ?? '');
         $esewa_phone = trim($_POST['esewaPhone'] ?? '');
         $primary_category = trim($_POST['primaryCategory'] ?? '');
@@ -190,11 +111,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
 
-        $insert_stmt = $conn->prepare("INSERT INTO sellers (user_id, store_name, store_description, primary_category, store_email, esewa_phone, province, district, municipality, ward, store_logo, store_banner) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $insert_stmt->bind_param("isssssssssss", $user_id, $store_name, $store_description, $primary_category, $store_email, $esewa_phone, $province, $district, $municipality, $ward, $store_logo, $store_banner);
+        $insert_stmt = $conn->prepare("INSERT INTO sellers (user_id, store_name, store_description, primary_category, esewa_phone, province, district, municipality, ward, store_logo, store_banner) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $insert_stmt->bind_param("issssssssss", $user_id, $store_name, $store_description, $primary_category, $esewa_phone, $province, $district, $municipality, $ward, $store_logo, $store_banner);
         if ($insert_stmt->execute()) {
-
-            // Update role
+            $seller_id = $insert_stmt->insert_id;
+            $insert_stmt->close();
             $current_role_stmt = $conn->prepare("SELECT role FROM users WHERE email = ? LIMIT 1");
             $current_role_stmt->bind_param("s", $user_email);
             $current_role_stmt->execute();
@@ -209,13 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $update_role_stmt->execute();
             $update_role_stmt->close();
 
-            $check_stmt = $conn->prepare("SELECT id FROM sellers WHERE user_id = ? LIMIT 1");
-            $check_stmt->bind_param("i", $user_id);
-            $check_stmt->execute();
-            $result = $check_stmt->get_result();
-            $row = $result->fetch_assoc();
-
-            $response = ["status" => "success"];
+            $response = ["status" => "success", "seller_id" => $seller_id];
             sendResponseAndContinue($response);
             sendSellerAccountCreatedEmail($user_email);
             exit;
@@ -224,7 +139,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
     }
-}
 
 $conn->close();
 exit;

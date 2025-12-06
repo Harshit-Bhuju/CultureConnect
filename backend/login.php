@@ -11,7 +11,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $password = trim($_POST['password']);
 
-    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
+    // Use LEFT JOIN to get seller_id and teacher_id in one query
+    $stmt = $conn->prepare("
+        SELECT 
+            u.*, 
+            s.id AS seller_id
+        FROM users u
+        LEFT JOIN sellers s ON u.id = s.user_id
+        WHERE u.email = ? 
+        LIMIT 1
+    ");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -30,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // Set session
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['logged_in'] = true;
 
@@ -46,15 +56,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "municipality" => $user['municipality'] ?? '',
                 "ward" => $user['ward'] ?? ''
             ],
-
             "avatar" => $user['profile_pic'] ?? '',
-            "role" => $user['role']
+            "role" => $user['role'],
+            "seller_id" => $user['seller_id'] ?? null,
+            "teacher_id" => null
         ]
     ]);
     exit;
 }
 
 echo json_encode(["status" => "error", "message" => "Invalid request."]);
-
 $conn->close();
 exit;

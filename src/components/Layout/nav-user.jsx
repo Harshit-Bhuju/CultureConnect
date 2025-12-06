@@ -76,7 +76,7 @@ export function NavUser({ user }) {
     if (result.success) {
       toast.success(`Switched to ${account.name}`);
       setShowMobileModal(false);
-      navigate("/");
+      window.location.href = "/";
     } else {
       toast.error(result.message || "Failed to switch account");
     }

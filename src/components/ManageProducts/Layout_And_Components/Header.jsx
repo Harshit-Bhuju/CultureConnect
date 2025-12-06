@@ -15,7 +15,7 @@ const Header = () => {
       <div className="max-w-7xl mx-auto">
         {/* Back Button */}
         <button
-          onClick={() => navigate('/sellerprofile/:id')}
+          onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors group"
         >
           <ArrowLeft className="w-5 h-5 " />

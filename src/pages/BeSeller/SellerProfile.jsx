@@ -1,63 +1,91 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "../../components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "../../components/ui/sidebar";
 import AppSidebar from "../../components/Layout/app-sidebar";
 import Navbar from "../../components/Layout/NavBar";
 import Card from "../../components/cardLayout/Card";
-import { Link } from "react-router-dom";
-
-// Mock seller data
-const mockSeller = {
-  storeName: "Cultural Crafts",
-  storeDescription:
-    "We bring authentic Nepalese crafts directly to your doorstep. Handmade, traditional, and unique.",
-  banner: "https://images.unsplash.com/photo-1602524209726-1e2381e2c0f7?auto=format&fit=crop&w=1470&q=80",
-  logo: "https://images.unsplash.com/photo-1612831455542-bd99a0ff6c3d?auto=format&fit=crop&w=400&q=80",
-  province: "Bagmati",
-  district: "Kathmandu",
-  municipality: "Kathmandu Metropolitan",
-  ward: "Ward 7",
-  followers: 256,
-  createdAt: "2025-20-11",
-  productsNo: 10
-};
-
-const mockProducts = [
-  {
-    id: 1,
-    title: "Traditional Dhaka Topi",
-    category: "Clothing",
-    price: "₹1200",
-    originalPrice: "₹1500",
-    image: "https://images.unsplash.com/photo-1589987604952-fb47e05dba6c?auto=format&fit=crop&w=500&q=80",
-    rating: 4.5,
-    reviews: 12
-  },
-  {
-    id: 2,
-    title: "Handmade Pottery Vase",
-    category: "Arts & Decors",
-    price: "₹3500",
-    originalPrice: "₹4200",
-    image: "https://images.unsplash.com/photo-1610384128025-2f81f2f0df95?auto=format&fit=crop&w=500&q=80",
-    rating: 5.0,
-    reviews: 8
-  },
-  {
-    id: 3,
-    title: "Nepali Madal",
-    category: "Musical Instruments",
-    price: "₹1500",
-    originalPrice: "₹2000",
-    image: "https://images.unsplash.com/photo-1601093290757-d0dbda3bb4cd?auto=format&fit=crop&w=500&q=80",
-    rating: 4.8,
-    reviews: 15
-  },
-];
+import { Link, useParams } from "react-router-dom";
+import API, { BASE_URL } from "../../Configs/ApiEndpoints"; // ✅ Import BASE_URL
+import toast from "react-hot-toast";
+import { useAuth } from "../../context/AuthContext";
 
 const SellerProfile = () => {
+  const { id } = useParams();
+  const { user } = useAuth?.() || {};
   const [activeTab, setActiveTab] = useState("products");
-  const [isOwnProfile, setIsOwnProfile] = useState(true);
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [sellerData, setSellerData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    if (id) {
+      fetchSellerProfile(id);
+    }
+  }, [id]);
+
+  const fetchSellerProfile = async (sellerId) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API.GET_SELLER_PROFILE}?seller_id=${sellerId}`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        setSellerData(result.seller_profile);
+        const currentUserSellerId = user?.seller_id;
+        setIsOwnProfile(currentUserSellerId && currentUserSellerId == sellerId);
+      } else {
+        toast.error(result.message || "Failed to load profile");
+      }
+    } catch (err) {
+      console.error("Fetch profile error:", err);
+      toast.error("Error loading seller profile");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <Navbar />
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading profile...</p>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
+  if (!sellerData) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <Navbar />
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">Seller profile not found</p>
+              <Link to="/seller-registration">
+                <button className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                  Register as Seller
+                </button>
+              </Link>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -68,15 +96,15 @@ const SellerProfile = () => {
           {/* Banner */}
           <div className="relative w-full h-64 bg-gray-200">
             <img
-              src={mockSeller.banner}
-              alt="Banner"
+              src={`${BASE_URL}/seller_img_datas/seller_banners/${sellerData.store_banner}`}
+              alt="Store Banner"
               className="w-full h-full object-cover"
             />
             {/* Profile Picture */}
-            <div className="absolute -bottom-16 left-6 w-32 h-32 border-4 border-white rounded-full overflow-hidden shadow-lg">
+            <div className="absolute -bottom-16 left-6 w-32 h-32 border-4 border-white rounded-full overflow-hidden shadow-lg bg-white">
               <img
-                src={mockSeller.logo}
-                alt="Logo"
+                src={`${BASE_URL}/seller_img_datas/seller_logos/${sellerData.store_logo}`}
+                alt="Store Logo"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -86,43 +114,46 @@ const SellerProfile = () => {
           <div className="mt-20 px-6 md:px-12">
             <div className="flex flex-col md:flex-row md:justify-between items-start md:items-center">
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">{mockSeller.storeName}</h1>
-                <p className="text-gray-600 mt-2">{mockSeller.storeDescription}</p>
+                <h1 className="text-3xl font-bold text-gray-800">{sellerData.name}</h1>
+                <p className="text-gray-600 mt-2">{sellerData.description}</p>
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center gap-6 text-gray-500">
                     <div className="flex items-center gap-1">
                       <Heart className="w-4 h-4" />
-                      <span>{mockSeller.followers} followers</span>
+                      <span>{sellerData.followers_count || 0} followers</span>
                     </div>
                     <div>
-                      <span>Products ({mockSeller.productsNo})</span>
+                      <span>Products ({sellerData.products_count || 0})</span>
                     </div>
                   </div>
                   <div className="text-gray-500 text-sm">
-                    <span>Created At {mockSeller.createdAt}</span>
+                    <span>Joined {new Date(sellerData.created_at).toLocaleDateString()}</span>
                   </div>
+                  <p className="text-gray-600 text-sm">Category: {sellerData.category}</p>
                 </div>
               </div>
+
+              {/* Action Buttons */}
               {!isOwnProfile ? (
                 <div className="flex gap-3 mt-4 md:mt-0">
-                  <button className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700">
+                  <button className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors">
                     Follow
                   </button>
-                  <button className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100">
+                  <button className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 transition-colors">
                     Message
                   </button>
                 </div>
               ) : (
                 <div className="flex gap-3 mt-4 md:mt-0">
-                  <Link to={'/customiseprofile'}>
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Customize Account
-                  </button>
+                  <Link to="/customiseprofile">
+                    <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                      Customize Account
+                    </button>
                   </Link>
-                     <Link to={'/manageproducts'}>
-                  <button className="px-4 py-2 border border-gray-800 text-gray-800 rounded hover:bg-gray-100">
-                    Manage Products
-                  </button>
+                  <Link to="/manageproducts">
+                    <button className="px-4 py-2 border border-gray-800 text-gray-800 rounded hover:bg-gray-100 transition-colors">
+                      Manage Products
+                    </button>
                   </Link>
                 </div>
               )}
@@ -151,7 +182,6 @@ const SellerProfile = () => {
                 >
                   About
                 </button>
-               
               </nav>
             </div>
 
@@ -159,26 +189,27 @@ const SellerProfile = () => {
             <div className="mt-6">
               {activeTab === "products" && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {mockProducts.map((product) => (
-                    <Card key={product.id} product={product} />
-                  ))}
+                  {products.length > 0 ? (
+                    products.map((product) => <Card key={product.id} product={product} />)
+                  ) : (
+                    <div className="col-span-full text-center py-12">
+                      <p className="text-gray-500 mb-2">No products yet</p>
+                      {isOwnProfile && (
+                        <Link to="/manageproducts">
+                          <button className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                            Add Your First Product
+                          </button>
+                        </Link>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
               {activeTab === "about" && (
                 <div className="bg-white p-6 rounded-lg shadow space-y-4">
-                  <h2 className="font-bold text-lg text-gray-800">About {mockSeller.storeName}</h2>
-                  <p className="text-gray-600">{mockSeller.storeDescription}</p>
-                  <p className="text-gray-600">
-                    Location: {mockSeller.ward}, {mockSeller.municipality}, {mockSeller.district}, {mockSeller.province}
-                  </p>
-                  <p className="text-gray-600">Contact: seller@example.com</p>
-                </div>
-              )}
-
-              {activeTab === "reviews" && (
-                <div className="bg-white p-6 rounded-lg shadow space-y-4">
-                  <p className="text-gray-500 text-center">No reviews yet.</p>
+                  <h2 className="font-bold text-lg text-gray-800">About {sellerData.name}</h2>
+                  <p className="text-gray-600 leading-relaxed">{sellerData.description}</p>
                 </div>
               )}
             </div>

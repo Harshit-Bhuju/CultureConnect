@@ -2,9 +2,9 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { useAuth } from "./context/AuthContext";
 import Loading from "./components/Common/Loading";
-import ProtectedRoute from "./components/Auth/ProtectedRoute";
-import PublicRoute from "./components/Auth/PublicRoute";
-import FlowRoute from "./components/Auth/FlowRoute";
+import ProtectedRoute from "./components/Auth/Route/ProtectedRoute";
+import PublicRoute from "./components/Auth/Route/PublicRoute";
+import FlowRoute from "./components/Auth/Route/FlowRoute";
 import { Toaster } from "react-hot-toast";
 
 // Lazy load all pages
@@ -63,10 +63,15 @@ const Delete_Accounts = lazy(() =>
   import("./pages/Settings/Delete_Accounts")
 );
 const AdminProtectedRoute = lazy(() =>
-  import("./components/Auth/AdminProtectedRoute")
+  import("./components/Auth/Route/AdminProtectedRoute")
 );
 const AdminPanel = lazy(() => import("./admin/AdminPanel"));
-
+const ProtectedSellerRoute = lazy(() => 
+  import("./components/Auth/Route/ProtectedSellerRoute")
+);
+const SellerRegistrationRoute = lazy(() => 
+  import("./components/Auth/Route/SellerRegistrationRoute")
+);
 // Seller pages
 const Seller = lazy(() => import("./pages/BeSeller/Seller"));
 const SellerProfile = lazy(() => import("./pages/BeSeller/SellerProfile"));
@@ -140,64 +145,74 @@ function App() {
 
           {/* ==================== Seller Routes ==================== */}
           {/* Seller Registration */}
-          <Route
-            path="/seller-registration"
-            element={
-              <ProtectedRoute>
-                <Seller />
-              </ProtectedRoute>
-            }
-          />
+         <Route
+  path="/seller-registration"
+  element={
+    <SellerRegistrationRoute>
+      <Seller />
+    </SellerRegistrationRoute>
+  }
+/>
 
-          {/* Seller Profile (Public View) */}
-          <Route
-            path="/sellerprofile/:id"
-            element={
-              <ProtectedRoute>
-                <SellerProfile />
-              </ProtectedRoute>
-            }
-          />
+{/* Seller Profile (Public View) - Anyone logged in can view */}
+<Route
+  path="/sellerprofile/:id"
+  element={
+    <ProtectedRoute>
+      <SellerProfile />
+    </ProtectedRoute>
+  }
+/>
 
-          {/* Customize Seller Profile */}
-          <Route
-            path="/customiseprofile"
-            element={
-              <ProtectedRoute>
-                <CustomizeProfile />
-              </ProtectedRoute>
-            }
-          />
+{/* Customize Seller Profile - Only for sellers */}
+<Route
+  path="/customiseprofile"
+  element={
+    <ProtectedSellerRoute>
+      <CustomizeProfile />
+    </ProtectedSellerRoute>
+  }
+/>
 
-          {/* Product Management Dashboard */}
-          <Route
-            path="/manageproducts"
-            element={
-              <ProtectedRoute>
-                <ProductManagement />
-              </ProtectedRoute>
-            }
-          />
+{/* Product Management Dashboard - Only for sellers */}
+<Route
+  path="/manageproducts"
+  element={
+    <ProtectedSellerRoute>
+      <ProductManagement />
+    </ProtectedSellerRoute>
+  }
+/>
 
-          {/* Add New Product */}
-          <Route
-            path="/seller/products/new"
-            element={
-              <ProtectedRoute>
-                <SellerProductUpload />
-              </ProtectedRoute>
-            }
-          />
+{/* Add New Product - Only for sellers */}
+<Route
+  path="/seller/products/new"
+  element={
+    <ProtectedSellerRoute>
+      <SellerProductUpload />
+    </ProtectedSellerRoute>
+  }
+/>
 
-          {/* Edit Existing Product */}
-          <Route
-            path="/seller/products/:id/edit"
-            element={
-              <ProtectedRoute>
-                <SellerProductUpload />
-              </ProtectedRoute>
-            }
-          />
+{/* Edit Existing Product - Only for sellers */}
+<Route
+  path="/seller/products/:id/edit"
+  element={
+    <ProtectedSellerRoute>
+      <SellerProductUpload />
+    </ProtectedSellerRoute>
+  }
+/>
+
+{/* Seller Product Detail (Management View) - Only for sellers */}
+<Route
+  path="/seller/products/:id"
+  element={
+    <ProtectedSellerRoute>
+      <SellerProductDetailPage />
+    </ProtectedSellerRoute>
+  }
+/>
 
           {/* Seller Product Detail (Management View) */}
           <Route

@@ -70,8 +70,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             "municipality" => $user_gen['municipality'] ?? '',
                             "ward" => $user_gen['ward'] ?? ''
                         ],
-
-                        "avatar" => $picture
+                        "avatar" => $picture,
+                        "seller_id" =>  null,
+                        "teacher_id" => null
                     ]
                 ];
                 sendResponseAndContinue($response);

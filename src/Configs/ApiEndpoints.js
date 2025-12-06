@@ -33,6 +33,7 @@ export const API = {
   GET_SLIDESRS: `${BASE_URL}/get_sliders.php`,
   SELLER_REGISTRATION: `${BASE_URL}/seller_registration.php`,
   GET_SELLER_PROFILE: `${BASE_URL}/get_seller_profile.php`,
+  UPDATE_SELLER_PROFILE: `${BASE_URL}/seller_profile_update.php`
 };
 
 export default API;
