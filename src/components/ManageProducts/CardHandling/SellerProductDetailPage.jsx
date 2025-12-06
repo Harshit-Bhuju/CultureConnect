@@ -1,28 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Star,
-  StarHalf,
   ShoppingCart,
-  Heart,
   Share2,
-  Truck,
-  Shield,
-  RotateCcw,
   ChevronLeft,
   ChevronRight,
   Edit,
-  Eye,
-  Trash2,
   TrendingUp,
-  Users,
   DollarSign,
   Package,
   ArrowLeft,
-  Loader2,
+  AlertTriangle,
+  Calendar,
+  BarChart3,
+  Eye, // Keep Eye icon, but remove view metrics
 } from "lucide-react";
 import { initialProducts } from '../../ManageProducts/Data/data';
 import Loading from "../../Common/Loading";
+import Rating from "../ProductDisplay/RatingForProduct";
 
 const SellerProductDetailPage = () => {
     
@@ -32,9 +27,6 @@ const SellerProductDetailPage = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedSize, setSelectedSize] = useState("");
-  const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
 
   // Load product data
@@ -46,11 +38,6 @@ const SellerProductDetailPage = () => {
         const foundProduct = initialProducts.find(p => p.id === parseInt(id));
         if (foundProduct) {
           setProduct(foundProduct);
-          setSelectedSize(
-            foundProduct.adultSizes?.[0] || 
-            foundProduct.childAgeGroups?.[0] || 
-            ""
-          );
         }
         setLoading(false);
       }, 500);
@@ -60,21 +47,7 @@ const SellerProductDetailPage = () => {
   }, [id]);
 
   const renderStars = (rating = 0) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />);
-    }
-    if (hasHalfStar) {
-      stars.push(<StarHalf key="half" className="w-4 h-4 fill-yellow-400 text-yellow-400" />);
-    }
-    const emptyStars = 5 - Math.ceil(rating);
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(<Star key={`empty-${i}`} className="w-4 h-4 text-gray-300" />);
-    }
-    return stars;
+    return <Rating rating={rating} reviews={0} />;
   };
 
   const nextImage = () => {
@@ -136,10 +109,10 @@ const SellerProductDetailPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate('/manageproducts')}
+                onClick={() => navigate(-1)}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition group"
               >
-                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                <ArrowLeft className="w-5 h-5" />
                 <span className="font-medium">Back to Products</span>
               </button>
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -159,7 +132,7 @@ const SellerProductDetailPage = () => {
                 <span className="hidden sm:inline">Customer View</span>
               </button>
               <button 
-                onClick={() => navigate(`/seller/products/${product.id}/edit`)}
+                onClick={() => navigate(`/seller/products/edit/${product.id}`)}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
                 <Edit className="w-4 h-4" />
@@ -172,7 +145,7 @@ const SellerProductDetailPage = () => {
 
       {/* Analytics Cards */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-4 mb-6"> {/* Changed grid-cols-4 to grid-cols-3 */}
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -185,6 +158,7 @@ const SellerProductDetailPage = () => {
             </div>
           </div>
           
+          {/* REMOVED: Total Views Card (formerly the 2nd card) 
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -196,6 +170,7 @@ const SellerProductDetailPage = () => {
               </div>
             </div>
           </div>
+          */}
           
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center justify-between">
@@ -250,12 +225,6 @@ const SellerProductDetailPage = () => {
                   </button>
                 </>
               )}
-              <button
-                onClick={() => setIsWishlisted(!isWishlisted)}
-                className="absolute top-4 right-4 bg-white p-2 rounded-full shadow hover:scale-110 transition"
-              >
-                <Heart className={`w-6 h-6 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`} />
-              </button>
             </div>
 
             {/* Thumbnails */}
@@ -317,62 +286,62 @@ const SellerProductDetailPage = () => {
               </span>
             </div>
 
-            {/* Sizes */}
+            {/* Sizes - Display Only */}
             {(product.adultSizes?.length > 0 || product.childAgeGroups?.length > 0) && (
               <div className="space-y-3">
                 <div>
                   <label className="font-semibold text-gray-900 mb-2 block">
-                    {product.audience ? `Size (${getAudienceDisplay(product.audience)}):` : "Size:"}
+                    {product.audience ? `Available Sizes (${getAudienceDisplay(product.audience)}):` : "Available Sizes:"}
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {(product.adultSizes?.length > 0 ? product.adultSizes : product.childAgeGroups)?.map((size) => (
-                      <button
+                      <span
                         key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`px-4 py-2 border-2 rounded-lg font-medium transition ${
-                          selectedSize === size 
-                            ? "border-blue-600 bg-blue-50 text-blue-700" 
-                            : "border-gray-300 hover:border-gray-400"
-                        }`}
+                        className="px-4 py-2 border-2 border-gray-300 bg-gray-50 rounded-lg font-medium text-gray-700"
                       >
                         {size}
-                      </button>
+                      </span>
                     ))}
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Quantity */}
-            <div>
-              <label className="font-semibold text-gray-900 mb-2 block">Quantity:</label>
-              <div className="flex items-center gap-3">
+            {/* Seller Action Buttons */}
+            <div className="space-y-3 pt-4">
+              <button 
+                onClick={() => navigate(`/seller/products/edit/${product.id}`)}
+                className="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition flex justify-center items-center gap-2 shadow-md font-semibold text-lg"
+              >
+                <Edit className="w-5 h-5" /> Edit Product Details
+              </button>
+              
+              <div className="grid grid-cols-2 gap-3">
                 <button 
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))} 
-                  className="border-2 border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 font-semibold"
+                  onClick={() => {
+                    const newStatus = product.status === "Active" ? "Draft" : "Active";
+                    // Update product status
+                    console.log("Toggle status to:", newStatus);
+                  }}
+                  className={`py-3 rounded-lg transition flex justify-center items-center gap-2 font-semibold ${
+                    product.status === "Active"
+                      ? "bg-yellow-50 text-yellow-700 border-2 border-yellow-200 hover:bg-yellow-100"
+                      : "bg-green-50 text-green-700 border-2 border-green-200 hover:bg-green-100"
+                  }`}
                 >
-                  −
+                  {product.status === "Active" ? "Draft" : "Publish"}
                 </button>
-                <span className="text-xl font-semibold w-12 text-center">{quantity}</span>
+                
                 <button 
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} 
-                  className="border-2 border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 font-semibold"
+                  onClick={() => navigate(`/product/${product.id}`)}
+                  className="border-2 border-gray-300 py-3 rounded-lg flex justify-center items-center gap-2 hover:bg-gray-50 transition font-semibold"
                 >
-                  +
+                  <Eye className="w-5 h-5" /> Preview
                 </button>
               </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="space-y-3 pt-4">
-              <button className="w-full bg-orange-500 text-white py-4 rounded-lg flex justify-center items-center gap-2 hover:bg-orange-600 transition shadow-md font-semibold text-lg">
-                <ShoppingCart className="w-5 h-5" /> Add to Cart
-              </button>
-              <button className="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition flex justify-center items-center gap-2 shadow-md font-semibold text-lg">
-                Buy Now
-              </button>
               <button className="w-full border-2 border-gray-300 py-3 rounded-lg flex justify-center items-center gap-2 hover:bg-gray-50 transition font-medium">
-                <Share2 className="w-5 h-5" /> Share Product
+                <Share2 className="w-5 h-5" /> Share Product Link
               </button>
             </div>
 
@@ -390,22 +359,24 @@ const SellerProductDetailPage = () => {
               </div>
             )}
 
-            {/* Delivery Info */}
-            <div className="grid grid-cols-3 gap-4 py-6 border-t mt-4">
+            {/* Seller Metrics - Changed grid-cols-3 to grid-cols-2 and removed Conversion */}
+            <div className="grid grid-cols-2 gap-4 py-6 border-t mt-4">
               <div className="text-center">
-                <Truck className="w-8 h-8 mx-auto text-blue-600 mb-2" />
-                <p className="text-sm font-semibold">Free Delivery</p>
-                <p className="text-xs text-gray-500">2-4 business days</p>
+                <Calendar className="w-8 h-8 mx-auto text-blue-600 mb-2" />
+                <p className="text-sm font-semibold">Listed Date</p>
+                <p className="text-xs text-gray-500">{product.listedDate || "Jan 15, 2024"}</p>
               </div>
+              {/* REMOVED: Conversion Metric (formerly the 2nd column)
               <div className="text-center">
-                <RotateCcw className="w-8 h-8 mx-auto text-green-600 mb-2" />
-                <p className="text-sm font-semibold">Easy Returns</p>
-                <p className="text-xs text-gray-500">30-day policy</p>
+                <BarChart3 className="w-8 h-8 mx-auto text-green-600 mb-2" />
+                <p className="text-sm font-semibold">Conversion</p>
+                <p className="text-xs text-gray-500">{product.views > 0 ? ((product.totalSales / product.views) * 100).toFixed(1) : 0}%</p>
               </div>
+              */}
               <div className="text-center">
-                <Shield className="w-8 h-8 mx-auto text-purple-600 mb-2" />
-                <p className="text-sm font-semibold">Quality Assured</p>
-                <p className="text-xs text-gray-500">6 months warranty</p>
+                <TrendingUp className="w-8 h-8 mx-auto text-purple-600 mb-2" />
+                <p className="text-sm font-semibold">Avg. Rating</p>
+                <p className="text-xs text-gray-500">{product.rating}/5.0</p>
               </div>
             </div>
           </div>
@@ -414,7 +385,7 @@ const SellerProductDetailPage = () => {
         {/* Tabs Section */}
         <div className="mt-12 bg-white rounded-lg shadow-sm border overflow-hidden">
           <div className="flex gap-8 border-b px-6">
-            {["description", "specifications", "care", "reviews"].map((tab) => (
+            {["description", "specifications", "care", "reviews", "performance"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -506,6 +477,108 @@ const SellerProductDetailPage = () => {
                 ) : (
                   <p className="text-gray-500 text-center py-8">No reviews yet.</p>
                 )}
+              </div>
+            )}
+
+            {activeTab === "performance" && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h3>
+                
+                {/* Changed grid-cols-1 md:grid-cols-2 gap-6 to match the new 3 card layout in this tab */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6"> 
+                  {/* REMOVED: Views Analytics Block (formerly the 1st card)
+                  <div className="bg-blue-50 rounded-lg p-5 border border-blue-100">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Eye className="w-6 h-6 text-blue-600" />
+                      <h4 className="font-semibold text-gray-900">Views Analytics</h4>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Total Views:</span>
+                        <span className="font-semibold">{product.views}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">This Month:</span>
+                        <span className="font-semibold">{Math.floor(product.views * 0.3)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">This Week:</span>
+                        <span className="font-semibold">{Math.floor(product.views * 0.1)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  */}
+
+                  {/* Sales Performance is now the 1st card in this section */}
+                  <div className="bg-green-50 rounded-lg p-5 border border-green-100">
+                    <div className="flex items-center gap-3 mb-3">
+                      <ShoppingCart className="w-6 h-6 text-green-600" />
+                      <h4 className="font-semibold text-gray-900">Sales Performance</h4>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Total Sales:</span>
+                        <span className="font-semibold">{product.totalSales}</span>
+                      </div>
+                      {/* REMOVED: Conversion Rate 
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Conversion Rate:</span>
+                        <span className="font-semibold">{((product.totalSales / product.views) * 100).toFixed(1)}%</span>
+                      </div>
+                      */}
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Total Revenue:</span>
+                        <span className="font-semibold">Rs {(product.price * product.totalSales).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Inventory Status is now the 2nd card in this section */}
+                  <div className="bg-yellow-50 rounded-lg p-5 border border-yellow-100">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Package className="w-6 h-6 text-yellow-600" />
+                      <h4 className="font-semibold text-gray-900">Inventory Status</h4>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Current Stock:</span>
+                        <span className="font-semibold">{product.stock}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Stock Value:</span>
+                        <span className="font-semibold">Rs {(product.price * product.stock).toLocaleString()}</span>
+                      </div>
+                      {product.stock <= 10 && (
+                        <div className="flex items-center gap-2 text-red-600 mt-2">
+                          <AlertTriangle className="w-4 h-4" />
+                          <span className="text-sm font-medium">Low stock alert!</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Customer Feedback is now the 3rd card in this section */}
+                  <div className="bg-purple-50 rounded-lg p-5 border border-purple-100">
+                    <div className="flex items-center gap-3 mb-3">
+                      <TrendingUp className="w-6 h-6 text-purple-600" />
+                      <h4 className="font-semibold text-gray-900">Customer Feedback</h4>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Average Rating:</span>
+                        <span className="font-semibold">{product.rating}/5.0</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Total Reviews:</span>
+                        <span className="font-semibold">{product.totalReviews}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Satisfaction:</span>
+                        <span className="font-semibold">{(product.rating / 5 * 100).toFixed(0)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>

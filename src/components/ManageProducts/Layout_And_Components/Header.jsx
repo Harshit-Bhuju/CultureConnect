@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Plus, Package } from 'lucide-react';
+import { ArrowLeft, Plus, Package, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CultureConnectLogo from "../../../assets/logo/cultureconnect__fav.png";
 
@@ -8,6 +8,10 @@ const Header = () => {
 
   const handleAddProduct = () => {
     navigate('/seller/products/new');
+  };
+
+  const handleViewAnalytics = () => {
+    navigate('/seller/analytics');
   };
 
   return (
@@ -38,13 +42,23 @@ const Header = () => {
             </div>
           </div>
 
-          <button
-            onClick={handleAddProduct}
-            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg font-semibold "
-          >
-            <Plus size={20} strokeWidth={2.5} />
-            Add Product
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleViewAnalytics}
+              className="bg-white hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg font-semibold border border-gray-300"
+            >
+              <BarChart3 size={20} strokeWidth={2.5} />
+              View Analytics
+            </button>
+            
+            <button
+              onClick={handleAddProduct}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg font-semibold "
+            >
+              <Plus size={20} strokeWidth={2.5} />
+              Add Product
+            </button>
+          </div>
         </div>
       </div>
     </header>
