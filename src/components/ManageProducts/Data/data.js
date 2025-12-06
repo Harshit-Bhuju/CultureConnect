@@ -1,4 +1,3 @@
-// Complete product data matching SellerProductUpload structure
 export const initialProducts = [
   {
     id: 1,
@@ -23,9 +22,8 @@ export const initialProducts = [
       'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&h=1000&fit=crop',
     ],
     rating: 4.8,
-    totalReviews: 24,
+    totalReviews: 3,
     totalSales: 156,
-    views: 1240,
     reviews: [
       {
         id: 1,
@@ -72,9 +70,8 @@ export const initialProducts = [
       'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=800&h=1000&fit=crop',
     ],
     rating: 4.9,
-    totalReviews: 18,
+    totalReviews: 2,
     totalSales: 89,
-    views: 856,
     reviews: [
       {
         id: 1,
@@ -114,9 +111,8 @@ export const initialProducts = [
       'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=800&h=1000&fit=crop',
     ],
     rating: 4.7,
-    totalReviews: 15,
+    totalReviews: 2,
     totalSales: 67,
-    views: 724,
     reviews: [
       {
         id: 1,
@@ -156,9 +152,8 @@ export const initialProducts = [
       'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&h=1000&fit=crop',
     ],
     rating: 4.6,
-    totalReviews: 22,
+    totalReviews: 2,
     totalSales: 134,
-    views: 1089,
     reviews: [
       {
         id: 1,
@@ -198,9 +193,8 @@ export const initialProducts = [
       'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=800&h=1000&fit=crop',
     ],
     rating: 4.8,
-    totalReviews: 31,
+    totalReviews: 3,
     totalSales: 198,
-    views: 1456,
     reviews: [
       {
         id: 1,
@@ -247,9 +241,8 @@ export const initialProducts = [
       'https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=800&h=1000&fit=crop',
     ],
     rating: 4.5,
-    totalReviews: 19,
+    totalReviews: 2,
     totalSales: 112,
-    views: 923,
     reviews: [
       {
         id: 1,
@@ -289,9 +282,8 @@ export const initialProducts = [
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=1000&fit=crop',
     ],
     rating: 4.9,
-    totalReviews: 8,
+    totalReviews: 2,
     totalSales: 23,
-    views: 456,
     reviews: [
       {
         id: 1,
@@ -333,7 +325,6 @@ export const initialProducts = [
     rating: 0,
     totalReviews: 0,
     totalSales: 0,
-    views: 234,
     reviews: []
   }
 ];

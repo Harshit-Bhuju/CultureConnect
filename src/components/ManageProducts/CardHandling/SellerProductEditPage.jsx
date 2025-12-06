@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { toast } from "react-hot-toast";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Upload,
   X,
@@ -12,21 +12,24 @@ import {
   Package,
   Info,
   AlertCircle,
+  ArrowLeft,
+  Loader2,
 } from "lucide-react";
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { initialProducts } from "../Data/data";
+import Loading from "../../Common/Loading";
+import toast from "react-hot-toast";
 
-// Inside your component:
-
-
-export default function SellerProductUpload() {
+export default function SellerProductEdit() {
+  const { id } = useParams();
   const navigate = useNavigate();
+
   const [images, setImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(0);
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [activeTab, setActiveTab] = useState("basic");
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     productName: "",
     productType: "",
@@ -45,9 +48,63 @@ export default function SellerProductUpload() {
   });
   const [tagInput, setTagInput] = useState("");
 
+  // Load existing product data
+  useEffect(() => {
+    const loadProduct = async () => {
+      setLoading(true);
+      try {
+        // Simulate API call - replace with actual API call
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
+        const product = initialProducts.find((p) => p.id === parseInt(id));
+
+        if (product) {
+          setFormData({
+            productName: product.productName || "",
+            productType: product.productType || "",
+            culture: product.culture || "",
+            description: product.description || "",
+            price: product.price?.toString() || "",
+            stock: product.stock?.toString() || "",
+            category: product.category || "",
+            audience: product.audience || "",
+            adultSizes: product.adultSizes || [],
+            childAgeGroups: product.childAgeGroups || [],
+            tags: product.tags || [],
+            dimensions: product.dimensions || "",
+            material: product.material || "",
+            careInstructions: product.careInstructions || "",
+          });
+
+          if (product.images && product.images.length > 0) {
+            const existingImages = product.images.map((url, index) => ({
+              id: Date.now() + index,
+              url: url,
+              file: null,
+              isExisting: true,
+            }));
+            setImages(existingImages);
+          }
+        } else {
+          navigate("/seller/products");
+        }
+      } catch (error) {
+       toast.error("Error loading product:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [id, navigate]);
+
   useEffect(() => {
     return () => {
-      images.forEach(img => URL.revokeObjectURL(img.url));
+      images.forEach((img) => {
+        if (!img.isExisting && img.url) {
+          URL.revokeObjectURL(img.url);
+        }
+      });
     };
   }, [images]);
 
@@ -57,50 +114,54 @@ export default function SellerProductUpload() {
     }
   }, [images, selectedImage]);
 
-  const handleImageUpload = useCallback((e) => {
-    const files = Array.from(e.target.files);
-    
-    const validFiles = files.filter(file => {
-      if (!file.type.startsWith('image/')) {
-        toast.error(`${file.name} is not an image file`);
-        return false;
+  const handleImageUpload = useCallback(
+    (e) => {
+      const files = Array.from(e.target.files);
+
+      const validFiles = files.filter((file) => {
+        if (!file.type.startsWith("image/")) {
+          toast.error(`${file.name} is not an image file`);
+          return false;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error(`${file.name} is too large (max 5MB)`);
+          return false;
+        }
+        return true;
+      });
+
+      if (validFiles.length === 0) return;
+
+      const newImages = validFiles.map((file) => ({
+        id: Date.now() + Math.random(),
+        url: URL.createObjectURL(file),
+        file: file,
+        isExisting: false,
+      }));
+
+      setImages((prev) => {
+        const combined = [...prev, ...newImages];
+        if (combined.length > 10) {
+          toast.error("Maximum 10 images allowed");
+          return combined.slice(0, 10);
+        }
+        return combined;
+      });
+
+      if (errors.images) {
+        setErrors((prev) => ({ ...prev, images: "" }));
       }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`${file.name} is too large (max 5MB)`);
-        return false;
-      }
-      return true;
-    });
+    },
+    [errors.images]
+  );
 
-    if (validFiles.length === 0) return;
-
-    const newImages = validFiles.map((file) => ({
-      id: Date.now() + Math.random(),
-      url: URL.createObjectURL(file),
-      file: file,
-    }));
-
+  const removeImage = useCallback((imageId) => {
     setImages((prev) => {
-      const combined = [...prev, ...newImages];
-      if (combined.length > 10) {
-        toast.error("Maximum 10 images allowed");
-        return combined.slice(0, 10);
-      }
-      return combined;
-    });
-
-    if (errors.images) {
-      setErrors((prev) => ({ ...prev, images: "" }));
-    }
-  }, [errors.images]);
-
-  const removeImage = useCallback((id) => {
-    setImages((prev) => {
-      const imageToRemove = prev.find(img => img.id === id);
-      if (imageToRemove) {
+      const imageToRemove = prev.find((img) => img.id === imageId);
+      if (imageToRemove && !imageToRemove.isExisting) {
         URL.revokeObjectURL(imageToRemove.url);
       }
-      return prev.filter((img) => img.id !== id);
+      return prev.filter((img) => img.id !== imageId);
     });
   }, []);
 
@@ -108,36 +169,42 @@ export default function SellerProductUpload() {
     setDraggedIndex(index);
   }, []);
 
-  const handleDragOver = useCallback((e, index) => {
-    e.preventDefault();
-    if (draggedIndex === null || draggedIndex === index) return;
+  const handleDragOver = useCallback(
+    (e, index) => {
+      e.preventDefault();
+      if (draggedIndex === null || draggedIndex === index) return;
 
-    const newImages = [...images];
-    const draggedImage = newImages[draggedIndex];
-    newImages.splice(draggedIndex, 1);
-    newImages.splice(index, 0, draggedImage);
+      const newImages = [...images];
+      const draggedImage = newImages[draggedIndex];
+      newImages.splice(draggedIndex, 1);
+      newImages.splice(index, 0, draggedImage);
 
-    setImages(newImages);
-    setDraggedIndex(index);
-  }, [draggedIndex, images]);
+      setImages(newImages);
+      setDraggedIndex(index);
+    },
+    [draggedIndex, images]
+  );
 
   const handleDragEnd = useCallback(() => {
     setDraggedIndex(null);
   }, []);
 
-  const handleInputChange = useCallback((e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-  }, [errors]);
+  const handleInputChange = useCallback(
+    (e) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      if (errors[name]) {
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+      }
+    },
+    [errors]
+  );
 
   const handleTagInputChange = useCallback((e) => {
     setTagInput(e.target.value);
   }, []);
 
- const commitTag = useCallback((tagValue) => {
+  const commitTag = useCallback((tagValue) => {
   const cleaned = tagValue.trim().replace(/,$/, "");
   if (!cleaned) return;
 
@@ -147,7 +214,6 @@ export default function SellerProductUpload() {
   }
 
   setFormData((prev) => {
-    // Tag already exists
     if (prev.tags.includes(cleaned)) {
       setErrors((prevErr) => ({
         ...prevErr,
@@ -176,18 +242,26 @@ export default function SellerProductUpload() {
 
 }, []);
 
-  const handleTagKeyDown = useCallback((e) => {
-    if (e.key === " " || e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      commitTag(tagInput);
-      setTagInput("");
-    } else if (e.key === "Backspace" && !tagInput && formData.tags.length > 0) {
-      setFormData(prev => ({
-        ...prev,
-        tags: prev.tags.slice(0, -1)
-      }));
-    }
-  }, [tagInput, formData.tags.length, commitTag]);
+
+  const handleTagKeyDown = useCallback(
+    (e) => {
+      if (e.key === " " || e.key === "Enter" || e.key === ",") {
+        e.preventDefault();
+        commitTag(tagInput);
+        setTagInput("");
+      } else if (
+        e.key === "Backspace" &&
+        !tagInput &&
+        formData.tags.length > 0
+      ) {
+        setFormData((prev) => ({
+          ...prev,
+          tags: prev.tags.slice(0, -1),
+        }));
+      }
+    },
+    [tagInput, formData.tags.length, commitTag]
+  );
 
   const removeTag = useCallback((tag) => {
     setFormData((prev) => ({
@@ -196,44 +270,53 @@ export default function SellerProductUpload() {
     }));
   }, []);
 
-  const toggleAudience = useCallback((audience) => {
-    setFormData((prev) => ({
-      ...prev,
-      audience: prev.audience === audience ? "" : audience,
-    }));
-    if (errors.audience || errors.adultSizes || errors.childAgeGroups) {
-      setErrors((prev) => ({
+  const toggleAudience = useCallback(
+    (audience) => {
+      setFormData((prev) => ({
         ...prev,
-        audience: "",
-        adultSizes: "",
-        childAgeGroups: "",
+        audience: prev.audience === audience ? "" : audience,
       }));
-    }
-  }, [errors.audience, errors.adultSizes, errors.childAgeGroups]);
+      if (errors.audience || errors.adultSizes || errors.childAgeGroups) {
+        setErrors((prev) => ({
+          ...prev,
+          audience: "",
+          adultSizes: "",
+          childAgeGroups: "",
+        }));
+      }
+    },
+    [errors]
+  );
 
-  const toggleAdultSize = useCallback((size) => {
-    setFormData((prev) => {
-      const adultSizes = prev.adultSizes.includes(size)
-        ? prev.adultSizes.filter((s) => s !== size)
-        : [...prev.adultSizes, size];
-      return { ...prev, adultSizes };
-    });
-    if (errors.adultSizes) {
-      setErrors((prev) => ({ ...prev, adultSizes: "" }));
-    }
-  }, [errors.adultSizes]);
+  const toggleAdultSize = useCallback(
+    (size) => {
+      setFormData((prev) => {
+        const adultSizes = prev.adultSizes.includes(size)
+          ? prev.adultSizes.filter((s) => s !== size)
+          : [...prev.adultSizes, size];
+        return { ...prev, adultSizes };
+      });
+      if (errors.adultSizes) {
+        setErrors((prev) => ({ ...prev, adultSizes: "" }));
+      }
+    },
+    [errors.adultSizes]
+  );
 
-  const toggleChildAgeGroup = useCallback((group) => {
-    setFormData((prev) => {
-      const childAgeGroups = prev.childAgeGroups.includes(group)
-        ? prev.childAgeGroups.filter((age) => age !== group)
-        : [...prev.childAgeGroups, group];
-      return { ...prev, childAgeGroups };
-    });
-    if (errors.childAgeGroups) {
-      setErrors((prev) => ({ ...prev, childAgeGroups: "" }));
-    }
-  }, [errors.childAgeGroups]);
+  const toggleChildAgeGroup = useCallback(
+    (group) => {
+      setFormData((prev) => {
+        const childAgeGroups = prev.childAgeGroups.includes(group)
+          ? prev.childAgeGroups.filter((age) => age !== group)
+          : [...prev.childAgeGroups, group];
+        return { ...prev, childAgeGroups };
+      });
+      if (errors.childAgeGroups) {
+        setErrors((prev) => ({ ...prev, childAgeGroups: "" }));
+      }
+    },
+    [errors.childAgeGroups]
+  );
 
   useEffect(() => {
     if (formData.category !== "cultural-clothes") {
@@ -252,8 +335,10 @@ export default function SellerProductUpload() {
       return;
     }
 
-    const isAdultAudience = formData.audience === "men" || formData.audience === "women";
-    const isChildAudience = formData.audience === "boy" || formData.audience === "girl";
+    const isAdultAudience =
+      formData.audience === "men" || formData.audience === "women";
+    const isChildAudience =
+      formData.audience === "boy" || formData.audience === "girl";
 
     if (!isAdultAudience && formData.adultSizes.length) {
       setFormData((prev) => ({ ...prev, adultSizes: [] }));
@@ -292,7 +377,8 @@ export default function SellerProductUpload() {
     }
 
     if (!formData.culture.trim() && formData.category === "cultural-clothes") {
-      newErrors.culture = "Culture background is required for cultural clothes.";
+      newErrors.culture =
+        "Culture background is required for cultural clothes.";
     }
 
     if (!formData.price) {
@@ -340,24 +426,29 @@ export default function SellerProductUpload() {
         newErrors.childAgeGroups = "Choose at least one child age group.";
       }
     }
+
     if (formData.tags.length === 0) {
       newErrors.tags = "Please add at least one tag.";
     }
+
     if (!formData.dimensions.trim()) {
       newErrors.dimensions = "Dimensions are required.";
-    } else if (!/^\d+(\.\d+)?\s*\*\s*\d+(\.\d+)?\s*\*\s*\d+(\.\d+)?$/.test(formData.dimensions.trim())) {
-      newErrors.dimensions = "Dimensions must be in the format: Length * Width * Height. Example: 1 * 2 * 3";
+    } else if (
+      !/^\d+(\.\d+)?\s*\*\s*\d+(\.\d+)?\s*\*\s*\d+(\.\d+)?$/.test(
+        formData.dimensions.trim()
+      )
+    ) {
+      newErrors.dimensions =
+        "Dimensions must be in the format: Length * Width * Height";
     }
-  
-    
+
     if (!formData.material.trim()) {
       newErrors.material = "Material information is required.";
     }
-    
+
     if (!formData.careInstructions.trim()) {
       newErrors.careInstructions = "Care instructions are required.";
     }
-    
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -368,31 +459,30 @@ export default function SellerProductUpload() {
       const firstErrorKey = Object.keys(errors)[0];
       if (firstErrorKey) {
         const element = document.querySelector(`[name="${firstErrorKey}"]`);
-        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element?.scrollIntoView({ behavior: "smooth", block: "center" });
       }
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      console.log("Form Data:", formData);
-      console.log("Images:", images);
-      toast.success("Product published successfully!");
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+
+      toast.success("Product updated successfully!");
       setErrors({});
+      navigate(`/seller/products/${id}`);
     } catch (error) {
-      toast.error("Failed to publish product. Please try again.");
+      toast.error("Failed to update product. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
-  }, [validateRequiredFields, formData, images, errors]);
+  }, [validateRequiredFields, formData, images, errors, id, navigate]);
 
   const handleSaveDraft = useCallback(async () => {
     setIsSubmitting(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log("Saving as draft...", formData);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success("Draft saved successfully!");
       setErrors({});
     } catch (error) {
@@ -402,7 +492,9 @@ export default function SellerProductUpload() {
     }
   }, [formData]);
 
-
+  if (loading) {
+    return <Loading message="Loading..."/>
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4">
@@ -410,23 +502,24 @@ export default function SellerProductUpload() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-<button
-  onClick={() => navigate(-1)}
-  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
->
-  <ArrowLeft className="w-5 h-5" />
-  Back to Products
-</button>
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition">
+                <ArrowLeft className="w-5 h-5" />
+                Back to Product
+              </button>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Add New Product
+                Edit Product
               </h1>
               <p className="text-gray-600">
-                Create a detailed listing with rich imagery and comprehensive information
+                Update your product information and imagery
               </p>
             </div>
             <div className="hidden md:flex items-center gap-3">
               <div className="text-right">
-                <p className="text-sm font-semibold text-gray-900">Live Preview</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  Live Preview
+                </p>
                 <p className="text-xs text-gray-500">See as customers do</p>
               </div>
               <Eye className="w-8 h-8 text-blue-500" />
@@ -434,14 +527,13 @@ export default function SellerProductUpload() {
           </div>
         </div>
 
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Images Section */}
           <div className="space-y-4">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <Upload className="w-5 h-5 text-blue-500" />
                 Product Images
-                
                 {images.length > 0 && (
                   <span className="text-sm font-normal text-gray-500">
                     ({images.length}/10)
@@ -462,7 +554,9 @@ export default function SellerProductUpload() {
                     <p className="text-sm text-center px-6 font-medium">
                       Upload product images
                     </p>
-                    <p className="text-xs text-gray-400">First image will be the main product image</p>
+                    <p className="text-xs text-gray-400">
+                      First image will be the main product image
+                    </p>
                   </div>
                 )}
 
@@ -558,7 +652,8 @@ export default function SellerProductUpload() {
               </div>
               <p className="text-xs text-gray-500 mt-3 flex items-start gap-2">
                 <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                Drag thumbnails to reorder. First image will be featured on the product listing. Max 5MB per image.
+                Drag thumbnails to reorder. First image will be featured. Max
+                5MB per image.
               </p>
               {errors.images && (
                 <p className="text-xs text-red-600 mt-2 font-medium flex items-center gap-1">
@@ -569,6 +664,7 @@ export default function SellerProductUpload() {
             </div>
           </div>
 
+          {/* Form Section */}
           <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="flex border-b border-gray-200">
@@ -595,7 +691,7 @@ export default function SellerProductUpload() {
                   <>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">
-                        Product Name 
+                        Product Name
                       </label>
                       <input
                         type="text"
@@ -603,7 +699,9 @@ export default function SellerProductUpload() {
                         value={formData.productName}
                         onChange={handleInputChange}
                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
-                          errors.productName ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                          errors.productName
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
                         }`}
                         placeholder="Enter product name"
                       />
@@ -618,7 +716,7 @@ export default function SellerProductUpload() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Product Type 
+                          Product Type
                         </label>
                         <input
                           type="text"
@@ -626,7 +724,9 @@ export default function SellerProductUpload() {
                           value={formData.productType}
                           onChange={handleInputChange}
                           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                            errors.productType ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            errors.productType
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
                           }`}
                           placeholder="Traditional, Modern..."
                         />
@@ -640,19 +740,29 @@ export default function SellerProductUpload() {
 
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Category 
+                          Category
                         </label>
                         <select
                           name="category"
                           value={formData.category}
                           onChange={handleInputChange}
                           className={`w-full px-4 py-3 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                            errors.category ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            errors.category
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
                           }`}>
-                          <option value="" hidden>Select category</option>
-                          <option value="cultural-clothes">Cultural Clothes</option>
-                          <option value="musical-instruments">Musical Instruments</option>
-                          <option value="handicraft-decors">Handicraft & Decors</option>
+                          <option value="" hidden>
+                            Select category
+                          </option>
+                          <option value="cultural-clothes">
+                            Cultural Clothes
+                          </option>
+                          <option value="musical-instruments">
+                            Musical Instruments
+                          </option>
+                          <option value="handicraft-decors">
+                            Handicraft & Decors
+                          </option>
                         </select>
                         {errors.category && (
                           <p className="text-xs text-red-600 font-medium flex items-center gap-1">
@@ -663,35 +773,37 @@ export default function SellerProductUpload() {
                       </div>
                     </div>
 
-                  { formData.category === "cultural-clothes" && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Culture
-                      </label>
-                      <input
-                        type="text"
-                        name="culture"
-                        value={formData.culture}
-                        onChange={handleInputChange}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                          errors.culture ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                        }`}
-                        placeholder="Newari, Tibetan, Tharu..."
-                      />
-                      {errors.culture && (
-                        <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          {errors.culture}
-                        </p>
-                      )}
-                    </div>
+                    {formData.category === "cultural-clothes" && (
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">
+                          Culture
+                        </label>
+                        <input
+                          type="text"
+                          name="culture"
+                          value={formData.culture}
+                          onChange={handleInputChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
+                            errors.culture
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
+                          }`}
+                          placeholder="Newari, Tibetan, Tharu..."
+                        />
+                        {errors.culture && (
+                          <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            {errors.culture}
+                          </p>
+                        )}
+                      </div>
                     )}
 
                     {formData.category === "cultural-clothes" && (
                       <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">
-                            Target audience 
+                            Target audience
                           </label>
                           <div className="flex flex-wrap gap-3">
                             {[
@@ -725,7 +837,7 @@ export default function SellerProductUpload() {
                           formData.audience === "women") && (
                           <div className="space-y-2">
                             <p className="text-xs uppercase tracking-wide text-gray-700 font-semibold">
-                              Available sizes (Adults) 
+                              Available sizes (Adults)
                             </p>
                             <div className="flex flex-wrap gap-3">
                               {["S", "M", "L", "XL", "XXL"].map((size) => (
@@ -755,7 +867,7 @@ export default function SellerProductUpload() {
                           formData.audience === "girl") && (
                           <div className="space-y-2">
                             <p className="text-xs uppercase tracking-wide text-gray-700 font-semibold">
-                              Age groups (Children) 
+                              Age groups (Children)
                             </p>
                             <div className="flex flex-wrap gap-3">
                               {["5-6", "7-8", "9-10", "11-12", "13-14"].map(
@@ -788,7 +900,7 @@ export default function SellerProductUpload() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Price (Rs) 
+                          Price (Rs)
                         </label>
                         <input
                           type="number"
@@ -798,11 +910,15 @@ export default function SellerProductUpload() {
                           min="0"
                           step="100"
                           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                            errors.price ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            errors.price
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
                           }`}
                           placeholder="0"
                         />
-                        <p className="text-xs text-gray-500">Maximum 9 digits</p>
+                        <p className="text-xs text-gray-500">
+                          Maximum 9 digits
+                        </p>
                         {errors.price && (
                           <p className="text-xs text-red-600 font-medium flex items-center gap-1">
                             <AlertCircle className="w-3 h-3" />
@@ -813,7 +929,7 @@ export default function SellerProductUpload() {
 
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Stock Quantity 
+                          Stock Quantity
                         </label>
                         <input
                           type="number"
@@ -822,11 +938,15 @@ export default function SellerProductUpload() {
                           onChange={handleInputChange}
                           min="0"
                           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                            errors.stock ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            errors.stock
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
                           }`}
                           placeholder="0"
                         />
-                        <p className="text-xs text-gray-500">Maximum 9 digits</p>
+                        <p className="text-xs text-gray-500">
+                          Maximum 9 digits
+                        </p>
                         {errors.stock && (
                           <p className="text-xs text-red-600 font-medium flex items-center gap-1">
                             <AlertCircle className="w-3 h-3" />
@@ -838,7 +958,7 @@ export default function SellerProductUpload() {
 
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">
-                        Product Description 
+                        Product Description
                       </label>
                       <textarea
                         name="description"
@@ -847,12 +967,15 @@ export default function SellerProductUpload() {
                         rows="4"
                         maxLength="50"
                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none ${
-                          errors.description ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                          errors.description
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
                         }`}
                         placeholder="Describe your product in detail..."
                       />
                       <p className="text-xs text-gray-500">
-                        {formData.description.length}/2000 characters (minimum 10)
+                        {formData.description.length}/2000 characters (minimum
+                        10)
                       </p>
                       {errors.description && (
                         <p className="text-xs text-red-600 font-medium flex items-center gap-1">
@@ -864,22 +987,23 @@ export default function SellerProductUpload() {
 
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">
-                        Tags 
+                        Tags
                       </label>
-                      <div className={`flex flex-wrap gap-2 rounded-lg border px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition ${
-                        errors.tags ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                      }`}>
+                      <div
+                        className={`flex flex-wrap gap-2 rounded-lg border px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition ${
+                          errors.tags
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                        }`}>
                         {formData.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-1 rounded-full"
-                          >
+                            className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-1 rounded-full">
                             {tag}
                             <button
                               type="button"
                               onClick={() => removeTag(tag)}
-                              className="text-blue-600 hover:text-blue-800"
-                            >
+                              className="text-blue-600 hover:text-blue-800">
                               <X className="w-3 h-3" />
                             </button>
                           </span>
@@ -891,12 +1015,15 @@ export default function SellerProductUpload() {
                           onKeyDown={handleTagKeyDown}
                           className="flex-1 min-w-[120px] border-none focus:outline-none focus:ring-0 text-sm py-1 bg-transparent"
                           placeholder={
-                            formData.tags.length ? "Add another tag" : "Type a tag and press space"
+                            formData.tags.length
+                              ? "Add another tag"
+                              : "Type a tag and press space"
                           }
                         />
                       </div>
                       <p className="text-xs text-gray-500">
-                        Press space, enter, or comma to create a tag. Maximum 10 tags, minimum 1 tag.
+                        Press space, enter, or comma to create a tag. Maximum 10
+                        tags, minimum 1 tag.
                       </p>
                       {errors.tags && (
                         <p className="text-xs text-red-600 font-medium flex items-center gap-1">
@@ -921,7 +1048,9 @@ export default function SellerProductUpload() {
                           value={formData.material}
                           onChange={handleInputChange}
                           className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none${
-                            errors.material ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            errors.material
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
                           }`}
                           placeholder="Silk, bamboo, cotton..."
                         />
@@ -943,9 +1072,11 @@ export default function SellerProductUpload() {
                           value={formData.dimensions}
                           onChange={handleInputChange}
                           className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none
-                            ${
-                            errors.dimensions ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                          }`}
+                                                        ${
+                                                          errors.dimensions
+                                                            ? "border-red-300 bg-red-50"
+                                                            : "border-gray-300"
+                                                        }`}
                           placeholder="L x W x H"
                         />
                         {errors.dimensions && (
@@ -967,9 +1098,11 @@ export default function SellerProductUpload() {
                         onChange={handleInputChange}
                         rows="5"
                         className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none
-                          ${
-                            errors.careInstructions ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                          }`}
+                                                      ${
+                                                        errors.careInstructions
+                                                          ? "border-red-300 bg-red-50"
+                                                          : "border-gray-300"
+                                                      }`}
                         placeholder="How to care for this product..."
                       />
                       {errors.careInstructions && (
@@ -989,14 +1122,14 @@ export default function SellerProductUpload() {
                   disabled={isSubmitting}
                   className="flex-1 inline-flex items-center justify-center gap-2 border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold bg-white hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed">
                   <Save className="w-5 h-5" />
-                  {isSubmitting ? 'Saving...' : 'Save Draft'}
+                  {isSubmitting ? "Saving..." : "Transfer to Draft"}
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={isSubmitting}
                   className="flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 shadow-md hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
                   <Eye className="w-5 h-5" />
-                  {isSubmitting ? 'Publishing...' : 'Publish Product'}
+                  {isSubmitting ? "Publishing..." : "Publish Changes"}
                 </button>
               </div>
             </div>

@@ -5,7 +5,7 @@ import StatsCards from '../../components/ManageProducts/Layout_And_Components/St
 import Filters from '../../components/ManageProducts/Filter/Filters';
 import ProductGrid from '../../components/ManageProducts/ProductDisplay/ProductGrid';
 import ProductList from '../../components/ManageProducts/ProductDisplay/ProductList';
-import EditProductModal from '../../components/ManageProducts/modals/EditProductModal';
+
 import DeleteProductModal from '../../components/ManageProducts/modals/DeleteProductModal';
 import { initialProducts, categories, statuses, getCategoryDisplay} from '../../components/ManageProducts/Data/data';
 const ProductManagement = () => {
@@ -17,7 +17,6 @@ const ProductManagement = () => {
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -45,22 +44,6 @@ const ProductManagement = () => {
   return matchesSearch && matchesCategory && matchesStatus;
 });
 
-  // Handlers
- const handleEditProduct = () => {
-  setProducts(products.map(p => 
-    p.id === selectedProduct.id 
-      ? { 
-          ...selectedProduct, 
-          ...formData, 
-          price: parseFloat(formData.price), 
-          stock: parseInt(formData.stock),
-          productName: formData.name  // Map name back to productName
-        }
-      : p
-  ));
-  setShowEditModal(false);
-  resetForm();
-};
   const handleDeleteProduct = () => {
     setProducts(products.filter(p => p.id !== selectedProduct.id));
     setShowDeleteModal(false);
@@ -79,27 +62,13 @@ const ProductManagement = () => {
     });
   };
 
- const openEditModal = (product) => {
-  setSelectedProduct(product);
-  setFormData({
-    name: product.productName,  // Map productName to name
-    category: product.category,
-    description: product.description,
-    price: product.price,
-    stock: product.stock,
-    status: product.status,
-    image: product.images?.[0] || ''  // Use first image from images array
-  });
-  setShowEditModal(true);
-};
-  // Navigate to detail page instead of opening modal
+
   const handleViewProduct = (product) => {
     navigate(`/seller/products/${product.id}`);
   };
 
-  // Navigate to edit page instead of opening modal (optional)
   const handleNavigateToEdit = (product) => {
-    navigate(`/seller/products/${product.id}/edit`);
+navigate(`/seller/products/edit/${product.id}`);
   };
 
   const openDeleteModal = (product) => {
@@ -137,30 +106,20 @@ const ProductManagement = () => {
           <ProductGrid
             products={filteredProducts}
             onView={handleViewProduct}
-            onEdit={openEditModal}
+            onEdit={handleNavigateToEdit}
             onDelete={openDeleteModal}
           />
         ) : (
           <ProductList
             products={filteredProducts}
             onView={handleViewProduct}
-            onEdit={openEditModal}
+            onEdit={handleNavigateToEdit}
             onDelete={openDeleteModal}
           />
         )}
       </div>
 
-      {/* Modals - Only Edit and Delete remain */}
-      {showEditModal && selectedProduct && (
-        <EditProductModal
-          product={selectedProduct}
-          formData={formData}
-          setFormData={setFormData}
-          categories={categories}
-          onClose={() => setShowEditModal(false)}
-          onSubmit={handleEditProduct}
-        />
-      )}
+   
 
       {showDeleteModal && selectedProduct && (
         <DeleteProductModal
