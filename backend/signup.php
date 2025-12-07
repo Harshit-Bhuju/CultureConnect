@@ -55,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   $insert_stmt->close();
 
   if ($insert_success) {
+    session_regenerate_id(true);
     $_SESSION['pending_email'] = $email;
     $_SESSION['pending_verification'] = true;
     sendResponseAndContinue(["status" => "success"]);

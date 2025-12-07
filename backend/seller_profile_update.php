@@ -79,8 +79,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
         $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
-
+        //very important to check if the file is an image
+        if (!getimagesize($_FILES['avatar']['tmp_name'])) {
+            echo json_encode(["status" => "error", "message" => "Not a valid image."]);
+            exit;
+        }
+        $allowedExts = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'];
+        if (!in_array($fileExt, $allowedExts)) {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid banner file type']);
+            exit;
+        }
         if (!in_array($fileExt, $allowedExts)) {
             echo json_encode(['status' => 'error', 'message' => 'Invalid logo file type']);
             exit;
@@ -115,7 +123,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
         $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
+        //very important to check if the file is an image
+        if (!getimagesize($_FILES['avatar']['tmp_name'])) {
+            echo json_encode(["status" => "error", "message" => "Not a valid image."]);
+            exit;
+        }
+        $allowedExts = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'];
+        if (!in_array($fileExt, $allowedExts)) {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid banner file type']);
+            exit;
+        }
 
         if (!in_array($fileExt, $allowedExts)) {
             echo json_encode(['status' => 'error', 'message' => 'Invalid banner file type']);
@@ -226,7 +243,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         echo json_encode(["status" => "error", "message" => "Failed to update profile"]);
     }
-
 }
 
 $conn->close();

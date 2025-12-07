@@ -45,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
 
             if ($deleted) {
+                session_regenerate_id(true);
                 $_SESSION['user_email'] = $email;
                 $_SESSION['logged_in'] = true;
                 unset($_SESSION['google_email']);

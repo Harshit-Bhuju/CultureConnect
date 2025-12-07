@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $row['profile_pic'] = $picture;
         }
-
+        session_regenerate_id(true);
         $_SESSION['user_email'] = $email;
         $_SESSION['logged_in'] = true;
 
@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("ss", $email, $picture);
     $stmt->execute();
     $stmt->close();
-
+    session_regenerate_id(true);
     $_SESSION['google_email'] = $email;
 
     echo json_encode(["status" => "null"]);

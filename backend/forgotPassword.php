@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("si", $email, $verify_token);
     $stmt->execute();
     $stmt->close();
-
+    session_regenerate_id(true);
     $_SESSION['forgot_email'] = $email;
 
     $response = ["status" => "success", "message" => "Code sent to $email"];
