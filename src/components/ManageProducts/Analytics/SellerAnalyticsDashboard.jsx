@@ -12,8 +12,12 @@ import AnalyticsStatsCards from "./Stats/AnalyticsStatsCards";
 import TopSellingChart from "./Chart and Orders/TopSellingChart";
 import RecentOrders from "./Chart and Orders/RecentOrders";
 import TransactionHistory from "./Chart and Orders/TransactionHistory";
+import { useNavigate } from "react-router-dom";
+import CancelledOrders from "./Chart and Orders/CancelledOrders";
+
 
 const SellerAnalyticsDashboard = () => {
+  const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState("This month");
   const [activeTab, setActiveTab] = useState("overview"); // overview, orders, history
 
@@ -60,7 +64,7 @@ const SellerAnalyticsDashboard = () => {
       <header className="bg-white border-b border-gray-200 px-8 py-6 shadow-sm">
         <div className="max-w-7xl mx-auto">
           <button
-            onClick={() => window.history.back()}
+            onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors group"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -116,6 +120,16 @@ const SellerAnalyticsDashboard = () => {
             >
               Active Orders
             </button>
+              <button
+              onClick={() => setActiveTab("cancelled")}
+              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "cancelled"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Cancelled Orders
+            </button>
             <button
               onClick={() => setActiveTab("history")}
               className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -126,6 +140,7 @@ const SellerAnalyticsDashboard = () => {
             >
               Transaction History
             </button>
+          
           </div>
         </div>
       </header>
@@ -160,6 +175,13 @@ const SellerAnalyticsDashboard = () => {
             <TransactionHistory />
           </div>
         )}
+
+          {activeTab === "cancelled" && (
+  <div className="mt-2">
+    <CancelledOrders />
+  </div>
+)}
+    
       </main>
     </div>
   );
