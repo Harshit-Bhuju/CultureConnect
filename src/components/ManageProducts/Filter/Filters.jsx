@@ -6,10 +6,13 @@ const Filters = ({
   setSearchQuery, 
   categoryFilter, 
   setCategoryFilter, 
-  statusFilter, 
-  setStatusFilter,
+  sortOption,
+  setSortOption,
+  stockFilter,
+  setStockFilter,
   categories,
-  statuses,
+  sortOptions,
+  stockOptions,
   filteredCount,
   viewMode,
   setViewMode
@@ -28,7 +31,7 @@ const Filters = ({
           />
         </div>
       </div>
-
+      
       <select
         value={categoryFilter}
         onChange={(e) => setCategoryFilter(e.target.value)}
@@ -38,17 +41,27 @@ const Filters = ({
           <option key={cat} value={cat}>{cat}</option>
         ))}
       </select>
-
+      
       <select
-        value={statusFilter}
-        onChange={(e) => setStatusFilter(e.target.value)}
+        value={sortOption}
+        onChange={(e) => setSortOption(e.target.value)}
         className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
       >
-        {statuses.map(status => (
-          <option key={status} value={status}>{status}</option>
+        {sortOptions.map(option => (
+          <option key={option} value={option}>{option}</option>
         ))}
       </select>
-
+      
+      <select
+        value={stockFilter}
+        onChange={(e) => setStockFilter(e.target.value)}
+        className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+      >
+        {stockOptions.map(option => (
+          <option key={option} value={option}>{option}</option>
+        ))}
+      </select>
+      
       <div className="flex gap-2 ml-auto">
         <p className="text-gray-500 py-2">{filteredCount} products</p>
         <button

@@ -11,13 +11,13 @@ import Loading from "../../Common/Loading";
     return <Loading message="Verifying seller access..." />;
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+  // if (!user) {
+  //   return <Navigate to="/login" replace />;
+  // }
 
-  if (!user.seller_id) {
-    return <Navigate to="/seller-registration" replace />;
-  }
+  // if (!user.seller_id) {
+  //   return <Navigate to="/seller-registration" replace />;
+  // }
 
   return children;
 };

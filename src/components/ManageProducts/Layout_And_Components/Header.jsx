@@ -14,6 +14,10 @@ const Header = () => {
     navigate('/seller/analytics');
   };
 
+  const handleDrafts = () => {
+    navigate('/seller/drafts');
+  };
+
   return (
     <header className="bg-white border-b border-gray-200 px-8 py-6 top-0 z-10 shadow-sm">
       <div className="max-w-7xl mx-auto">
@@ -49,6 +53,14 @@ const Header = () => {
             >
               <BarChart3 size={20} strokeWidth={2.5} />
               View Analytics
+            </button>
+
+            <button
+              onClick={handleDrafts}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg font-semibold border border-gray-300"
+            >
+              <Package size={20} strokeWidth={2.5} />
+              Drafts
             </button>
             
             <button

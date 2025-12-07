@@ -1,13 +1,23 @@
 import React from 'react';
 import ProductCard from './ProductCard';
 import { Package } from 'lucide-react';
+import DraftProductCard from './DraftProductCard';
 
-const ProductGrid = ({ products, onView, onEdit, onDelete }) => (
+const ProductGrid = ({ products, onView, onEdit, onDelete,onPublish, isDraftMode = false }) => (
   <div className="space-y-6">
     {/* Product Grid */}
     {products.length > 0 ? (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {products.map(product => (
+              isDraftMode ? (
+          <DraftProductCard
+            key={product.id}
+            product={product}
+            onView={onView}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onPublish={onPublish}
+          />):(
           <ProductCard
             key={product.id}
             product={product}
@@ -15,7 +25,7 @@ const ProductGrid = ({ products, onView, onEdit, onDelete }) => (
             onEdit={onEdit}
             onDelete={onDelete}
           />
-        ))}
+          )))}
       </div>
     ) : (
       /* Empty State */

@@ -23,7 +23,46 @@ export const initialProducts = [
     ],
     rating: 4.8,
     totalReviews: 3,
-    totalSales: 156,
+    sales: [
+      {
+        thisMonth: 34,
+        thisYear: 156,
+        totalSales: 1250
+      }
+    ],
+    orders: [
+      {
+        user_id: 'ORD-1201',
+        customerName: 'Rajesh Maharjan',
+        customerEmail: 'rajesh.maharjan@gmail.com',
+        customerPhone: '9801234567',
+        status: 'completed',
+        totalAmount: 2400,
+        orderDate: '2024-12-05T14:30:00',
+        quantity: 2
+      },
+      {
+        user_id: 'ORD-1185',
+        customerName: 'Sarah Johnson',
+        customerEmail: 'sarah.johnson@gmail.com',
+        customerPhone: '9802345678',
+        status: 'shipped',
+        totalAmount: 1200,
+        orderDate: '2024-12-04T11:15:00',
+        quantity: 1
+      },
+      {
+        user_id: 'ORD-1167',
+        customerName: 'Anil Shrestha',
+        customerEmail: 'anil.shrestha@gmail.com',
+        customerPhone: '9803456789',
+        status: 'processing',
+        totalAmount: 3600,
+        orderDate: '2024-12-03T09:45:00',
+        quantity: 3
+      }
+    ],
+    createdAt: '2024-01-15',
     reviews: [
       {
         id: 1,
@@ -71,7 +110,36 @@ export const initialProducts = [
     ],
     rating: 4.9,
     totalReviews: 2,
-    totalSales: 89,
+    sales: [
+      {
+        thisMonth: 5,
+        thisYear: 18,
+        totalSales: 89
+      }
+    ],
+    orders: [
+      {
+        user_id: 'ORD-1198',
+        customerName: 'Tenzin Dorje',
+        customerEmail: 'tenzin.dorje@gmail.com',
+        customerPhone: '9804567890',
+        status: 'completed',
+        totalAmount: 2500,
+        orderDate: '2024-12-06T16:20:00',
+        quantity: 1
+      },
+      {
+        user_id: 'ORD-1175',
+        customerName: 'Lisa Anderson',
+        customerEmail: 'lisa.anderson@gmail.com',
+        customerPhone: '9805678901',
+        status: 'processing',
+        totalAmount: 2500,
+        orderDate: '2024-12-02T13:40:00',
+        quantity: 1
+      }
+    ],
+    createdAt: '2024-03-22',
     reviews: [
       {
         id: 1,
@@ -112,7 +180,36 @@ export const initialProducts = [
     ],
     rating: 4.7,
     totalReviews: 2,
-    totalSales: 67,
+    sales: [
+      {
+        thisMonth: 4,
+        thisYear: 15,
+        totalSales: 67
+      }
+    ],
+    orders: [
+      {
+        user_id: 'ORD-1192',
+        customerName: 'Krishna Tamang',
+        customerEmail: 'krishna.tamang@gmail.com',
+        customerPhone: '9806789012',
+        status: 'shipped',
+        totalAmount: 3500,
+        orderDate: '2024-12-05T10:25:00',
+        quantity: 1
+      },
+      {
+        user_id: 'ORD-1180',
+        customerName: 'David Chen',
+        customerEmail: 'david.chen@gmail.com',
+        customerPhone: '9807890123',
+        status: 'completed',
+        totalAmount: 7000,
+        orderDate: '2024-12-01T15:50:00',
+        quantity: 2
+      }
+    ],
+    createdAt: '2024-05-10',
     reviews: [
       {
         id: 1,
@@ -153,7 +250,36 @@ export const initialProducts = [
     ],
     rating: 4.6,
     totalReviews: 2,
-    totalSales: 134,
+    sales: [
+      {
+        thisMonth: 9,
+        thisYear: 42,
+        totalSales: 134
+      }
+    ],
+    orders: [
+      {
+        user_id: 'ORD-1205',
+        customerName: 'Sita Chaudhary',
+        customerEmail: 'sita.chaudhary@gmail.com',
+        customerPhone: '9808901234',
+        status: 'processing',
+        totalAmount: 2800,
+        orderDate: '2024-12-07T08:30:00',
+        quantity: 1
+      },
+      {
+        user_id: 'ORD-1188',
+        customerName: 'Maya Tharu',
+        customerEmail: 'maya.tharu@gmail.com',
+        customerPhone: '9809012345',
+        status: 'completed',
+        totalAmount: 5600,
+        orderDate: '2024-12-04T12:45:00',
+        quantity: 2
+      }
+    ],
+    createdAt: '2024-02-28',
     reviews: [
       {
         id: 1,
@@ -194,7 +320,46 @@ export const initialProducts = [
     ],
     rating: 4.8,
     totalReviews: 3,
-    totalSales: 198,
+    sales: [
+      {
+        thisMonth: 16,
+        thisYear: 64,
+        totalSales: 198
+      }
+    ],
+    orders: [
+      {
+        user_id: 'ORD-1203',
+        customerName: 'Lakshmi Shakya',
+        customerEmail: 'lakshmi.shakya@gmail.com',
+        customerPhone: '9810123456',
+        status: 'shipped',
+        totalAmount: 1500,
+        orderDate: '2024-12-06T14:10:00',
+        quantity: 1
+      },
+      {
+        user_id: 'ORD-1195',
+        customerName: 'Ramesh Joshi',
+        customerEmail: 'ramesh.joshi@gmail.com',
+        customerPhone: '9811234567',
+        status: 'completed',
+        totalAmount: 3000,
+        orderDate: '2024-12-05T11:30:00',
+        quantity: 2
+      },
+      {
+        user_id: 'ORD-1172',
+        customerName: 'Anita Shrestha',
+        customerEmail: 'anita.shrestha@gmail.com',
+        customerPhone: '9812345678',
+        status: 'processing',
+        totalAmount: 1500,
+        orderDate: '2024-12-03T16:55:00',
+        quantity: 1
+      }
+    ],
+    createdAt: '2024-06-18',
     reviews: [
       {
         id: 1,
@@ -242,7 +407,36 @@ export const initialProducts = [
     ],
     rating: 4.5,
     totalReviews: 2,
-    totalSales: 112,
+    sales: [
+      {
+        thisMonth: 7,
+        thisYear: 36,
+        totalSales: 112
+      }
+    ],
+    orders: [
+      {
+        user_id: 'ORD-1190',
+        customerName: 'Maria Garcia',
+        customerEmail: 'maria.garcia@gmail.com',
+        customerPhone: '9813456789',
+        status: 'completed',
+        totalAmount: 1800,
+        orderDate: '2024-12-04T09:20:00',
+        quantity: 1
+      },
+      {
+        user_id: 'ORD-1177',
+        customerName: 'Robert Wilson',
+        customerEmail: 'robert.wilson@gmail.com',
+        customerPhone: '9814567890',
+        status: 'shipped',
+        totalAmount: 5400,
+        orderDate: '2024-12-02T15:35:00',
+        quantity: 3
+      }
+    ],
+    createdAt: '2024-08-05',
     reviews: [
       {
         id: 1,
@@ -283,7 +477,26 @@ export const initialProducts = [
     ],
     rating: 4.9,
     totalReviews: 2,
-    totalSales: 23,
+    sales: [
+      {
+        thisMonth: 1,
+        thisYear: 8,
+        totalSales: 23
+      }
+    ],
+    orders: [
+      {
+        user_id: 'ORD-1200',
+        customerName: 'Ganesh Raj',
+        customerEmail: 'ganesh.raj@gmail.com',
+        customerPhone: '9815678901',
+        status: 'processing',
+        totalAmount: 8500,
+        orderDate: '2024-12-06T10:40:00',
+        quantity: 1
+      }
+    ],
+    createdAt: '2024-09-12',
     reviews: [
       {
         id: 1,
@@ -324,28 +537,118 @@ export const initialProducts = [
     ],
     rating: 0,
     totalReviews: 0,
-    totalSales: 0,
+    sales: [
+      {
+        thisMonth: 0,
+        thisYear: 0,
+        totalSales: 0
+      }
+    ],
+    orders: [],
+    createdAt: '2024-11-01',
     reviews: []
   }
 ];
 
+// Helper function to get all recent orders across all products
+export const getAllRecentOrders = () => {
+  const allOrders = [];
+  
+  initialProducts.forEach((product) => {
+    if (product.orders && product.orders.length > 0) {
+      product.orders.forEach((order) => {
+        allOrders.push({
+          ...order,
+          productId: product.id,
+          productName: product.productName
+        });
+      });
+    }
+  });
+  
+  // Sort by date (most recent first)
+  return allOrders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+};
+
+// Helper function to update order status
+export const updateOrderStatus = (userId, newStatus) => {
+  const product = initialProducts.find(p => 
+    p.orders && p.orders.some(o => o.user_id === userId)
+  );
+  
+  if (product) {
+    const order = product.orders.find(o => o.user_id === userId);
+    if (order) {
+      order.status = newStatus;
+      return true;
+    }
+  }
+  return false;
+};
+
+// Helper function to get orders by user ID
+export const getOrdersByUserId = (userId) => {
+  const userOrders = [];
+  
+  initialProducts.forEach((product) => {
+    if (product.orders && product.orders.length > 0) {
+      const matchingOrders = product.orders.filter(
+        (order) => order.user_id === userId
+      );
+      
+      matchingOrders.forEach((order) => {
+        userOrders.push({
+          ...order,
+          productId: product.id,
+          productName: product.productName
+        });
+      });
+    }
+  });
+  
+  return userOrders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+};
+
+// Helper function to get orders by customer email
+export const getOrdersByEmail = (email) => {
+  const emailOrders = [];
+  
+  initialProducts.forEach((product) => {
+    if (product.orders && product.orders.length > 0) {
+      const matchingOrders = product.orders.filter(
+        (order) => order.customerEmail === email
+      );
+      
+      matchingOrders.forEach((order) => {
+        emailOrders.push({
+          ...order,
+          productId: product.id,
+          productName: product.productName
+        });
+      });
+    }
+  });
+  
+  return emailOrders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+};
+
 // Categories matching the upload form
 export const categories = [
   'All Categories',
-  'CULTURAL CLOTHES',
-  'MUSICAL INSTRUMENTS',
-  'HANDICRAFT & DECORS'
+  'Cultural Clothes',
+  'Musical Instruments',
+  'Handicraft & Decors'
 ];
 
-// Statuses
-export const statuses = ['All Status', 'Active', 'Draft'];
+export const sortOptions = ['Latest', 'Oldest'];
 
-// Helper function to get category display name
+export const stockOptions = ['All Stock', 'In Stock', 'Out of Stock','Low Stock'];
+
 export const getCategoryDisplay = (category) => {
   const categoryMap = {
-    'cultural-clothes': 'CULTURAL CLOTHES',
-    'musical-instruments': 'MUSICAL INSTRUMENTS',
-    'handicraft-decors': 'HANDICRAFT & DECORS'
+    'cultural-clothes': 'Cultural Clothes',
+    'musical-instruments': 'Musical Instruments',
+    'handicraft-decors': 'Handicraft & Decors'
   };
   return categoryMap[category] || category.toUpperCase();
 };

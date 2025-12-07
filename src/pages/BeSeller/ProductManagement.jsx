@@ -5,9 +5,9 @@ import StatsCards from '../../components/ManageProducts/Layout_And_Components/St
 import Filters from '../../components/ManageProducts/Filter/Filters';
 import ProductGrid from '../../components/ManageProducts/ProductDisplay/ProductGrid';
 import ProductList from '../../components/ManageProducts/ProductDisplay/ProductList';
-
 import DeleteProductModal from '../../components/ManageProducts/modals/DeleteProductModal';
-import { initialProducts, categories, statuses, getCategoryDisplay} from '../../components/ManageProducts/Data/data';
+import { initialProducts, categories, sortOptions, stockOptions, getCategoryDisplay } from '../../components/ManageProducts/Data/data';
+
 const ProductManagement = () => {
   const navigate = useNavigate();
   
@@ -15,7 +15,8 @@ const ProductManagement = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
-  const [statusFilter, setStatusFilter] = useState('All Status');
+  const [sortOption, setSortOption] = useState('Latest');
+  const [stockFilter, setStockFilter] = useState('All Stock');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -29,20 +30,45 @@ const ProductManagement = () => {
     image: ''
   });
 
-  // Calculated stats
-  const totalProducts = products.length;
-  const activeProducts = products.filter(p => p.status === 'Active').length;
-  const lowStockProducts = products.filter(p => p.stock <= 10).length;
-  const inventoryValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0);
+  // Calculated stats (only for Active products)
+  const activeProductsList = products.filter(p => p.status === 'Active');
+  const totalProducts = activeProductsList.length;
+  const activeProducts = activeProductsList.length;
+  const lowStockProducts = activeProductsList.filter(p => p.stock <= 10).length;
+  const inventoryValue = activeProductsList.reduce((sum, p) => sum + (p.price * p.stock), 0);
 
-  // Filtered products
-  const filteredProducts = products.filter(product => {
-  const matchesSearch = product.productName?.toLowerCase().includes(searchQuery.toLowerCase());
-  const matchesCategory = categoryFilter === 'All Categories' || 
-    getCategoryDisplay(product.category) === categoryFilter;
-  const matchesStatus = statusFilter === 'All Status' || product.status === statusFilter;
-  return matchesSearch && matchesCategory && matchesStatus;
-});
+  // Filter and sort products (ONLY ACTIVE PRODUCTS)
+  const filteredProducts = products
+    .filter(product => {
+      // Only show Active products
+      if (product.status !== 'Active') return false;
+      
+      const matchesSearch = product.productName?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = categoryFilter === 'All Categories' || 
+        getCategoryDisplay(product.category) === categoryFilter;
+      
+      // Stock filter
+      let matchesStock = true;
+      if (stockFilter === 'In Stock') {
+        matchesStock = product.stock > 0;
+      } else if (stockFilter === 'Out of Stock') {
+        matchesStock = product.stock === 0;
+      }
+       else if (stockFilter === 'Low Stock') {
+        matchesStock = product.stock <= 10;
+      }
+      
+      return matchesSearch && matchesCategory && matchesStock;
+    })
+    .sort((a, b) => {
+      // Sort by date
+      if (sortOption === 'Latest') {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      } else if (sortOption === 'Oldest') {
+        return new Date(a.createdAt) - new Date(b.createdAt);
+      }
+      return 0;
+    });
 
   const handleDeleteProduct = () => {
     setProducts(products.filter(p => p.id !== selectedProduct.id));
@@ -62,13 +88,12 @@ const ProductManagement = () => {
     });
   };
 
-
   const handleViewProduct = (product) => {
     navigate(`/seller/products/${product.id}`);
   };
 
   const handleNavigateToEdit = (product) => {
-navigate(`/seller/products/edit/${product.id}`);
+    navigate(`/seller/products/edit/${product.id}`);
   };
 
   const openDeleteModal = (product) => {
@@ -93,10 +118,13 @@ navigate(`/seller/products/edit/${product.id}`);
           setSearchQuery={setSearchQuery}
           categoryFilter={categoryFilter}
           setCategoryFilter={setCategoryFilter}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
+          sortOption={sortOption}
+          setSortOption={setSortOption}
+          stockFilter={stockFilter}
+          setStockFilter={setStockFilter}
           categories={categories}
-          statuses={statuses}
+          sortOptions={sortOptions}
+          stockOptions={stockOptions}
           filteredCount={filteredProducts.length}
           viewMode={viewMode}
           setViewMode={setViewMode}
@@ -118,8 +146,6 @@ navigate(`/seller/products/edit/${product.id}`);
           />
         )}
       </div>
-
-   
 
       {showDeleteModal && selectedProduct && (
         <DeleteProductModal

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import {
   ShoppingCart,
   Share2,
@@ -13,11 +14,13 @@ import {
   AlertTriangle,
   Calendar,
   BarChart3,
-  Eye, // Keep Eye icon, but remove view metrics
+  Eye,
 } from "lucide-react";
-import { initialProducts } from '../../ManageProducts/Data/data';
+import { initialProducts } from '../Data/data';
 import Loading from "../../Common/Loading";
 import Rating from "../ProductDisplay/RatingForProduct";
+import PublishProductModal from "../modals/PublishProductModal";
+import DraftProductModal from "../modals/DraftProductModal";
 
 const SellerProductDetailPage = () => {
     
@@ -28,6 +31,23 @@ const SellerProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState("description");
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [showDraftModal, setShowDraftModal] = useState(false);
+
+  // Calculate total sales from product sales data
+  const getTotalSales = () => {
+    return product?.sales?.[0]?.totalSales || 0;
+  };
+
+  // Calculate this month sales
+  const getThisMonthSales = () => {
+    return product?.sales?.[0]?.thisMonth || 0;
+  };
+
+  // Calculate this year sales
+  const getThisYearSales = () => {
+    return product?.sales?.[0]?.thisYear || 0;
+  };
 
   // Load product data
   useEffect(() => {
@@ -45,6 +65,50 @@ const SellerProductDetailPage = () => {
 
     loadProduct();
   }, [id]);
+
+  const handlePublish = () => {
+    // Update product status to Active
+    setProduct({ ...product, status: 'Active' });
+    setShowPublishModal(false);
+    
+    // Show success toast
+    toast.success('Product published successfully!', {
+      duration: 3000,
+      position: 'top-center',
+      icon: '✅',
+    });
+  };
+
+  const handleDraft = () => {
+    // Update product status to Draft
+    setProduct({ ...product, status: 'Draft' });
+    setShowDraftModal(false);
+    
+    // Show success toast
+    toast.success('Product moved to drafts!', {
+      duration: 3000,
+      position: 'top-center',
+      icon: '📝',
+    });
+  };
+
+  const handleShareProduct = () => {
+    const productUrl = `${window.location.origin}/product/${product.id}`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(productUrl).then(() => {
+      toast.success('Product link copied to clipboard!', {
+        duration: 3000,
+        position: 'top-center',
+        icon: '🔗',
+      });
+    }).catch(() => {
+      toast.error('Failed to copy link', {
+        duration: 3000,
+        position: 'top-center',
+      });
+    });
+  };
 
   const renderStars = (rating = 0) => {
     return <Rating rating={rating} reviews={0} />;
@@ -91,7 +155,7 @@ const SellerProductDetailPage = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Product Not Found</h2>
           <p className="text-gray-600 mb-6">The product you're looking for doesn't exist.</p>
           <button
-            onClick={() => navigate('/manageproducts')}
+            onClick={() => navigate('/seller/products')}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
           >
             Back to Products
@@ -124,13 +188,7 @@ const SellerProductDetailPage = () => {
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <button 
-                onClick={() => navigate(`/product/${product.id}`)}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-              >
-                <Eye className="w-4 h-4" />
-                <span className="hidden sm:inline">Customer View</span>
-              </button>
+           
               <button 
                 onClick={() => navigate(`/seller/products/edit/${product.id}`)}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
@@ -145,32 +203,18 @@ const SellerProductDetailPage = () => {
 
       {/* Analytics Cards */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-4 mb-6"> {/* Changed grid-cols-4 to grid-cols-3 */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Sales</p>
-                <p className="text-2xl font-bold text-gray-900">{product.totalSales}</p>
+                <p className="text-2xl font-bold text-gray-900">{getTotalSales()}</p>
               </div>
               <div className="bg-blue-100 p-3 rounded-full">
                 <TrendingUp className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </div>
-          
-          {/* REMOVED: Total Views Card (formerly the 2nd card) 
-          <div className="bg-white rounded-lg shadow-sm border p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Views</p>
-                <p className="text-2xl font-bold text-gray-900">{product.views}</p>
-              </div>
-              <div className="bg-purple-100 p-3 rounded-full">
-                <Eye className="w-6 h-6 text-purple-600" />
-              </div>
-            </div>
-          </div>
-          */}
           
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center justify-between">
@@ -188,7 +232,7 @@ const SellerProductDetailPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">Rs {(product.price * product.totalSales).toLocaleString()}</p>
+                <p className="text-2xl font-bold text-gray-900">Rs {(product.price * getTotalSales()).toLocaleString()}</p>
               </div>
               <div className="bg-yellow-100 p-3 rounded-full">
                 <DollarSign className="w-6 h-6 text-yellow-600" />
@@ -319,9 +363,11 @@ const SellerProductDetailPage = () => {
               <div className="grid grid-cols-2 gap-3">
                 <button 
                   onClick={() => {
-                    const newStatus = product.status === "Active" ? "Draft" : "Active";
-                    // Update product status
-                    console.log("Toggle status to:", newStatus);
+                    if (product.status === "Active") {
+                      setShowDraftModal(true);
+                    } else {
+                      setShowPublishModal(true);
+                    }
                   }}
                   className={`py-3 rounded-lg transition flex justify-center items-center gap-2 font-semibold ${
                     product.status === "Active"
@@ -329,7 +375,7 @@ const SellerProductDetailPage = () => {
                       : "bg-green-50 text-green-700 border-2 border-green-200 hover:bg-green-100"
                   }`}
                 >
-                  {product.status === "Active" ? "Draft" : "Publish"}
+                  {product.status === "Active" ? "Move to Draft" : "Publish"}
                 </button>
                 
                 <button 
@@ -340,7 +386,10 @@ const SellerProductDetailPage = () => {
                 </button>
               </div>
 
-              <button className="w-full border-2 border-gray-300 py-3 rounded-lg flex justify-center items-center gap-2 hover:bg-gray-50 transition font-medium">
+              <button 
+                onClick={handleShareProduct}
+                className="w-full border-2 border-gray-300 py-3 rounded-lg flex justify-center items-center gap-2 hover:bg-gray-50 transition font-medium"
+              >
                 <Share2 className="w-5 h-5" /> Share Product Link
               </button>
             </div>
@@ -359,20 +408,13 @@ const SellerProductDetailPage = () => {
               </div>
             )}
 
-            {/* Seller Metrics - Changed grid-cols-3 to grid-cols-2 and removed Conversion */}
+            {/* Seller Metrics */}
             <div className="grid grid-cols-2 gap-4 py-6 border-t mt-4">
               <div className="text-center">
                 <Calendar className="w-8 h-8 mx-auto text-blue-600 mb-2" />
                 <p className="text-sm font-semibold">Listed Date</p>
-                <p className="text-xs text-gray-500">{product.listedDate || "Jan 15, 2024"}</p>
+                <p className="text-xs text-gray-500">{product.createdAt || "Jan 15, 2024"}</p>
               </div>
-              {/* REMOVED: Conversion Metric (formerly the 2nd column)
-              <div className="text-center">
-                <BarChart3 className="w-8 h-8 mx-auto text-green-600 mb-2" />
-                <p className="text-sm font-semibold">Conversion</p>
-                <p className="text-xs text-gray-500">{product.views > 0 ? ((product.totalSales / product.views) * 100).toFixed(1) : 0}%</p>
-              </div>
-              */}
               <div className="text-center">
                 <TrendingUp className="w-8 h-8 mx-auto text-purple-600 mb-2" />
                 <p className="text-sm font-semibold">Avg. Rating</p>
@@ -484,32 +526,7 @@ const SellerProductDetailPage = () => {
               <div className="space-y-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h3>
                 
-                {/* Changed grid-cols-1 md:grid-cols-2 gap-6 to match the new 3 card layout in this tab */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6"> 
-                  {/* REMOVED: Views Analytics Block (formerly the 1st card)
-                  <div className="bg-blue-50 rounded-lg p-5 border border-blue-100">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Eye className="w-6 h-6 text-blue-600" />
-                      <h4 className="font-semibold text-gray-900">Views Analytics</h4>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Total Views:</span>
-                        <span className="font-semibold">{product.views}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">This Month:</span>
-                        <span className="font-semibold">{Math.floor(product.views * 0.3)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">This Week:</span>
-                        <span className="font-semibold">{Math.floor(product.views * 0.1)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  */}
-
-                  {/* Sales Performance is now the 1st card in this section */}
                   <div className="bg-green-50 rounded-lg p-5 border border-green-100">
                     <div className="flex items-center gap-3 mb-3">
                       <ShoppingCart className="w-6 h-6 text-green-600" />
@@ -517,23 +534,24 @@ const SellerProductDetailPage = () => {
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between">
+                        <span className="text-gray-600">This Month:</span>
+                        <span className="font-semibold">{getThisMonthSales()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">This Year:</span>
+                        <span className="font-semibold">{getThisYearSales()}</span>
+                      </div>
+                      <div className="flex justify-between">
                         <span className="text-gray-600">Total Sales:</span>
-                        <span className="font-semibold">{product.totalSales}</span>
+                        <span className="font-semibold">{getTotalSales()}</span>
                       </div>
-                      {/* REMOVED: Conversion Rate 
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Conversion Rate:</span>
-                        <span className="font-semibold">{((product.totalSales / product.views) * 100).toFixed(1)}%</span>
-                      </div>
-                      */}
-                      <div className="flex justify-between">
+                      <div className="flex justify-between border-t pt-2 mt-2">
                         <span className="text-gray-600">Total Revenue:</span>
-                        <span className="font-semibold">Rs {(product.price * product.totalSales).toLocaleString()}</span>
+                        <span className="font-semibold">Rs {(product.price * getTotalSales()).toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Inventory Status is now the 2nd card in this section */}
                   <div className="bg-yellow-50 rounded-lg p-5 border border-yellow-100">
                     <div className="flex items-center gap-3 mb-3">
                       <Package className="w-6 h-6 text-yellow-600" />
@@ -557,7 +575,6 @@ const SellerProductDetailPage = () => {
                     </div>
                   </div>
 
-                  {/* Customer Feedback is now the 3rd card in this section */}
                   <div className="bg-purple-50 rounded-lg p-5 border border-purple-100">
                     <div className="flex items-center gap-3 mb-3">
                       <TrendingUp className="w-6 h-6 text-purple-600" />
@@ -584,6 +601,24 @@ const SellerProductDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Publish Modal */}
+      {showPublishModal && (
+        <PublishProductModal
+          product={product}
+          onClose={() => setShowPublishModal(false)}
+          onPublish={handlePublish}
+        />
+      )}
+
+      {/* Draft Modal */}
+      {showDraftModal && (
+        <DraftProductModal
+          product={product}
+          onClose={() => setShowDraftModal(false)}
+          onDraft={handleDraft}
+        />
+      )}
     </div>
   );
 };

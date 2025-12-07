@@ -10,7 +10,6 @@ const Settings = () => {
   const sections = [
     { name: "Personal Details", path: "personal" },
     { name: "Password & Security", path: "security" },
-    { name: "Delete Account", path: "delete" },
   ];
 
   return (

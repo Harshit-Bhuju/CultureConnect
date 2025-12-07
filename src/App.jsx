@@ -7,6 +7,7 @@ import PublicRoute from "./components/Auth/Route/PublicRoute";
 import FlowRoute from "./components/Auth/Route/FlowRoute";
 import { Toaster } from "react-hot-toast";
 
+
 // Lazy load all pages
 const Home = lazy(() => import("./pages/Home/Home"));
 const Login = lazy(() => import("./pages/Login/Login"));
@@ -47,8 +48,17 @@ const ProductDetailPage = lazy(() =>
 const SellerProductUpload = lazy(() => 
   import("./components/ManageProducts/CardHandling/SellerProductUpload")
 );
+const SellerProductEdit = lazy(() => 
+  import("./components/ManageProducts/CardHandling/SellerProductEditPage")
+);
 const SellerProductDetailPage = lazy(() => 
   import("./components/ManageProducts/CardHandling/SellerProductDetailPage")
+);
+const SellerAnalyticsDashboard = lazy(() => 
+  import("./components/ManageProducts/Analytics/SellerAnalyticsDashboard")
+);
+const DraftProducts = lazy(() => 
+  import("./components/ManageProducts/Drafts/Drafts")
 );
 
 // Settings pages
@@ -58,9 +68,6 @@ const Personal_Settings = lazy(() =>
 );
 const Password_Settings = lazy(() =>
   import("./pages/Settings/Password_Settings")
-);
-const Delete_Accounts = lazy(() =>
-  import("./pages/Settings/Delete_Accounts")
 );
 const AdminProtectedRoute = lazy(() =>
   import("./components/Auth/Route/AdminProtectedRoute")
@@ -183,6 +190,22 @@ function App() {
     </ProtectedSellerRoute>
   }
 />
+<Route
+  path="/seller/analytics"
+  element={
+    <ProtectedSellerRoute>
+      <SellerAnalyticsDashboard />
+    </ProtectedSellerRoute>
+  }
+/>
+<Route
+  path="/seller/drafts"
+  element={
+    <ProtectedSellerRoute>
+      <DraftProducts />
+    </ProtectedSellerRoute>
+  }
+/>
 
 {/* Add New Product - Only for sellers */}
 <Route
@@ -196,10 +219,10 @@ function App() {
 
 {/* Edit Existing Product - Only for sellers */}
 <Route
-  path="/seller/products/:id/edit"
+  path="/seller/products/edit/:id"
   element={
     <ProtectedSellerRoute>
-      <SellerProductUpload />
+      <SellerProductEdit />
     </ProtectedSellerRoute>
   }
 />
@@ -214,15 +237,7 @@ function App() {
   }
 />
 
-          {/* Seller Product Detail (Management View) */}
-          <Route
-            path="/seller/products/:id"
-            element={
-              <ProtectedRoute>
-                <SellerProductDetailPage />
-              </ProtectedRoute>
-            }
-          />
+
 
           {/* ==================== Learn Culture Routes ==================== */}
           <Route
@@ -252,7 +267,6 @@ function App() {
             <Route index element={<Navigate to="personal" />} />
             <Route path="personal" element={<Personal_Settings />} />
             <Route path="security" element={<Password_Settings />} />
-            <Route path="delete" element={<Delete_Accounts />} />
           </Route>
 
           {/* ==================== Public Routes ==================== */}

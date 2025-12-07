@@ -32,6 +32,9 @@ const ProductListRow = ({ product, onView, onEdit, onDelete }) => {
     e.stopPropagation();
     onDelete(product);
   };
+  const productImage = product.images?.[0];
+  const productName = product.productName || product.name || 'Unnamed Product';
+
 
   return (
     <div 
@@ -42,8 +45,8 @@ const ProductListRow = ({ product, onView, onEdit, onDelete }) => {
       <div className="col-span-1">
         <div className="relative">
           <img 
-            src={product.image} 
-            alt={product.name} 
+            src={productImage} 
+            alt={productName} 
             className="w-16 h-16 object-cover rounded-lg shadow-sm group-hover:shadow-md transition-shadow"
           />
           {isLowStock && (

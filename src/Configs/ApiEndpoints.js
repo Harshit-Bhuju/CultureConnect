@@ -28,9 +28,7 @@ export const API = {
   UPLOADS: `${BASE_URL}/uploads`,
   USER_PROFILE: `${BASE_URL}/user_profile.php`,
   USERNAME_PERSONAL: `${BASE_URL}/usernamePersonal.php`,
-  DELETE_ACCOUNTS: `${BASE_URL}/deleteAccount.php`,
   SETTING_PASSWORD: `${BASE_URL}/settingpassword.php`,
-  GET_SLIDESRS: `${BASE_URL}/get_sliders.php`,
   SELLER_REGISTRATION: `${BASE_URL}/seller_registration.php`,
   GET_SELLER_PROFILE: `${BASE_URL}/get_seller_profile.php`,
   UPDATE_SELLER_PROFILE: `${BASE_URL}/seller_profile_update.php`
