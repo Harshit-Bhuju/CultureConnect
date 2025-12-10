@@ -30,7 +30,7 @@ const StatsCards = ({ totalProducts, activeProducts, lowStockProducts, inventory
       iconBgColor="bg-orange-100"
       iconColor="text-orange-500"
       label="Inventory Value"
-      value={`$${inventoryValue.toLocaleString()}`}
+      value={`Rs.${inventoryValue.toLocaleString()}`}
     />
   </div>
 );

@@ -640,7 +640,7 @@ export const categories = [
   'Handicraft & Decors'
 ];
 
-export const sortOptions = ['Latest', 'Oldest'];
+export const sortOptions = ['Latest', 'Oldest','Recently Updated'];
 
 export const stockOptions = ['All Stock', 'In Stock', 'Out of Stock','Low Stock'];
 

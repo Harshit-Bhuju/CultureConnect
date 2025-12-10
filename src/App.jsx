@@ -183,7 +183,7 @@ function App() {
 
 {/* Product Management Dashboard - Only for sellers */}
 <Route
-  path="/manageproducts"
+  path="/seller/manageproducts/:sellerId"
   element={
     <ProtectedSellerRoute>
       <ProductManagement />
@@ -191,7 +191,7 @@ function App() {
   }
 />
 <Route
-  path="/seller/analytics"
+  path="/seller/analytics/:sellerId"
   element={
     <ProtectedSellerRoute>
       <SellerAnalyticsDashboard />
@@ -199,7 +199,7 @@ function App() {
   }
 />
 <Route
-  path="/seller/drafts"
+  path="/seller/drafts/:sellerId"
   element={
     <ProtectedSellerRoute>
       <DraftProducts />
@@ -209,7 +209,7 @@ function App() {
 
 {/* Add New Product - Only for sellers */}
 <Route
-  path="/seller/products/new"
+  path="/seller/products/new/:sellerId"
   element={
     <ProtectedSellerRoute>
       <SellerProductUpload />
@@ -219,7 +219,7 @@ function App() {
 
 {/* Edit Existing Product - Only for sellers */}
 <Route
-  path="/seller/products/edit/:id"
+  path="/seller/products/edit/:sellerId/:id"
   element={
     <ProtectedSellerRoute>
       <SellerProductEdit />
@@ -229,7 +229,7 @@ function App() {
 
 {/* Seller Product Detail (Management View) - Only for sellers */}
 <Route
-  path="/seller/products/:id"
+  path="/seller/products/:sellerId/:id"
   element={
     <ProtectedSellerRoute>
       <SellerProductDetailPage />

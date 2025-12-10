@@ -2,20 +2,22 @@ import React from 'react';
 import { ArrowLeft, Plus, Package, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CultureConnectLogo from "../../../assets/logo/cultureconnect__fav.png";
+import { useAuth } from '../../../context/AuthContext';
 
 const Header = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleAddProduct = () => {
-    navigate('/seller/products/new');
+    navigate(`/seller/products/new/${user.sellerId}`);
   };
 
   const handleViewAnalytics = () => {
-    navigate('/seller/analytics');
+    navigate(`/seller/analytics/${user.sellerId}`);
   };
 
   const handleDrafts = () => {
-    navigate('/seller/drafts');
+    navigate(`/seller/drafts/${user.sellerId}`);
   };
 
   return (

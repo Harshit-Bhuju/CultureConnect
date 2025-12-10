@@ -12,10 +12,9 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
-import default_logo from "../../assets/default-image.jpg";
 import useNepalAddress from "../../hooks/NepalAddress";
 import API from "../../Configs/ApiEndpoints";
-import CultureConnectLogo from "../../assets/logo/cultureconnect__fav.png";
+
 
 // Reuse your existing components
 import EditModal from "../../profileSettings_Components/EditModal";

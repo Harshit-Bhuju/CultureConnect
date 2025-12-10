@@ -1,6 +1,7 @@
 import React from 'react';
 import { Edit2, Trash2, AlertTriangle } from 'lucide-react';
 import Rating from './RatingForProduct';
+import { BASE_URL } from '../../../Configs/ApiEndpoints'; // Add this import
 
 // Product Card Component
 export default function ProductCard({ product, onEdit, onDelete, onView }) {
@@ -38,10 +39,16 @@ export default function ProductCard({ product, onEdit, onDelete, onView }) {
   const reviewCount = product.reviews?.length || 0;
 
   // Check if stock is low (matches ProductManagement threshold of 10)
-  const isLowStock = product.stock <= 10;
+  const isLowStock = product.stock <= 10 && product.stock > 0;
+  const isOutOfStock = product.stock === 0;
 
   // Get the first image from the images array, or use a placeholder
   const productImage = product.images?.[0];
+  
+  // Construct full image URL
+  const imageUrl = productImage 
+    ? `${BASE_URL}/product_images/${productImage}` 
+    : '/placeholder-image.png'; // fallback placeholder
   
   // Get product name (handle both 'name' and 'productName' properties)
   const productName = product.productName || product.name || 'Unnamed Product';
@@ -71,6 +78,12 @@ export default function ProductCard({ product, onEdit, onDelete, onView }) {
             Low Stock
           </span>
         )}
+        {isOutOfStock && (
+          <span className="px-2 py-1 text-xs font-medium rounded bg-red-100 text-red-700 flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3" />
+            Out of Stock
+          </span>
+        )}
       </div>
 
       {/* Action Buttons */}
@@ -92,9 +105,12 @@ export default function ProductCard({ product, onEdit, onDelete, onView }) {
       {/* Product Image */}
       <div className="relative h-48 bg-gray-100 overflow-hidden">
         <img
-          src={productImage}
+          src={imageUrl}
           alt={productName}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            e.target.src = '/placeholder-image.png'; // fallback if image fails to load
+          }}
         />
       </div>
 
@@ -111,7 +127,7 @@ export default function ProductCard({ product, onEdit, onDelete, onView }) {
         </h3>
 
         {/* Description */}
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+        <p className="text-sm text-gray-600 mb-3 line-clamp-1">
           {product.description}
         </p>
 
@@ -131,7 +147,7 @@ export default function ProductCard({ product, onEdit, onDelete, onView }) {
             isLowStock 
               ? 'text-orange-600' 
               : 'text-gray-500'
-          }`}>
+          } ${isOutOfStock ? 'text-red-600' : ''}`}>
             {product.stock} in stock
           </span>
         </div>
