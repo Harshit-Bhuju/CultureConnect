@@ -39,12 +39,6 @@ export default function Card({ product }) {
           >
             {product.price}
           </span>
-          <span
-            className={`text-[8px] min-[500px]:text-[10px] md:text-xs lg:text-sm text-gray-400 line-through
-            ${isCollapsed ? "lg:text-sm" : "lg:text-xs"}`}
-          >
-            {product.originalPrice}
-          </span>
         </div>
         <div className="flex">
           <Rating rating={product.rating} reviews={product.reviews} />
