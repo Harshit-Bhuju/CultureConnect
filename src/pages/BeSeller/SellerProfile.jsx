@@ -152,7 +152,7 @@ const SellerProfile = () => {
                       Customize Account
                     </button>
                   </Link>
-                  <Link to="/manageproducts">
+                  <Link to={`/seller/manageproducts/${user?.seller_id}`}>
                     <button className="px-4 py-2 border border-gray-800 text-gray-800 rounded hover:bg-gray-100 transition-colors">
                       Manage Products
                     </button>

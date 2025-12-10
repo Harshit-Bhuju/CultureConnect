@@ -55,6 +55,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $esewa_phone_raw = trim($_POST['esewaPhone'] ?? '');
     $esewa_phone = $esewa_phone_raw === '' ? $current_seller['esewa_phone'] : htmlspecialchars($esewa_phone_raw, ENT_QUOTES);
+    if (!preg_match('/^98\d{8}$/', $esewa_phone)) {
+        echo json_encode(["status" => "error", "message" => "Invalid eSewa phone number format"]);
+        exit;
+    }
 
     $primary_category_raw = trim($_POST['primaryCategory'] ?? '');
     $primary_category = $primary_category_raw === '' ? $current_seller['primary_category'] : htmlspecialchars($primary_category_raw, ENT_QUOTES);
@@ -80,17 +84,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         //very important to check if the file is an image
-        if (!getimagesize($_FILES['avatar']['tmp_name'])) {
+        if (!getimagesize($_FILES['logo']['tmp_name'])) {
             echo json_encode(["status" => "error", "message" => "Not a valid image."]);
             exit;
         }
-        $allowedExts = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'];
+        $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
         if (!in_array($fileExt, $allowedExts)) {
             echo json_encode(['status' => 'error', 'message' => 'Invalid banner file type']);
-            exit;
-        }
-        if (!in_array($fileExt, $allowedExts)) {
-            echo json_encode(['status' => 'error', 'message' => 'Invalid logo file type']);
             exit;
         }
 
@@ -124,16 +124,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         //very important to check if the file is an image
-        if (!getimagesize($_FILES['avatar']['tmp_name'])) {
+        if (!getimagesize($_FILES['banner']['tmp_name'])) {
             echo json_encode(["status" => "error", "message" => "Not a valid image."]);
             exit;
         }
-        $allowedExts = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'];
-        if (!in_array($fileExt, $allowedExts)) {
-            echo json_encode(['status' => 'error', 'message' => 'Invalid banner file type']);
-            exit;
-        }
-
+        $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
         if (!in_array($fileExt, $allowedExts)) {
             echo json_encode(['status' => 'error', 'message' => 'Invalid banner file type']);
             exit;

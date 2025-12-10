@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from "react";
+
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { toast } from "react-hot-toast";
 import {
   Upload,
@@ -15,15 +16,22 @@ import {
 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import API from "../../../Configs/ApiEndpoints";
+import { useAuth } from "../../../context/AuthContext";
 
-// Inside your component:
+// Import your API configuration
+// import API from './path-to-your-API-file';
+
+// For demo purposes, we'll define it here
 
 
 export default function SellerProductUpload() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [images, setImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [draggedIndex, setDraggedIndex] = useState(null);
+  const draggedIndexRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,11 +53,15 @@ export default function SellerProductUpload() {
   });
   const [tagInput, setTagInput] = useState("");
 
-  useEffect(() => {
-    return () => {
-      images.forEach(img => URL.revokeObjectURL(img.url));
-    };
-  }, [images]);
+useEffect(() => {
+  return () => {
+    images.forEach(img => {
+      if (!img.isExisting && img.url) {
+        URL.revokeObjectURL(img.url);
+      }
+    });
+  };
+}, []); // ✅ Empty dependency array
 
   useEffect(() => {
     if (selectedImage > images.length - 1) {
@@ -59,7 +71,7 @@ export default function SellerProductUpload() {
 
   const handleImageUpload = useCallback((e) => {
     const files = Array.from(e.target.files);
-    
+
     const validFiles = files.filter(file => {
       if (!file.type.startsWith('image/')) {
         toast.error(`${file.name} is not an image file`);
@@ -104,26 +116,35 @@ export default function SellerProductUpload() {
     });
   }, []);
 
-  const handleDragStart = useCallback((index) => {
-    setDraggedIndex(index);
-  }, []);
-
-  const handleDragOver = useCallback((e, index) => {
-    e.preventDefault();
-    if (draggedIndex === null || draggedIndex === index) return;
-
-    const newImages = [...images];
-    const draggedImage = newImages[draggedIndex];
-    newImages.splice(draggedIndex, 1);
-    newImages.splice(index, 0, draggedImage);
-
-    setImages(newImages);
-    setDraggedIndex(index);
-  }, [draggedIndex, images]);
-
-  const handleDragEnd = useCallback(() => {
-    setDraggedIndex(null);
-  }, []);
+  
+    const handleDragStart = useCallback((index) => {
+      draggedIndexRef.current = index;
+      setIsDragging(true); 
+    }, []);
+  
+    const handleDragOver = useCallback((e) => {
+      e.preventDefault();
+    }, []);
+  
+    const handleDrop = useCallback((dropIndex) => {
+      const dragIndex = draggedIndexRef.current;
+      if (dragIndex === null || dragIndex === dropIndex) return;
+  
+      setImages((prev) => {
+        const newImages = [...prev];
+        const [moved] = newImages.splice(dragIndex, 1);
+        newImages.splice(dropIndex, 0, moved);
+        return newImages;
+      });
+  
+      draggedIndexRef.current = null;
+      setIsDragging(false);  // <-- ADD THIS LINE
+    }, []);
+  
+    const handleDragEnd = useCallback(() => {
+      draggedIndexRef.current = null;
+      setIsDragging(false);  // <-- ADD THIS LINE
+    }, []);
 
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -137,44 +158,40 @@ export default function SellerProductUpload() {
     setTagInput(e.target.value);
   }, []);
 
- const commitTag = useCallback((tagValue) => {
-  const cleaned = tagValue.trim().replace(/,$/, "");
-  if (!cleaned) return;
+  const commitTag = useCallback((tagValue) => {
+    const cleaned = tagValue.trim().replace(/,$/, "");
+    if (!cleaned) return;
 
-  if (cleaned.length > 30) {
-    toast.error("Tag must be less than 30 characters");
-    return;
-  }
-
-  setFormData((prev) => {
-    // Tag already exists
-    if (prev.tags.includes(cleaned)) {
-      setErrors((prevErr) => ({
-        ...prevErr,
-        tags: "Tag already exists",
-      }));
-      return prev;
+    if (cleaned.length > 30) {
+      toast.error("Tag must be less than 30 characters");
+      return;
     }
 
-    // Max tags
-    if (prev.tags.length >= 10) {
+    setFormData((prev) => {
+      if (prev.tags.includes(cleaned)) {
+        setErrors((prevErr) => ({
+          ...prevErr,
+          tags: "Tag already exists",
+        }));
+        return prev;
+      }
+
+      if (prev.tags.length >= 10) {
+        setErrors((prevErr) => ({
+          ...prevErr,
+          tags: "Maximum 10 tags allowed",
+        }));
+        return prev;
+      }
+
       setErrors((prevErr) => ({
         ...prevErr,
-        tags: "Maximum 10 tags allowed",
+        tags: "",
       }));
-      return prev;
-    }
 
-    // Clear tag error if valid
-    setErrors((prevErr) => ({
-      ...prevErr,
-      tags: "",
-    }));
-
-    return { ...prev, tags: [...prev.tags, cleaned] };
-  });
-
-}, []);
+      return { ...prev, tags: [...prev.tags, cleaned] };
+    });
+  }, []);
 
   const handleTagKeyDown = useCallback((e) => {
     if (e.key === " " || e.key === "Enter" || e.key === ",") {
@@ -343,25 +360,61 @@ export default function SellerProductUpload() {
     if (formData.tags.length === 0) {
       newErrors.tags = "Please add at least one tag.";
     }
-    if (!formData.dimensions.trim()) {
-      newErrors.dimensions = "Dimensions are required.";
-    } else if (!/^\d+(\.\d+)?\s*\*\s*\d+(\.\d+)?\s*\*\s*\d+(\.\d+)?$/.test(formData.dimensions.trim())) {
-      newErrors.dimensions = "Dimensions must be in the format: Length * Width * Height. Example: 1 * 2 * 3";
+    if (formData.dimensions.trim() && !/^\d+(\.\d+)?\s*\*\s*\d+(\.\d+)?\s*\*\s*\d+(\.\d+)?$/.test(formData.dimensions.trim())) {
+      newErrors.dimensions = "Dimensions must be in the format: Length * Width * Height";
     }
-  
-    
-    if (!formData.material.trim()) {
-      newErrors.material = "Material information is required.";
-    }
-    
-    if (!formData.careInstructions.trim()) {
-      newErrors.careInstructions = "Care instructions are required.";
-    }
-    
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [images.length, formData]);
+
+  // UPDATED: Submit to PHP backend
+  const submitToBackend = async (status) => {
+    const formDataToSend = new FormData();
+
+    // Append all form fields
+    formDataToSend.append('productName', formData.productName);
+    formDataToSend.append('productType', formData.productType);
+    formDataToSend.append('category', formData.category);
+    formDataToSend.append('culture', formData.culture);
+    formDataToSend.append('audience', formData.audience);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('price', formData.price);
+    formDataToSend.append('stock', formData.stock);
+    formDataToSend.append('dimensions', formData.dimensions);
+    formDataToSend.append('material', formData.material);
+    formDataToSend.append('careInstructions', formData.careInstructions);
+    formDataToSend.append('status', status); // 'draft' or 'published'
+
+    // Append arrays as JSON strings
+    formDataToSend.append('tags', JSON.stringify(formData.tags));
+    formDataToSend.append('adultSizes', JSON.stringify(formData.adultSizes));
+    formDataToSend.append('childAgeGroups', JSON.stringify(formData.childAgeGroups));
+
+    // Append images
+    images.forEach((image) => {
+      formDataToSend.append('images[]', image.file);
+    });
+
+    try {
+      const response = await fetch(API.PRODUCT_UPLOAD, {
+        method: 'POST',
+        credentials: 'include', // Important for session cookies
+        body: formDataToSend,
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        return { success: true, data: result };
+      } else {
+        throw new Error(result.message || 'Failed to save product');
+      }
+    } catch (error) {
+      console.error('Product upload error:', error);
+      throw error;
+    }
+  };
 
   const handleSubmit = useCallback(async () => {
     if (!validateRequiredFields()) {
@@ -370,38 +423,68 @@ export default function SellerProductUpload() {
         const element = document.querySelector(`[name="${firstErrorKey}"]`);
         element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
+      toast.error("Please fix all errors before publishing");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      console.log("Form Data:", formData);
-      console.log("Images:", images);
-      toast.success("Product published successfully!");
+      const result = await submitToBackend('published');
+      toast.success(result.data.message || "Product published successfully!");
+
+      // Clear form
+      setFormData({
+        productName: "",
+        productType: "",
+        culture: "",
+        description: "",
+        price: "",
+        stock: "",
+        category: "",
+        audience: "",
+        adultSizes: [],
+        childAgeGroups: [],
+        tags: [],
+        dimensions: "",
+        material: "",
+        careInstructions: "",
+      });
+      setImages([]);
       setErrors({});
+
+      // Navigate after success
+      setTimeout(() => navigate(`/seller/manageproducts/${user?.seller_id}`, { replace: true }), 700);
     } catch (error) {
-      toast.error("Failed to publish product. Please try again.");
+      toast.error(error.message || "Failed to publish product. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
-  }, [validateRequiredFields, formData, images, errors]);
+  }, [validateRequiredFields, formData, images, errors, navigate]);
 
   const handleSaveDraft = useCallback(async () => {
+    // For draft, we still validate images and basic info
+    if (!images.length) {
+      toast.error("Please upload at least one image");
+      return;
+    }
+
+    if (!formData.productName.trim()) {
+      toast.error("Product name is required");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log("Saving as draft...", formData);
-      toast.success("Draft saved successfully!");
-      setErrors({});
+      const result = await submitToBackend('draft');
+      toast.success(result.data.message || "Draft saved successfully!");
+
+      setTimeout(() => navigate(`/seller/drafts/${user.sellerId}`, { replace: true }), 700);
     } catch (error) {
-      toast.error("Failed to save draft. Please try again.");
+      toast.error(error.message || "Failed to save draft. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData]);
-
+  }, [formData.productName, images.length, navigate]);
 
 
   return (
@@ -410,26 +493,19 @@ export default function SellerProductUpload() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-<button
-  onClick={() => navigate(-1)}
-  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
->
-  <ArrowLeft className="w-5 h-5" />
-  Back to Products
-</button>
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                Back to Products
+              </button>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Add New Product
               </h1>
               <p className="text-gray-600">
                 Create a detailed listing with rich imagery and comprehensive information
               </p>
-            </div>
-            <div className="hidden md:flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-sm font-semibold text-gray-900">Live Preview</p>
-                <p className="text-xs text-gray-500">See as customers do</p>
-              </div>
-              <Eye className="w-8 h-8 text-blue-500" />
             </div>
           </div>
         </div>
@@ -441,7 +517,7 @@ export default function SellerProductUpload() {
               <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <Upload className="w-5 h-5 text-blue-500" />
                 Product Images
-                
+
                 {images.length > 0 && (
                   <span className="text-sm font-normal text-gray-500">
                     ({images.length}/10)
@@ -508,19 +584,22 @@ export default function SellerProductUpload() {
                     key={image.id}
                     draggable
                     onDragStart={() => handleDragStart(index)}
-                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop(index)}
                     onDragEnd={handleDragEnd}
                     onClick={() => setSelectedImage(index)}
-                    className={`relative w-20 h-20 flex-shrink-0 rounded-lg border-2 overflow-hidden cursor-pointer group ${
-                      selectedImage === index
+                    className={`relative w-20 h-20 flex-shrink-0 rounded-lg border-2 overflow-hidden cursor-move group transition-all ${isDragging && draggedIndexRef.current === index ? "opacity-50 scale-95" : ""
+                      } ${selectedImage === index
                         ? "border-blue-500 shadow-md"
                         : "border-gray-200 hover:border-blue-300"
-                    }`}>
+                      }`}
+                  >
                     <img
                       src={image.url}
                       alt=""
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover pointer-events-none"
                     />
+
                     <div className="absolute top-1 left-1 bg-white/90 backdrop-blur-sm rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <GripVertical className="w-3 h-3 text-gray-600" />
                     </div>
@@ -579,11 +658,10 @@ export default function SellerProductUpload() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 py-4 px-4 font-semibold text-sm flex items-center justify-center gap-2 transition ${
-                      activeTab === tab.id
-                        ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600"
-                        : "text-gray-600 hover:bg-gray-50"
-                    }`}>
+                    className={`flex-1 py-4 px-4 font-semibold text-sm flex items-center justify-center gap-2 transition ${activeTab === tab.id
+                      ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600"
+                      : "text-gray-600 hover:bg-gray-50"
+                      }`}>
                     <tab.icon className="w-4 h-4" />
                     {tab.label}
                   </button>
@@ -595,16 +673,15 @@ export default function SellerProductUpload() {
                   <>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">
-                        Product Name 
+                        Product Name
                       </label>
                       <input
                         type="text"
                         name="productName"
                         value={formData.productName}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
-                          errors.productName ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                        }`}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${errors.productName ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                          }`}
                         placeholder="Enter product name"
                       />
                       {errors.productName && (
@@ -618,16 +695,15 @@ export default function SellerProductUpload() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Product Type 
+                          Product Type
                         </label>
                         <input
                           type="text"
                           name="productType"
                           value={formData.productType}
                           onChange={handleInputChange}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                            errors.productType ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                          }`}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors.productType ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
                           placeholder="Traditional, Modern..."
                         />
                         {errors.productType && (
@@ -640,15 +716,14 @@ export default function SellerProductUpload() {
 
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Category 
+                          Category
                         </label>
                         <select
                           name="category"
                           value={formData.category}
                           onChange={handleInputChange}
-                          className={`w-full px-4 py-3 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                            errors.category ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                          }`}>
+                          className={`w-full px-4 py-3 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors.category ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}>
                           <option value="" hidden>Select category</option>
                           <option value="cultural-clothes">Cultural Clothes</option>
                           <option value="musical-instruments">Musical Instruments</option>
@@ -663,35 +738,34 @@ export default function SellerProductUpload() {
                       </div>
                     </div>
 
-                  { formData.category === "cultural-clothes" && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Culture
-                      </label>
-                      <input
-                        type="text"
-                        name="culture"
-                        value={formData.culture}
-                        onChange={handleInputChange}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                          errors.culture ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                        }`}
-                        placeholder="Newari, Tibetan, Tharu..."
-                      />
-                      {errors.culture && (
-                        <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          {errors.culture}
-                        </p>
-                      )}
-                    </div>
+                    {formData.category === "cultural-clothes" && (
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">
+                          Culture
+                        </label>
+                        <input
+                          type="text"
+                          name="culture"
+                          value={formData.culture}
+                          onChange={handleInputChange}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors.culture ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
+                          placeholder="Newari, Tibetan, Tharu..."
+                        />
+                        {errors.culture && (
+                          <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            {errors.culture}
+                          </p>
+                        )}
+                      </div>
                     )}
 
                     {formData.category === "cultural-clothes" && (
                       <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">
-                            Target audience 
+                            Target audience
                           </label>
                           <div className="flex flex-wrap gap-3">
                             {[
@@ -704,11 +778,10 @@ export default function SellerProductUpload() {
                                 key={aud.id}
                                 type="button"
                                 onClick={() => toggleAudience(aud.id)}
-                                className={`px-5 py-2 rounded-lg border-2 font-medium transition ${
-                                  formData.audience === aud.id
-                                    ? "border-blue-500 bg-blue-500 text-white shadow-md"
-                                    : "border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50"
-                                }`}>
+                                className={`px-5 py-2 rounded-lg border-2 font-medium transition ${formData.audience === aud.id
+                                  ? "border-blue-500 bg-blue-500 text-white shadow-md"
+                                  : "border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50"
+                                  }`}>
                                 {aud.label}
                               </button>
                             ))}
@@ -723,72 +796,70 @@ export default function SellerProductUpload() {
 
                         {(formData.audience === "men" ||
                           formData.audience === "women") && (
-                          <div className="space-y-2">
-                            <p className="text-xs uppercase tracking-wide text-gray-700 font-semibold">
-                              Available sizes (Adults) 
-                            </p>
-                            <div className="flex flex-wrap gap-3">
-                              {["S", "M", "L", "XL", "XXL"].map((size) => (
-                                <button
-                                  key={size}
-                                  type="button"
-                                  onClick={() => toggleAdultSize(size)}
-                                  className={`px-5 py-2 rounded-lg border-2 font-medium transition ${
-                                    formData.adultSizes.includes(size)
+                            <div className="space-y-2">
+                              <p className="text-xs uppercase tracking-wide text-gray-700 font-semibold">
+                                Available sizes (Adults)
+                              </p>
+                              <div className="flex flex-wrap gap-3">
+                                {["S", "M", "L", "XL", "XXL"].map((size) => (
+                                  <button
+                                    key={size}
+                                    type="button"
+                                    onClick={() => toggleAdultSize(size)}
+                                    className={`px-5 py-2 rounded-lg border-2 font-medium transition ${formData.adultSizes.includes(size)
                                       ? "border-blue-500 bg-blue-500 text-white shadow-md"
                                       : "border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50"
-                                  }`}>
-                                  {size}
-                                </button>
-                              ))}
+                                      }`}>
+                                    {size}
+                                  </button>
+                                ))}
+                              </div>
+                              {errors.adultSizes && (
+                                <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                  <AlertCircle className="w-3 h-3" />
+                                  {errors.adultSizes}
+                                </p>
+                              )}
                             </div>
-                            {errors.adultSizes && (
-                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                                <AlertCircle className="w-3 h-3" />
-                                {errors.adultSizes}
-                              </p>
-                            )}
-                          </div>
-                        )}
+                          )}
 
                         {(formData.audience === "boy" ||
                           formData.audience === "girl") && (
-                          <div className="space-y-2">
-                            <p className="text-xs uppercase tracking-wide text-gray-700 font-semibold">
-                              Age groups (Children) 
-                            </p>
-                            <div className="flex flex-wrap gap-3">
-                              {["5-6", "7-8", "9-10", "11-12", "13-14"].map(
-                                (group) => (
-                                  <button
-                                    key={group}
-                                    type="button"
-                                    onClick={() => toggleChildAgeGroup(group)}
-                                    className={`px-5 py-2 rounded-lg border-2 font-medium transition ${
-                                      formData.childAgeGroups.includes(group)
+                            <div className="space-y-2">
+                              <p className="text-xs uppercase tracking-wide text-gray-700 font-semibold">
+                                Age groups (Children)
+                              </p>
+                              <div className="flex flex-wrap gap-3">
+                                {["5-6", "7-8", "9-10", "11-12", "13-14"].map(
+                                  (group) => (
+                                    <button
+                                      key={group}
+                                      type="button"
+                                      onClick={() => toggleChildAgeGroup(group)}
+                                      className={`px-5 py-2 rounded-lg border-2 font-medium transition ${formData.childAgeGroups.includes(group)
                                         ? "border-blue-500 bg-blue-500 text-white shadow-md"
                                         : "border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50"
-                                    }`}>
-                                    {group}
-                                  </button>
-                                )
+                                        }`}>
+                                      {group}
+                                    </button>
+                                  )
+                                )}
+                              </div>
+                              {errors.childAgeGroups && (
+                                <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                  <AlertCircle className="w-3 h-3" />
+                                  {errors.childAgeGroups}
+                                </p>
                               )}
                             </div>
-                            {errors.childAgeGroups && (
-                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                                <AlertCircle className="w-3 h-3" />
-                                {errors.childAgeGroups}
-                              </p>
-                            )}
-                          </div>
-                        )}
+                          )}
                       </div>
                     )}
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Price (Rs) 
+                          Price (Rs)
                         </label>
                         <input
                           type="number"
@@ -797,9 +868,8 @@ export default function SellerProductUpload() {
                           onChange={handleInputChange}
                           min="0"
                           step="100"
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                            errors.price ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                          }`}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors.price ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
                           placeholder="0"
                         />
                         <p className="text-xs text-gray-500">Maximum 9 digits</p>
@@ -813,7 +883,7 @@ export default function SellerProductUpload() {
 
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Stock Quantity 
+                          Stock Quantity
                         </label>
                         <input
                           type="number"
@@ -821,9 +891,8 @@ export default function SellerProductUpload() {
                           value={formData.stock}
                           onChange={handleInputChange}
                           min="0"
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                            errors.stock ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                          }`}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors.stock ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
                           placeholder="0"
                         />
                         <p className="text-xs text-gray-500">Maximum 9 digits</p>
@@ -838,17 +907,16 @@ export default function SellerProductUpload() {
 
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">
-                        Product Description 
+                        Product Description
                       </label>
                       <textarea
                         name="description"
                         value={formData.description}
                         onChange={handleInputChange}
                         rows="4"
-                        maxLength="50"
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none ${
-                          errors.description ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                        }`}
+                        maxLength="2000"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none ${errors.description ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                          }`}
                         placeholder="Describe your product in detail..."
                       />
                       <p className="text-xs text-gray-500">
@@ -864,11 +932,10 @@ export default function SellerProductUpload() {
 
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">
-                        Tags 
+                        Tags
                       </label>
-                      <div className={`flex flex-wrap gap-2 rounded-lg border px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition ${
-                        errors.tags ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                      }`}>
+                      <div className={`flex flex-wrap gap-2 rounded-lg border px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition ${errors.tags ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                        }`}>
                         {formData.tags.map((tag) => (
                           <span
                             key={tag}
@@ -913,16 +980,15 @@ export default function SellerProductUpload() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Material
+                          Material (Optional)
                         </label>
                         <input
                           type="text"
                           name="material"
                           value={formData.material}
                           onChange={handleInputChange}
-                          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none${
-                            errors.material ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                          }`}
+                          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none${errors.material ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
                           placeholder="Silk, bamboo, cotton..."
                         />
                         {errors.material && (
@@ -935,7 +1001,7 @@ export default function SellerProductUpload() {
 
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Dimensions
+                          Dimensions (Optional)
                         </label>
                         <input
                           type="text"
@@ -943,9 +1009,8 @@ export default function SellerProductUpload() {
                           value={formData.dimensions}
                           onChange={handleInputChange}
                           className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none
-                            ${
-                            errors.dimensions ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                          }`}
+                            ${errors.dimensions ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
                           placeholder="L x W x H"
                         />
                         {errors.dimensions && (
@@ -959,7 +1024,7 @@ export default function SellerProductUpload() {
 
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">
-                        Care Instructions
+                        Care Instructions (Optional)
                       </label>
                       <textarea
                         name="careInstructions"
@@ -967,8 +1032,7 @@ export default function SellerProductUpload() {
                         onChange={handleInputChange}
                         rows="5"
                         className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none
-                          ${
-                            errors.careInstructions ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                          ${errors.careInstructions ? 'border-red-300 bg-red-50' : 'border-gray-300'
                           }`}
                         placeholder="How to care for this product..."
                       />

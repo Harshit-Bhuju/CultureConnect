@@ -3,7 +3,7 @@ include("dbconnect.php");
 
 $allowedOrigins = [
     "http://localhost:5173",
-    "http://192.168.1.6:5173" // Replace with your LAN IP of frontend device
+    "http://192.168.1.3:5173" // Replace with your LAN IP of frontend device
 ];
 
 if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowedOrigins)) {

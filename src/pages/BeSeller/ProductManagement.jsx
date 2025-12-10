@@ -1,17 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/ManageProducts/Layout_And_Components/Header';
 import StatsCards from '../../components/ManageProducts/Layout_And_Components/StatsCards';
 import Filters from '../../components/ManageProducts/Filter/Filters';
 import ProductGrid from '../../components/ManageProducts/ProductDisplay/ProductGrid';
 import ProductList from '../../components/ManageProducts/ProductDisplay/ProductList';
 import DeleteProductModal from '../../components/ManageProducts/modals/DeleteProductModal';
-import { initialProducts, categories, sortOptions, stockOptions, getCategoryDisplay } from '../../components/ManageProducts/Data/data';
+import { categories, sortOptions, stockOptions, getCategoryDisplay } from '../../components/ManageProducts/Data/data';
+import API from '../../Configs/ApiEndpoints';
 
 const ProductManagement = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
@@ -20,28 +25,59 @@ const ProductManagement = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: '',
-    category: '',
-    description: '',
-    price: 0,
-    stock: 0,
-    status: 'Draft',
-    image: ''
+  // Stats state
+  const [stats, setStats] = useState({
+    totalProducts: 0,
+    activeProducts: 0,
+    lowStockProducts: 0,
+    inventoryValue: 0
   });
 
-  // Calculated stats (only for Active products)
-  const activeProductsList = products.filter(p => p.status === 'Active');
-  const totalProducts = activeProductsList.length;
-  const activeProducts = activeProductsList.length;
-  const lowStockProducts = activeProductsList.filter(p => p.stock <= 10).length;
-  const inventoryValue = activeProductsList.reduce((sum, p) => sum + (p.price * p.stock), 0);
+  // Fetch products from backend
+  useEffect(() => {
+    if (!user?.seller_id) {
+      setError('No seller account found');
+      setLoading(false);
+      return;
+    }
+
+    fetchProducts();
+  }, [user?.seller_id]);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(API.GET_SELLER_PRODUCTS, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+console.log('Fetched products data:', data);
+      if (data.success) {
+        setProducts(data.products || []);
+        setStats(data.stats || {
+          totalProducts: 0,
+          activeProducts: 0,
+          lowStockProducts: 0,
+          inventoryValue: 0
+        });
+      } else {
+        setError(data.error || 'Failed to fetch products');
+      }
+    } catch (err) {
+      console.error('Error fetching products:', err);
+      setError('Network error while fetching products');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter and sort products (ONLY ACTIVE PRODUCTS)
   const filteredProducts = products
     .filter(product => {
-      // Only show Active products
-      if (product.status !== 'Active') return false;
+      // Only show Active products (status === 'Active' or 'Published')
+      if (product.status !== 'Active' && product.status !== 'Published') return false;
       
       const matchesSearch = product.productName?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = categoryFilter === 'All Categories' || 
@@ -53,47 +89,64 @@ const ProductManagement = () => {
         matchesStock = product.stock > 0;
       } else if (stockFilter === 'Out of Stock') {
         matchesStock = product.stock === 0;
-      }
-       else if (stockFilter === 'Low Stock') {
+      } else if (stockFilter === 'Low Stock') {
         matchesStock = product.stock <= 10;
       }
       
       return matchesSearch && matchesCategory && matchesStock;
     })
     .sort((a, b) => {
-      // Sort by date
       if (sortOption === 'Latest') {
         return new Date(b.createdAt) - new Date(a.createdAt);
       } else if (sortOption === 'Oldest') {
         return new Date(a.createdAt) - new Date(b.createdAt);
       }
+      else if (sortOption === 'Recently Updated') {
+        return new Date(b.updatedAt) - new Date(a.updatedAt);
+      }
       return 0;
     });
 
-  const handleDeleteProduct = () => {
-    setProducts(products.filter(p => p.id !== selectedProduct.id));
-    setShowDeleteModal(false);
-    setSelectedProduct(null);
-  };
+  const handleDeleteProduct = async () => {
+    if (!selectedProduct) return;
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      category: '',
-      description: '',
-      price: 0,
-      stock: 0,
-      status: 'Draft',
-      image: ''
-    });
+    try {
+      const formData = new URLSearchParams();
+      formData.append('product_id', selectedProduct.id);
+
+      const response = await fetch(API.DELETE_PRODUCT, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        // Refresh products list
+        await fetchProducts();
+        setShowDeleteModal(false);
+        setSelectedProduct(null);
+      } else {
+        alert(data.message || 'Failed to delete product');
+      }
+    } catch (err) {
+      console.error('Error deleting product:', err);
+      alert('Network error while deleting product');
+    }
   };
 
   const handleViewProduct = (product) => {
-    navigate(`/seller/products/${product.id}`);
+    if (!user?.seller_id) return;
+    navigate(`/seller/products/${user.seller_id}/${product.id}`);
   };
 
   const handleNavigateToEdit = (product) => {
-    navigate(`/seller/products/edit/${product.id}`);
+    if (!user?.seller_id) return;
+    navigate(`/seller/products/edit/${user.seller_id}/${product.id}`);
   };
 
   const openDeleteModal = (product) => {
@@ -101,16 +154,43 @@ const ProductManagement = () => {
     setShowDeleteModal(true);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading products...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={fetchProducts}
+            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
 
       <div className="px-8 py-6">
         <StatsCards
-          totalProducts={totalProducts}
-          activeProducts={activeProducts}
-          lowStockProducts={lowStockProducts}
-          inventoryValue={inventoryValue}
+          totalProducts={stats.totalProducts}
+          activeProducts={stats.activeProducts}
+          lowStockProducts={stats.lowStockProducts}
+          inventoryValue={stats.inventoryValue}
         />
 
         <Filters

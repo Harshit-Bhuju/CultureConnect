@@ -15,17 +15,20 @@ import {
   ArrowLeft,
   Loader2,
 } from "lucide-react";
-import { initialProducts } from "../Data/data";
 import Loading from "../../Common/Loading";
 import toast from "react-hot-toast";
+import { useAuth } from "../../../context/AuthContext";
+import API from "../../../Configs/ApiEndpoints";
 
 export default function SellerProductEdit() {
+  const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [images, setImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(0);
   const [draggedIndex, setDraggedIndex] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,60 +50,120 @@ export default function SellerProductEdit() {
     careInstructions: "",
   });
   const [tagInput, setTagInput] = useState("");
+  const [initialSnapshot, setInitialSnapshot] = useState(null);
 
   // Load existing product data
   useEffect(() => {
     const loadProduct = async () => {
       setLoading(true);
       try {
-        // Simulate API call - replace with actual API call
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        const response = await fetch(`${API.GET_PRODUCT_DETAILS}?product_id=${id}`, {
+          method: 'GET',
+          credentials: 'include',
+        });
 
-        const product = initialProducts.find((p) => p.id === parseInt(id));
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to fetch product');
+        }
+
+        const product = data.product;
 
         if (product) {
+          // Set form data
           setFormData({
-            productName: product.productName || "",
-            productType: product.productType || "",
+            productName: product.productName || product.product_name || "",
+            productType: product.productType || product.product_type || "",
             culture: product.culture || "",
             description: product.description || "",
             price: product.price?.toString() || "",
             stock: product.stock?.toString() || "",
             category: product.category || "",
             audience: product.audience || "",
-            adultSizes: product.adultSizes || [],
-            childAgeGroups: product.childAgeGroups || [],
+            adultSizes: product.sizes || [],
+            childAgeGroups: product.ageGroups || [],
             tags: product.tags || [],
             dimensions: product.dimensions || "",
             material: product.material || "",
-            careInstructions: product.careInstructions || "",
+            careInstructions: product.careInstructions || product.care_instructions || "",
           });
 
+          // Set images
           if (product.images && product.images.length > 0) {
-            const existingImages = product.images.map((url, index) => ({
+            const existingImages = product.images.map((imageFileName, index) => ({
               id: Date.now() + index,
-              url: url,
+              url: `${API.PRODUCT_IMAGES}/${imageFileName}`,
+              fileName: imageFileName,
               file: null,
               isExisting: true,
             }));
             setImages(existingImages);
+
+            // Create initial snapshot for change detection
+            const loadedForm = {
+              productName: product.productName || product.product_name || "",
+              productType: product.productType || product.product_type || "",
+              culture: product.culture || "",
+              description: product.description || "",
+              price: product.price?.toString() || "",
+              stock: product.stock?.toString() || "",
+              category: product.category || "",
+              audience: product.audience || "",
+              adultSizes: product.sizes || [],
+              childAgeGroups: product.ageGroups || [],
+              tags: product.tags || [],
+              dimensions: product.dimensions || "",
+              material: product.material || "",
+              careInstructions: product.careInstructions || product.care_instructions || "",
+            };
+
+            const imagesSnapshot = existingImages.map((img) => ({
+              isExisting: true,
+              fileName: img.fileName,
+            }));
+
+            setInitialSnapshot({ form: loadedForm, images: imagesSnapshot });
           }
         } else {
-          navigate("/seller/products");
+          toast.error("Product not found");
+          navigate(`/seller/manageproducts/${user?.seller_id}`);
         }
       } catch (error) {
-       toast.error("Error loading product:", error);
+        console.error("Error loading product:", error);
+        toast.error(error.message || "Failed to load product");
+        navigate(`/seller/manageproducts/${user?.seller_id}`);
       } finally {
         setLoading(false);
       }
     };
 
     loadProduct();
-  }, [id, navigate]);
+  }, [id, navigate, user?.seller_id]);
 
+  // Derive current snapshot for change detection
+  const currentSnapshot = React.useMemo(() => {
+    const imagesSnapshot = images.map((img) => ({
+      isExisting: !!img.isExisting,
+      fileName: img.fileName || null,
+    }));
+    return { form: formData, images: imagesSnapshot };
+  }, [formData, images]);
+
+  // Check if form is dirty (has changes)
+  const isDirty = React.useMemo(() => {
+    if (!initialSnapshot) return false;
+    try {
+      return JSON.stringify(initialSnapshot) !== JSON.stringify(currentSnapshot);
+    } catch (e) {
+      return true;
+    }
+  }, [initialSnapshot, currentSnapshot]);
+
+  // Cleanup object URLs on unmount
   useEffect(() => {
     return () => {
-      images.forEach((img) => {
+      images.forEach(img => {
         if (!img.isExisting && img.url) {
           URL.revokeObjectURL(img.url);
         }
@@ -118,7 +181,7 @@ export default function SellerProductEdit() {
     (e) => {
       const files = Array.from(e.target.files);
 
-      const validFiles = files.filter((file) => {
+      const validFiles = files.filter(file => {
         if (!file.type.startsWith("image/")) {
           toast.error(`${file.name} is not an image file`);
           return false;
@@ -132,27 +195,25 @@ export default function SellerProductEdit() {
 
       if (validFiles.length === 0) return;
 
-      const newImages = validFiles.map((file) => ({
+      const newImages = validFiles.map(file => ({
         id: Date.now() + Math.random(),
         url: URL.createObjectURL(file),
-        file: file,
-        isExisting: false,
+        file,
+        isExisting: false
       }));
 
-      setImages((prev) => {
-        const combined = [...prev, ...newImages];
-        if (combined.length > 10) {
-          toast.error("Maximum 10 images allowed");
-          return combined.slice(0, 10);
-        }
+      setImages(prev => {
+        const combined = [...prev, ...newImages].slice(0, 10);
         return combined;
       });
 
-      if (errors.images) {
-        setErrors((prev) => ({ ...prev, images: "" }));
+      if (images.length === 0) {
+        setSelectedImage(0);
       }
+
+      if (errors.images) setErrors(prev => ({ ...prev, images: "" }));
     },
-    [errors.images]
+    [images.length, errors.images]
   );
 
   const removeImage = useCallback((imageId) => {
@@ -165,28 +226,35 @@ export default function SellerProductEdit() {
     });
   }, []);
 
+  const draggedIndexRef = React.useRef(null);
+
   const handleDragStart = useCallback((index) => {
-    setDraggedIndex(index);
+    draggedIndexRef.current = index;
+    setIsDragging(true);  // <-- ADD THIS LINE
   }, []);
 
-  const handleDragOver = useCallback(
-    (e, index) => {
-      e.preventDefault();
-      if (draggedIndex === null || draggedIndex === index) return;
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault();
+  }, []);
 
-      const newImages = [...images];
-      const draggedImage = newImages[draggedIndex];
-      newImages.splice(draggedIndex, 1);
-      newImages.splice(index, 0, draggedImage);
+  const handleDrop = useCallback((dropIndex) => {
+    const dragIndex = draggedIndexRef.current;
+    if (dragIndex === null || dragIndex === dropIndex) return;
 
-      setImages(newImages);
-      setDraggedIndex(index);
-    },
-    [draggedIndex, images]
-  );
+    setImages((prev) => {
+      const newImages = [...prev];
+      const [moved] = newImages.splice(dragIndex, 1);
+      newImages.splice(dropIndex, 0, moved);
+      return newImages;
+    });
+
+    draggedIndexRef.current = null;
+    setIsDragging(false);  // <-- ADD THIS LINE
+  }, []);
 
   const handleDragEnd = useCallback(() => {
-    setDraggedIndex(null);
+    draggedIndexRef.current = null;
+    setIsDragging(false);  // <-- ADD THIS LINE
   }, []);
 
   const handleInputChange = useCallback(
@@ -205,43 +273,39 @@ export default function SellerProductEdit() {
   }, []);
 
   const commitTag = useCallback((tagValue) => {
-  const cleaned = tagValue.trim().replace(/,$/, "");
-  if (!cleaned) return;
+    const cleaned = tagValue.trim().replace(/,$/, "");
+    if (!cleaned) return;
 
-  if (cleaned.length > 30) {
-    toast.error("Tag must be less than 30 characters");
-    return;
-  }
-
-  setFormData((prev) => {
-    if (prev.tags.includes(cleaned)) {
-      setErrors((prevErr) => ({
-        ...prevErr,
-        tags: "Tag already exists",
-      }));
-      return prev;
+    if (cleaned.length > 30) {
+      toast.error("Tag must be less than 30 characters");
+      return;
     }
 
-    // Max tags
-    if (prev.tags.length >= 10) {
+    setFormData((prev) => {
+      if (prev.tags.includes(cleaned)) {
+        setErrors((prevErr) => ({
+          ...prevErr,
+          tags: "Tag already exists",
+        }));
+        return prev;
+      }
+
+      if (prev.tags.length >= 10) {
+        setErrors((prevErr) => ({
+          ...prevErr,
+          tags: "Maximum 10 tags allowed",
+        }));
+        return prev;
+      }
+
       setErrors((prevErr) => ({
         ...prevErr,
-        tags: "Maximum 10 tags allowed",
+        tags: "",
       }));
-      return prev;
-    }
 
-    // Clear tag error if valid
-    setErrors((prevErr) => ({
-      ...prevErr,
-      tags: "",
-    }));
-
-    return { ...prev, tags: [...prev.tags, cleaned] };
-  });
-
-}, []);
-
+      return { ...prev, tags: [...prev.tags, cleaned] };
+    });
+  }, []);
 
   const handleTagKeyDown = useCallback(
     (e) => {
@@ -431,23 +495,13 @@ export default function SellerProductEdit() {
       newErrors.tags = "Please add at least one tag.";
     }
 
-    if (!formData.dimensions.trim()) {
-      newErrors.dimensions = "Dimensions are required.";
-    } else if (
-      !/^\d+(\.\d+)?\s*\*\s*\d+(\.\d+)?\s*\*\s*\d+(\.\d+)?$/.test(
+    if (formData.dimensions.trim()) {
+      if (!/^\d+(\.\d+)?\s*\*\s*\d+(\.\d+)?\s*\*\s*\d+(\.\d+)?$/.test(
         formData.dimensions.trim()
-      )
-    ) {
-      newErrors.dimensions =
-        "Dimensions must be in the format: Length * Width * Height";
-    }
-
-    if (!formData.material.trim()) {
-      newErrors.material = "Material information is required.";
-    }
-
-    if (!formData.careInstructions.trim()) {
-      newErrors.careInstructions = "Care instructions are required.";
+      )) {
+        newErrors.dimensions =
+          "Dimensions must be in the format: Length * Width * Height";
+      }
     }
 
     setErrors(newErrors);
@@ -461,39 +515,152 @@ export default function SellerProductEdit() {
         const element = document.querySelector(`[name="${firstErrorKey}"]`);
         element?.scrollIntoView({ behavior: "smooth", block: "center" });
       }
+      toast.error("Please fix all errors before publishing");
       return;
     }
 
     setIsSubmitting(true);
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const formDataToSend = new FormData();
 
+      // Add product ID
+      formDataToSend.append('productId', id);
 
-      toast.success("Product updated successfully!");
-      setErrors({});
-      navigate(`/seller/products/${id}`);
+      // Add basic fields
+      formDataToSend.append('productName', formData.productName);
+      formDataToSend.append('productType', formData.productType);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('culture', formData.culture);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('stock', formData.stock);
+      formDataToSend.append('dimensions', formData.dimensions);
+      formDataToSend.append('material', formData.material);
+      formDataToSend.append('careInstructions', formData.careInstructions);
+      formDataToSend.append('status', 'published');
+
+      // Add audience for cultural-clothes
+      if (formData.category === 'cultural-clothes') {
+        formDataToSend.append('audience', formData.audience);
+      }
+
+      // Add arrays as JSON
+      formDataToSend.append('tags', JSON.stringify(formData.tags));
+      formDataToSend.append('adultSizes', JSON.stringify(formData.adultSizes));
+      formDataToSend.append('childAgeGroups', JSON.stringify(formData.childAgeGroups));
+
+      // Add new images
+      const newImages = images.filter(img => !img.isExisting && img.file);
+      newImages.forEach((img) => {
+        formDataToSend.append('newImages[]', img.file);
+      });
+
+      // Track deleted images (compare with initial snapshot)
+      const deletedImages = initialSnapshot?.images
+        .filter(snapImg => !images.some(img => img.fileName === snapImg.fileName))
+        .map(img => img.fileName) || [];
+
+      formDataToSend.append('deletedImages', JSON.stringify(deletedImages));
+      // Add image order (send fileName for existing images, or placeholder for new ones)
+const imageOrder = images.map(img => img.fileName || `new_${img.id}`);
+formDataToSend.append('imageOrder', JSON.stringify(imageOrder));
+
+      const response = await fetch(API.UPDATE_PRODUCT, {
+        method: 'POST',
+        credentials: 'include',
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        toast.success(data.message);
+        setErrors({});
+        navigate(`/seller/manageproducts/${user?.seller_id}`, { replace: true });
+      } else {
+        toast.error(data.message || 'Failed to update product');
+      }
     } catch (error) {
-      toast.error("Failed to update product. Please try again.");
+      console.error('Error updating product:', error);
+      toast.error('Failed to update product. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
-  }, [validateRequiredFields, formData, images, errors, id, navigate]);
+  }, [validateRequiredFields, formData, images, initialSnapshot, id, navigate, user?.seller_id, errors]);
 
   const handleSaveDraft = useCallback(async () => {
     setIsSubmitting(true);
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success("Draft saved successfully!");
-      setErrors({});
+      const formDataToSend = new FormData();
+
+      // Add product ID
+      formDataToSend.append('productId', id);
+
+      // Add all fields
+      formDataToSend.append('productName', formData.productName);
+      formDataToSend.append('productType', formData.productType);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('culture', formData.culture);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('stock', formData.stock);
+      formDataToSend.append('dimensions', formData.dimensions);
+      formDataToSend.append('material', formData.material);
+      formDataToSend.append('careInstructions', formData.careInstructions);
+      formDataToSend.append('status', 'draft');
+
+      if (formData.category === 'cultural-clothes') {
+        formDataToSend.append('audience', formData.audience);
+      }
+
+      formDataToSend.append('tags', JSON.stringify(formData.tags));
+      formDataToSend.append('adultSizes', JSON.stringify(formData.adultSizes));
+      formDataToSend.append('childAgeGroups', JSON.stringify(formData.childAgeGroups));
+
+      // Add new images
+      const newImages = images.filter(img => !img.isExisting && img.file);
+      newImages.forEach((img) => {
+        formDataToSend.append('newImages[]', img.file);
+      });
+
+      // Track deleted images
+      const deletedImages = initialSnapshot?.images
+        .filter(snapImg => !images.some(img => img.fileName === snapImg.fileName))
+        .map(img => img.fileName) || [];
+
+      formDataToSend.append('deletedImages', JSON.stringify(deletedImages));
+// Add image order
+const imageOrder = images.map(img => img.fileName || `new_${img.id}`);
+formDataToSend.append('imageOrder', JSON.stringify(imageOrder));
+
+      const response = await fetch(API.UPDATE_PRODUCT, {
+        method: 'POST',
+        credentials: 'include',
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        toast.success(data.message);
+        setErrors({});
+        // Update initial snapshot after successful save
+        setInitialSnapshot(currentSnapshot);
+      } else {
+        toast.error(data.message || 'Failed to save draft');
+      }
     } catch (error) {
-      toast.error("Failed to save draft. Please try again.");
+      console.error('Error saving draft:', error);
+      toast.error('Failed to save draft. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData]);
+  }, [formData, images, initialSnapshot, currentSnapshot, id]);
 
   if (loading) {
-    return <Loading message="Loading..."/>
+    return <Loading message="Loading product..." />
   }
 
   return (
@@ -514,15 +681,6 @@ export default function SellerProductEdit() {
               <p className="text-gray-600">
                 Update your product information and imagery
               </p>
-            </div>
-            <div className="hidden md:flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-sm font-semibold text-gray-900">
-                  Live Preview
-                </p>
-                <p className="text-xs text-gray-500">See as customers do</p>
-              </div>
-              <Eye className="w-8 h-8 text-blue-500" />
             </div>
           </div>
         </div>
@@ -602,18 +760,20 @@ export default function SellerProductEdit() {
                     key={image.id}
                     draggable
                     onDragStart={() => handleDragStart(index)}
-                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop(index)}
                     onDragEnd={handleDragEnd}
                     onClick={() => setSelectedImage(index)}
-                    className={`relative w-20 h-20 flex-shrink-0 rounded-lg border-2 overflow-hidden cursor-pointer group ${
-                      selectedImage === index
+                    className={`relative w-20 h-20 flex-shrink-0 rounded-lg border-2 overflow-hidden cursor-move group transition-all ${isDragging && draggedIndexRef.current === index ? "opacity-50 scale-95" : ""
+                      } ${selectedImage === index
                         ? "border-blue-500 shadow-md"
                         : "border-gray-200 hover:border-blue-300"
-                    }`}>
+                      }`}
+                  >
                     <img
                       src={image.url}
                       alt=""
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover pointer-events-none"
                     />
                     <div className="absolute top-1 left-1 bg-white/90 backdrop-blur-sm rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <GripVertical className="w-3 h-3 text-gray-600" />
@@ -675,11 +835,10 @@ export default function SellerProductEdit() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 py-4 px-4 font-semibold text-sm flex items-center justify-center gap-2 transition ${
-                      activeTab === tab.id
-                        ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600"
-                        : "text-gray-600 hover:bg-gray-50"
-                    }`}>
+                    className={`flex-1 py-4 px-4 font-semibold text-sm flex items-center justify-center gap-2 transition ${activeTab === tab.id
+                      ? "bg-blue-50 text-blue-600 border-b-2 border-blue-600"
+                      : "text-gray-600 hover:bg-gray-50"
+                      }`}>
                     <tab.icon className="w-4 h-4" />
                     {tab.label}
                   </button>
@@ -698,11 +857,10 @@ export default function SellerProductEdit() {
                         name="productName"
                         value={formData.productName}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
-                          errors.productName
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${errors.productName
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                          }`}
                         placeholder="Enter product name"
                       />
                       {errors.productName && (
@@ -723,11 +881,10 @@ export default function SellerProductEdit() {
                           name="productType"
                           value={formData.productType}
                           onChange={handleInputChange}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                            errors.productType
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300"
-                          }`}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors.productType
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                            }`}
                           placeholder="Traditional, Modern..."
                         />
                         {errors.productType && (
@@ -746,11 +903,10 @@ export default function SellerProductEdit() {
                           name="category"
                           value={formData.category}
                           onChange={handleInputChange}
-                          className={`w-full px-4 py-3 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                            errors.category
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300"
-                          }`}>
+                          className={`w-full px-4 py-3 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors.category
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                            }`}>
                           <option value="" hidden>
                             Select category
                           </option>
@@ -783,11 +939,10 @@ export default function SellerProductEdit() {
                           name="culture"
                           value={formData.culture}
                           onChange={handleInputChange}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                            errors.culture
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300"
-                          }`}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors.culture
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                            }`}
                           placeholder="Newari, Tibetan, Tharu..."
                         />
                         {errors.culture && (
@@ -816,11 +971,10 @@ export default function SellerProductEdit() {
                                 key={aud.id}
                                 type="button"
                                 onClick={() => toggleAudience(aud.id)}
-                                className={`px-5 py-2 rounded-lg border-2 font-medium transition ${
-                                  formData.audience === aud.id
-                                    ? "border-blue-500 bg-blue-500 text-white shadow-md"
-                                    : "border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50"
-                                }`}>
+                                className={`px-5 py-2 rounded-lg border-2 font-medium transition ${formData.audience === aud.id
+                                  ? "border-blue-500 bg-blue-500 text-white shadow-md"
+                                  : "border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50"
+                                  }`}>
                                 {aud.label}
                               </button>
                             ))}
@@ -835,65 +989,63 @@ export default function SellerProductEdit() {
 
                         {(formData.audience === "men" ||
                           formData.audience === "women") && (
-                          <div className="space-y-2">
-                            <p className="text-xs uppercase tracking-wide text-gray-700 font-semibold">
-                              Available sizes (Adults)
-                            </p>
-                            <div className="flex flex-wrap gap-3">
-                              {["S", "M", "L", "XL", "XXL"].map((size) => (
-                                <button
-                                  key={size}
-                                  type="button"
-                                  onClick={() => toggleAdultSize(size)}
-                                  className={`px-5 py-2 rounded-lg border-2 font-medium transition ${
-                                    formData.adultSizes.includes(size)
+                            <div className="space-y-2">
+                              <p className="text-xs uppercase tracking-wide text-gray-700 font-semibold">
+                                Available sizes (Adults)
+                              </p>
+                              <div className="flex flex-wrap gap-3">
+                                {["S", "M", "L", "XL", "XXL"].map((size) => (
+                                  <button
+                                    key={size}
+                                    type="button"
+                                    onClick={() => toggleAdultSize(size)}
+                                    className={`px-5 py-2 rounded-lg border-2 font-medium transition ${formData.adultSizes.includes(size)
                                       ? "border-blue-500 bg-blue-500 text-white shadow-md"
                                       : "border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50"
-                                  }`}>
-                                  {size}
-                                </button>
-                              ))}
+                                      }`}>
+                                    {size}
+                                  </button>
+                                ))}
+                              </div>
+                              {errors.adultSizes && (
+                                <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                  <AlertCircle className="w-3 h-3" />
+                                  {errors.adultSizes}
+                                </p>
+                              )}
                             </div>
-                            {errors.adultSizes && (
-                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                                <AlertCircle className="w-3 h-3" />
-                                {errors.adultSizes}
-                              </p>
-                            )}
-                          </div>
-                        )}
+                          )}
 
                         {(formData.audience === "boy" ||
                           formData.audience === "girl") && (
-                          <div className="space-y-2">
-                            <p className="text-xs uppercase tracking-wide text-gray-700 font-semibold">
-                              Age groups (Children)
-                            </p>
-                            <div className="flex flex-wrap gap-3">
-                              {["5-6", "7-8", "9-10", "11-12", "13-14"].map(
-                                (group) => (
-                                  <button
-                                    key={group}
-                                    type="button"
-                                    onClick={() => toggleChildAgeGroup(group)}
-                                    className={`px-5 py-2 rounded-lg border-2 font-medium transition ${
-                                      formData.childAgeGroups.includes(group)
+                            <div className="space-y-2">
+                              <p className="text-xs uppercase tracking-wide text-gray-700 font-semibold">
+                                Age groups (Children)
+                              </p>
+                              <div className="flex flex-wrap gap-3">
+                                {["5-6", "7-8", "9-10", "11-12", "13-14"].map(
+                                  (group) => (
+                                    <button
+                                      key={group}
+                                      type="button"
+                                      onClick={() => toggleChildAgeGroup(group)}
+                                      className={`px-5 py-2 rounded-lg border-2 font-medium transition ${formData.childAgeGroups.includes(group)
                                         ? "border-blue-500 bg-blue-500 text-white shadow-md"
                                         : "border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50"
-                                    }`}>
-                                    {group}
-                                  </button>
-                                )
+                                        }`}>
+                                      {group}
+                                    </button>
+                                  )
+                                )}
+                              </div>
+                              {errors.childAgeGroups && (
+                                <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                  <AlertCircle className="w-3 h-3" />
+                                  {errors.childAgeGroups}
+                                </p>
                               )}
                             </div>
-                            {errors.childAgeGroups && (
-                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                                <AlertCircle className="w-3 h-3" />
-                                {errors.childAgeGroups}
-                              </p>
-                            )}
-                          </div>
-                        )}
+                          )}
                       </div>
                     )}
 
@@ -909,11 +1061,10 @@ export default function SellerProductEdit() {
                           onChange={handleInputChange}
                           min="0"
                           step="100"
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                            errors.price
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300"
-                          }`}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors.price
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                            }`}
                           placeholder="0"
                         />
                         <p className="text-xs text-gray-500">
@@ -937,11 +1088,10 @@ export default function SellerProductEdit() {
                           value={formData.stock}
                           onChange={handleInputChange}
                           min="0"
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-                            errors.stock
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300"
-                          }`}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors.stock
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                            }`}
                           placeholder="0"
                         />
                         <p className="text-xs text-gray-500">
@@ -966,11 +1116,10 @@ export default function SellerProductEdit() {
                         onChange={handleInputChange}
                         rows="4"
                         maxLength="50"
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none ${
-                          errors.description
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none ${errors.description
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                          }`}
                         placeholder="Describe your product in detail..."
                       />
                       <p className="text-xs text-gray-500">
@@ -990,11 +1139,10 @@ export default function SellerProductEdit() {
                         Tags
                       </label>
                       <div
-                        className={`flex flex-wrap gap-2 rounded-lg border px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition ${
-                          errors.tags
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}>
+                        className={`flex flex-wrap gap-2 rounded-lg border px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition ${errors.tags
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                          }`}>
                         {formData.tags.map((tag) => (
                           <span
                             key={tag}
@@ -1040,18 +1188,17 @@ export default function SellerProductEdit() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Material
+                          Material (Optional)
                         </label>
                         <input
                           type="text"
                           name="material"
                           value={formData.material}
                           onChange={handleInputChange}
-                          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none${
-                            errors.material
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300"
-                          }`}
+                          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none${errors.material
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                            }`}
                           placeholder="Silk, bamboo, cotton..."
                         />
                         {errors.material && (
@@ -1064,7 +1211,7 @@ export default function SellerProductEdit() {
 
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Dimensions
+                          Dimensions (Optional)
                         </label>
                         <input
                           type="text"
@@ -1072,11 +1219,10 @@ export default function SellerProductEdit() {
                           value={formData.dimensions}
                           onChange={handleInputChange}
                           className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none
-                                                        ${
-                                                          errors.dimensions
-                                                            ? "border-red-300 bg-red-50"
-                                                            : "border-gray-300"
-                                                        }`}
+                                                        ${errors.dimensions
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
+                            }`}
                           placeholder="L x W x H"
                         />
                         {errors.dimensions && (
@@ -1090,7 +1236,7 @@ export default function SellerProductEdit() {
 
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700">
-                        Care Instructions
+                        Care Instructions (Optional)
                       </label>
                       <textarea
                         name="careInstructions"
@@ -1098,11 +1244,10 @@ export default function SellerProductEdit() {
                         onChange={handleInputChange}
                         rows="5"
                         className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none
-                                                      ${
-                                                        errors.careInstructions
-                                                          ? "border-red-300 bg-red-50"
-                                                          : "border-gray-300"
-                                                      }`}
+                                                      ${errors.careInstructions
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
+                          }`}
                         placeholder="How to care for this product..."
                       />
                       {errors.careInstructions && (
@@ -1126,8 +1271,8 @@ export default function SellerProductEdit() {
                 </button>
                 <button
                   onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 shadow-md hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
+                  disabled={isSubmitting || !isDirty}
+                  className={`flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 shadow-md hover:shadow-lg transition ${isSubmitting || !isDirty ? 'disabled:opacity-50 disabled:cursor-not-allowed opacity-50 cursor-not-allowed' : ''}`}>
                   <Eye className="w-5 h-5" />
                   {isSubmitting ? "Publishing..." : "Publish Changes"}
                 </button>

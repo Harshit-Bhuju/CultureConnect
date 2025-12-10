@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo json_encode(["status" => "error", "message" => "Not a valid image."]);
             exit;
         }
-        $allowedExts = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'];
+        $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
         if (!in_array($fileExt, $allowedExts)) {
             echo json_encode(['status' => 'error', 'message' => 'Invalid file type.']);
             exit;

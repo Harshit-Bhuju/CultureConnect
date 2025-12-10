@@ -10,13 +10,13 @@ const SellerRegistrationRoute = ({ children }) => {
     return <Loading message="Checking seller status..." />;
   }
   
-  // if (!user) {
-  //   return <Navigate to="/login" replace />;
-  // }
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
   
-  // if (user.seller_id) {
-  //   return <Navigate to={`/sellerprofile/${user.seller_id}`} replace />;
-  // }
+  if (user.seller_id) {
+    return <Navigate to={`/sellerprofile/${user.seller_id}`} replace />;
+  }
   
   return children;
 };
