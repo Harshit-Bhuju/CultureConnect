@@ -1,0 +1,6 @@
+{
+    "require": {
+        "xentixar/khalti-sdk": "^1.0",
+        "xentixar/esewa-sdk": "^1.0"
+    }
+}

@@ -1,0 +1,14 @@
+# Node
+node_modules/
+dist/
+
+# PHP / Composer
+vendor/
+backend/vendor/
+
+# Environment
+.env
+.env.*
+
+# Server config
+backend/.htaccess
