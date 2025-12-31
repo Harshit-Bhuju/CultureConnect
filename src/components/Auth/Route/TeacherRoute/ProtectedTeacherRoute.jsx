@@ -11,9 +11,9 @@ const ProtectedTeacherRoute = ({ children }) => {
   }
 
 
-  if (!user.teacher_id) {
-    return <Navigate to="/teacher-registration" replace />;
-  }
+  // if (!user.teacher_id) {
+  //   return <Navigate to="/teacher-registration" replace />;
+  // }
   return children;
 };
 

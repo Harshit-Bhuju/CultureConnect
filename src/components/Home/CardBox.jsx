@@ -1,14 +1,12 @@
 import React from "react";
 
-const CardBox = ({ title, items, footerLink, footerText }) => {
+const CardBox = ({ title, items = [], footerLink, footerText }) => {
   return (
-    <div className="bg-white  rounded shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex flex-col">
-      
+    <div className="bg-white rounded shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex flex-col">
       {/* Title */}
       <h2 className="text-[10px] min-[500px]:text-xs lg:text-2xl font-bold p-2 md:p-3 lg:p-4 leading-tight text-gray-900">
         {title}
       </h2>
-
       {/* Items grid */}
       <div className="grid grid-cols-2 gap-1 md:gap-2 lg:gap-3 px-2 md:px-3 lg:px-4 flex-grow shrink">
         {items.map((item, index) => (
@@ -24,7 +22,6 @@ const CardBox = ({ title, items, footerLink, footerText }) => {
           </div>
         ))}
       </div>
-
       {/* Footer */}
       <a
         href={footerLink}

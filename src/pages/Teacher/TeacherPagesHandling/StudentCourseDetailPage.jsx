@@ -9,8 +9,6 @@ import {
   Clock,
   Users,
   CheckCircle,
-  Calendar,
-  Crown,
   Star,
   BookOpen,
   Award
@@ -34,7 +32,11 @@ const StudentCourseDetailPage = () => {
 
   useEffect(() => {
     fetchCourseDetails();
-  }, [id]);
+    if (user) {
+      checkEnrollmentStatus();
+      checkWishlistStatus();
+    }
+  }, [id, user]);
 
   const fetchCourseDetails = async () => {
     try {
@@ -56,10 +58,8 @@ const StudentCourseDetailPage = () => {
             ? `${API.COURSE_THUMBNAILS}/${data.course.thumbnail}`
             : "https://i.ytimg.com/vi/EcvPBRM405k/maxresdefault.jpg",
           price: parseFloat(data.course.price) || 0,
-          isPremium: data.course.is_premium === 1 || data.course.is_premium === '1',
           numVideos: parseInt(data.course.total_videos) || 0,
           duration: `${data.course.duration_weeks} weeks`,
-          schedule: data.course.schedule || 'Flexible',
           enrolled_students: parseInt(data.course.enrolled_students) || 0,
           max_students: parseInt(data.course.max_students) || 20,
           level: data.course.skill_level || 'Beginner',
@@ -86,12 +86,14 @@ const StudentCourseDetailPage = () => {
             title: video.video_title || `Lesson ${index + 1}`,
             duration: video.duration || "0:00",
             description: video.description || "",
+            // ✅ FIXED: Use COURSE_THUMBNAILS for video thumbnails
             thumbnail: video.thumbnail 
-              ? `${API.COURSE_VIDEOS}/${video.thumbnail}`
+              ? `${API.COURSE_THUMBNAILS}/${video.thumbnail}`
               : data.course.thumbnail 
                 ? `${API.COURSE_THUMBNAILS}/${data.course.thumbnail}`
-                : "https://i.ytimg.com/vi/EcvPBRM405k/maxresdefault.jpg",
-            order: parseInt(video.order_in_course) || index + 1
+                : "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400",
+            order: parseInt(video.order_in_course) || index + 1,
+            is_intro: video.is_intro || 0
           })).sort((a, b) => a.order - b.order),
           learningOutcomes: data.course.what_you_will_learn 
             ? data.course.what_you_will_learn.split('\n').filter(item => item.trim())
@@ -102,11 +104,6 @@ const StudentCourseDetailPage = () => {
         };
 
         setCourse(transformedCourse);
-        
-        // Check if user is enrolled (you'll need to implement this endpoint)
-        if (user) {
-          checkEnrollmentStatus(id);
-        }
       } else {
         toast.error(data.message || 'Course not found');
         setCourse(null);
@@ -120,17 +117,27 @@ const StudentCourseDetailPage = () => {
     }
   };
 
-  const checkEnrollmentStatus = async (courseId) => {
+  const checkEnrollmentStatus = async () => {
     try {
-      // TODO: Create an endpoint to check enrollment status
-      // const response = await fetch(`${API.CHECK_ENROLLMENT}?course_id=${courseId}`, {
-      //   credentials: 'include'
-      // });
-      // const data = await response.json();
-      // setIsEnrolled(data.is_enrolled);
-      setIsEnrolled(false); // Placeholder
+      const response = await fetch(`${API.CHECK_ENROLLMENT}?course_id=${id}`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      setIsEnrolled(data.is_enrolled || false);
     } catch (error) {
       console.error('Error checking enrollment:', error);
+    }
+  };
+
+  const checkWishlistStatus = async () => {
+    try {
+      const response = await fetch(`${API.CHECK_COURSE_WISHLIST}?course_id=${id}`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      setIsWishlisted(data.is_wishlisted || false);
+    } catch (error) {
+      console.error('Error checking wishlist:', error);
     }
   };
 
@@ -141,26 +148,24 @@ const StudentCourseDetailPage = () => {
       return;
     }
 
-    if (course.enrolled_students >= course.max_students) {
-      toast.error("This class is full");
-      return;
-    }
-
     // Handle free vs paid enrollment
     if (course.price === 0) {
       try {
-        // TODO: Create enrollment endpoint
-        // const response = await fetch(API.ENROLL_COURSE, {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   credentials: 'include',
-        //   body: JSON.stringify({ course_id: id })
-        // });
-        // const data = await response.json();
-        // if (data.status === 'success') {
-        toast.success("Successfully enrolled in free course!");
-        setIsEnrolled(true);
-        // }
+        const response = await fetch(API.ENROLL_COURSE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ course_id: id })
+        });
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+          toast.success("Successfully enrolled in free course!");
+          setIsEnrolled(true);
+          fetchCourseDetails();
+        } else {
+          toast.error(data.message || 'Failed to enroll');
+        }
       } catch (error) {
         console.error('Error enrolling:', error);
         toast.error('Failed to enroll');
@@ -178,15 +183,24 @@ const StudentCourseDetailPage = () => {
     }
     
     try {
-      // TODO: Implement wishlist API
-      // const response = await fetch(API.ADD_TO_COURSE_WISHLIST, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   credentials: 'include',
-      //   body: JSON.stringify({ course_id: id, action: isWishlisted ? 'remove' : 'add' })
-      // });
-      setIsWishlisted(!isWishlisted);
-      toast.success(isWishlisted ? "Removed from wishlist" : "Added to wishlist ❤️");
+      const response = await fetch(API.ADD_TO_COURSE_WISHLIST, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          course_id: id, 
+          action: isWishlisted ? 'remove' : 'add' 
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        setIsWishlisted(!isWishlisted);
+        toast.success(isWishlisted ? "Removed from wishlist" : "Added to wishlist ❤️");
+      } else {
+        toast.error(data.message || 'Failed to update wishlist');
+      }
     } catch (error) {
       console.error('Error updating wishlist:', error);
       toast.error('Failed to update wishlist');
@@ -243,9 +257,6 @@ const StudentCourseDetailPage = () => {
     );
   }
 
-  const enrollmentPercentage = (course.enrolled_students / course.max_students) * 100;
-  const isFull = course.enrolled_students >= course.max_students;
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -290,12 +301,6 @@ const StudentCourseDetailPage = () => {
                 <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full capitalize">
                   {course.level}
                 </span>
-                {course.isPremium && (
-                  <span className="flex items-center gap-1 text-sm font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
-                    <Crown className="w-4 h-4" />
-                    Premium
-                  </span>
-                )}
               </div>
 
               <h1 className="text-3xl font-bold text-gray-900 mb-4">{course.title}</h1>
@@ -372,10 +377,6 @@ const StudentCourseDetailPage = () => {
                         <span className="text-gray-700">{course.duration}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Calendar className="w-5 h-5 text-blue-600" />
-                        <span className="text-gray-700">{course.schedule}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
                         <Users className="w-5 h-5 text-blue-600" />
                         <span className="text-gray-700">{course.enrolled_students} enrolled</span>
                       </div>
@@ -394,12 +395,36 @@ const StudentCourseDetailPage = () => {
                           key={video.id}
                           className="flex items-start gap-4 p-4 border rounded-lg hover:bg-gray-50 transition"
                         >
-                          <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <span className="text-blue-600 font-semibold">{idx + 1}</span>
+                          {/* Video Thumbnail */}
+                          <div className="flex-shrink-0">
+                            <img
+                              src={video.thumbnail}
+                              alt={video.title}
+                              className="w-32 h-20 object-cover rounded-lg"
+                              onError={(e) => {
+                                e.target.src = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400";
+                              }}
+                            />
                           </div>
+                          
                           <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900">{video.title}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{video.description}</p>
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-sm font-semibold text-blue-600">
+                                    Lesson {idx + 1}
+                                  </span>
+                                  {video.is_intro === 1 && (
+                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                                      Preview
+                                    </span>
+                                  )}
+                                </div>
+                                <h4 className="font-semibold text-gray-900">{video.title}</h4>
+                                <p className="text-sm text-gray-600 mt-1">{video.description}</p>
+                              </div>
+                            </div>
+                            
                             <div className="flex items-center gap-2 mt-2">
                               <PlayCircle className="w-4 h-4 text-gray-500" />
                               <span className="text-sm text-gray-500">{video.duration}</span>
@@ -484,14 +509,9 @@ const StudentCourseDetailPage = () => {
                 ) : (
                   <button
                     onClick={handleEnroll}
-                    disabled={isFull}
-                    className={`w-full py-3 rounded-lg font-semibold transition ${
-                      isFull
-                        ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                        : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600"
-                    }`}
+                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 rounded-lg hover:from-orange-600 hover:to-red-600 font-semibold transition"
                   >
-                    {isFull ? "Class Full" : course.price === 0 ? "Enroll for Free" : "Enroll Now"}
+                    {course.price === 0 ? "Enroll for Free" : "Enroll Now"}
                   </button>
                 )}
 

@@ -14,6 +14,7 @@ export default defineConfig({
     },
   },
   server: {
+    allowedHosts: true,
     watch: {
       ignored: [
         '**/node_modules/**',

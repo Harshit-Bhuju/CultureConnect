@@ -65,7 +65,7 @@ if (!$teacher_profile) {
 
 // Format created_at date
 $created_at = $teacher_profile["created_at"];
-$formatted_created_at = date("F Y", strtotime($created_at));
+$formatted_created_at = date("j F Y ", strtotime($created_at));
 
 // Fetch all courses for this teacher
 $courses_stmt = $conn->prepare("

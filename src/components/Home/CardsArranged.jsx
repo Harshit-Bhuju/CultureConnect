@@ -2,7 +2,7 @@ import CardBox from "./CardBox";
 import { cardData } from "./cardData";
 
 export default function CardsArranged() {
-  const {Dance,Singing,HE
+  const {Dance,Singing,Instruments
   } = cardData;
 
   return (
@@ -23,21 +23,21 @@ export default function CardsArranged() {
             title="Dances"
             items={Dance}
             footerLink="#"
-            footerText="Discover more"
+            footerText="Learn Dances"
           />
 
           <CardBox
             title="Songs"
             items={Singing}
             footerLink="#"
-            footerText="Shop all gifts"
+            footerText="Learn Songs"
           />
 
           <CardBox
             title="Instruments"
-            items={HE}
+            items={Instruments}
             footerLink="#"
-            footerText="Discover more"
+            footerText="Learn Instruments"
           />
         </div>
       </div>

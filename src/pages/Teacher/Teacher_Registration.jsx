@@ -395,7 +395,7 @@ function TeacherRegistration() {
 
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-            Teacher Registration
+Be an Expert
           </h1>
           <p className="text-gray-600 text-lg">Register as a cultural instructor</p>
         </div>
@@ -405,7 +405,7 @@ function TeacherRegistration() {
             {/* Teacher / Studio Name */}
             <div>
               <InlineLabel>
-                Teacher / Studio Name <span className="text-red-500">*</span>
+                Experts / Studio Name <span className="text-red-500">*</span>
               </InlineLabel>
               <input
                 name="name"

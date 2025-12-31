@@ -3,7 +3,8 @@ const getBaseUrl = () => {
   if (hostname === "localhost" || hostname === "127.0.0.1") {
     return "http://localhost/CultureConnect/backend";
   } else {
-    return `http://${hostname}/CultureConnect/backend`;
+    return `https://peaky-willa-glucinic.ngrok-free.dev/`;
+    // return `http://${hostname}/CultureConnect/backend`;
   }
 };
 

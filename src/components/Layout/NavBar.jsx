@@ -233,7 +233,7 @@ const [isMessageOpen, setIsMessageOpen] = useState(false);
       {/* Message */}
 {!isSearchOpen && (
   <button
-    onClick={() => setIsMessageOpen(true)}
+    onClick={() => {  window.open('https://peaky-willa-glucinic.ngrok-free.dev', '_blank', 'noopener,noreferrer'); }}
     className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
   >
     <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />

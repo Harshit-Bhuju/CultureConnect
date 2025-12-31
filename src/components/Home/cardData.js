@@ -1,22 +1,40 @@
+// Dances
+import Ghatu_dance from "../../assets/forcard/Dances/Ghatu_dance.png";
+import Jhyaure_Dance from "../../assets/forcard/Dances/Jhyaure Dance.png";
+import lakhey from "../../assets/forcard/Dances/lakhey.png";
+import Maruni_Dance from "../../assets/forcard/Dances/Maruni_Dance.png";
+
+// Instruments
+import Bansuri from "../../assets/forcard/Instruments/Bansuri.png";
+import Madal from "../../assets/forcard/Instruments/Madal.png";
+import Panche_Baja from "../../assets/forcard/Instruments/Panche Baja.png";
+import Tungna from "../../assets/forcard/Instruments/Tungna.png";
+
+// Sing
+import jhaure from "../../assets/forcard/Sing/jhaure.png";
+import RodhiGeet from "../../assets/forcard/Sing/RodhiGeet.png";
+import SakelaGeet from "../../assets/forcard/Sing/SakelaGeet.png";
+import Tamang_Selo from "../../assets/forcard/Sing/Tamang Selo.png";
+
 export const cardData = {
   Dance: [
-    { image: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=400', label: 'Under $10' },
-    { image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400', label: 'Under $25' },
-    { image: 'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=400', label: 'Under $50' },
-    { image: 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=400', label: 'Deals' },
+    { image: Ghatu_dance, label: 'Ghatu Dance' },
+    { image: Jhyaure_Dance, label: 'Jhyaure Dance' },
+    { image: lakhey, label: 'Lakhey' },
+    { image: Maruni_Dance, label: 'Maruni Dance' },
   ],
 
   Singing: [
-    { image: 'https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=400', label: 'For him' },
-    { image: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=400', label: 'For her' },
-    { image: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=400', label: 'For kids' },
-    { image: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400', label: 'For teens' },
+    { image: jhaure, label: 'Jhaure' },
+    { image: RodhiGeet, label: 'Rodhi Geet' },
+    { image: SakelaGeet, label: 'Sakela Geet' },
+    { image: Tamang_Selo, label: 'Tamang Selo' },
   ],
 
-  HE: [
-    { image: 'https://images.unsplash.com/photo-1585421514738-01798e348b17?w=400', label: 'Cleaning Tools' },
-    { image: 'https://images.unsplash.com/photo-1595428774223-ef52624120d2?w=400', label: 'Home Storage' },
-    { image: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=400&h=500&fit=crop', label: 'Home Decor' },
-    { image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=400', label: 'Bedding' },
+  Instruments: [
+    { image: Bansuri, label: 'Bansuri' },
+    { image: Madal, label: 'Madal' },
+    { image: Panche_Baja, label: 'Panche Baja' },
+    { image: Tungna, label: 'Tungna' },
   ],
 };

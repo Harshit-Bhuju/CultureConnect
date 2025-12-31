@@ -1,9 +1,12 @@
 <?php
 include("dbconnect.php");
+// ngrok http 80 --pooling-enabled
+// ngrok http 5173 --pooling-enabled
 
 $allowedOrigins = [
     "http://localhost:5173",
-    "http://10.10.255.64:5173" // Replace with your LAN IP of frontend device
+    "http://10.10.255.64:5173",
+    "https://peaky-willa-glucinic.ngrok-free.dev/" // Replace with your LAN IP of frontend device
 ];
 // $_SERVER['HTTP_ORIGIN'] shows localhost:5173 or LAN IP of frontend device
 //browser le  kun link bata request gareko ho bhanera thah pauna ko lagi

@@ -9,14 +9,10 @@ import {
   Users,
   PlayCircle,
   Clock,
-  Calendar,
   Eye,
   Share2,
-  Crown,
   BookOpen,
-  Award,
   CheckCircle,
-  AlertTriangle,
   Star
 } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
@@ -70,7 +66,6 @@ const TeacherCourseDetailPage = () => {
             ? `${API.COURSE_THUMBNAILS}/${data.course.thumbnail}`
             : "https://i.ytimg.com/vi/EcvPBRM405k/maxresdefault.jpg",
           price: parseFloat(data.course.price) || 0,
-          isPremium: data.course.is_premium === 1 || data.course.is_premium === '1',
           numVideos: parseInt(data.course.total_videos) || 0,
           duration: `${data.course.duration_weeks} weeks`,
           max_students: parseInt(data.course.max_students) || 20,
@@ -85,19 +80,20 @@ const TeacherCourseDetailPage = () => {
           totalReviews: parseInt(data.course.total_reviews) || 0,
           completionRate: parseInt(data.course.completion_rate) || 0,
           createdAt: data.course.created_at,
-          schedule: data.course.schedule || 'Flexible',
           videos: (data.videos || []).map((video, index) => ({
             id: video.id,
             title: video.video_title || `Lesson ${index + 1}`,
             duration: video.duration || "0:00",
             description: video.description || "",
+            // ✅ FIXED: Use COURSE_THUMBNAILS for video thumbnails
             thumbnail: video.thumbnail
-              ? `${API.COURSE_VIDEOS}/${video.thumbnail}`
+              ? `${API.COURSE_THUMBNAILS}/${video.thumbnail}`
               : data.course.thumbnail
                 ? `${API.COURSE_THUMBNAILS}/${data.course.thumbnail}`
-                : "https://i.ytimg.com/vi/EcvPBRM405k/maxresdefault.jpg",
+                : "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400",
             order: parseInt(video.order_in_course) || index + 1,
-            views: parseInt(video.views) || 0
+            views: parseInt(video.views) || 0,
+            is_intro: video.is_intro || 0
           })).sort((a, b) => a.order - b.order),
           learningOutcomes: data.course.what_you_will_learn
             ? data.course.what_you_will_learn.split('\n').filter(item => item.trim())
@@ -148,6 +144,7 @@ const TeacherCourseDetailPage = () => {
       if (data.status === 'success') {
         toast.success("Course published successfully! ✅");
         setCourse({ ...course, status: "Active" });
+        fetchCourseDetails();
       } else {
         toast.error(data.message || 'Failed to publish course');
       }
@@ -174,6 +171,7 @@ const TeacherCourseDetailPage = () => {
       if (data.status === 'success') {
         toast.success("Course moved to drafts! 📝");
         setCourse({ ...course, status: "Draft" });
+        fetchCourseDetails();
       } else {
         toast.error(data.message || 'Failed to move to draft');
       }
@@ -189,8 +187,7 @@ const TeacherCourseDetailPage = () => {
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`w-5 h-5 ${star <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-              }`}
+            className={`w-5 h-5 ${star <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
           />
         ))}
       </div>
@@ -217,8 +214,6 @@ const TeacherCourseDetailPage = () => {
       </div>
     );
   }
-
-  const enrollmentPercentage = (course.enrolled_students / course.max_students) * 100;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -323,12 +318,6 @@ const TeacherCourseDetailPage = () => {
                 <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full capitalize">
                   {course.level}
                 </span>
-                {course.isPremium && (
-                  <span className="flex items-center gap-1 text-sm font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
-                    <Crown className="w-4 h-4" />
-                    Premium
-                  </span>
-                )}
               </div>
 
               <h1 className="text-3xl font-bold text-gray-900 mb-4">{course.title}</h1>
@@ -388,12 +377,8 @@ const TeacherCourseDetailPage = () => {
                         <span className="text-gray-700">{course.duration}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Calendar className="w-5 h-5 text-blue-600" />
-                        <span className="text-gray-700">{course.schedule}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
                         <Users className="w-5 h-5 text-blue-600" />
-                        <span className="text-gray-700">{course.enrolled_students}/{course.max_students} enrolled</span>
+                        <span className="text-gray-700">{course.enrolled_students} students enrolled</span>
                       </div>
                     </div>
                   </div>
@@ -416,14 +401,38 @@ const TeacherCourseDetailPage = () => {
                       course.videos.map((video, idx) => (
                         <div
                           key={video.id}
-                          className="flex items-start gap-4 p-4 border rounded-lg"
+                          className="flex items-start gap-4 p-4 border rounded-lg hover:bg-gray-50 transition"
                         >
-                          <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <span className="text-blue-600 font-semibold">{idx + 1}</span>
+                          {/* Video Thumbnail */}
+                          <div className="flex-shrink-0">
+                            <img
+                              src={video.thumbnail}
+                              alt={video.title}
+                              className="w-32 h-20 object-cover rounded-lg"
+                              onError={(e) => {
+                                e.target.src = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400";
+                              }}
+                            />
                           </div>
+                          
                           <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900">{video.title}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{video.description}</p>
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-sm font-semibold text-blue-600">
+                                    Lesson {idx + 1}
+                                  </span>
+                                  {video.is_intro === 1 && (
+                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                                      Intro
+                                    </span>
+                                  )}
+                                </div>
+                                <h4 className="font-semibold text-gray-900">{video.title}</h4>
+                                <p className="text-sm text-gray-600 mt-1">{video.description}</p>
+                              </div>
+                            </div>
+                            
                             <div className="flex items-center gap-4 mt-2">
                               <div className="flex items-center gap-1 text-sm text-gray-500">
                                 <PlayCircle className="w-4 h-4" />
@@ -487,7 +496,7 @@ const TeacherCourseDetailPage = () => {
                         <strong>{course.enrolled_students}</strong> students are enrolled in this course
                       </p>
                       <p className="text-sm text-blue-600 mt-1">
-                        {course.max_students - course.enrolled_students} spots remaining
+                        No enrollment limit - unlimited spots available
                       </p>
                     </div>
                     <p className="text-gray-600">Detailed student list and progress tracking coming soon.</p>
@@ -506,16 +515,16 @@ const TeacherCourseDetailPage = () => {
                         </div>
                         <div className="space-y-2">
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Current Students:</span>
+                            <span className="text-gray-600">Total Students:</span>
                             <span className="font-semibold">{course.enrolled_students}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Maximum Capacity:</span>
-                            <span className="font-semibold">{course.max_students}</span>
+                            <span className="text-gray-600">Enrollment Status:</span>
+                            <span className="font-semibold text-green-600">Unlimited</span>
                           </div>
                           <div className="flex justify-between border-t pt-2 mt-2">
-                            <span className="text-gray-600">Fill Rate:</span>
-                            <span className="font-semibold">{Math.round(enrollmentPercentage)}%</span>
+                            <span className="text-gray-600">Availability:</span>
+                            <span className="font-semibold">Open to All</span>
                           </div>
                         </div>
                       </div>
@@ -585,18 +594,6 @@ const TeacherCourseDetailPage = () => {
                         </div>
                       </div>
                     </div>
-
-                    {enrollmentPercentage < 50 && (
-                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-start gap-3">
-                        <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="font-medium text-orange-800">Low enrollment</p>
-                          <p className="text-sm text-orange-700 mt-1">
-                            Consider promoting this course or adjusting the pricing to attract more students.
-                          </p>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -654,8 +651,7 @@ const TeacherCourseDetailPage = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Status:</span>
-                    <span className={`font-medium ${course.status === "Active" ? "text-green-600" : "text-gray-600"
-                      }`}>
+                    <span className={`font-medium ${course.status === "Active" ? "text-green-600" : "text-gray-600"}`}>
                       {course.status}
                     </span>
                   </div>
@@ -674,32 +670,15 @@ const TeacherCourseDetailPage = () => {
                     <span className="font-medium capitalize">{course.level}</span>
                   </div>
                   <div className="flex justify-between">
+                    <span className="text-gray-600">Total Students:</span>
+                    <span className="font-medium">{course.enrolled_students}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-gray-600">Created:</span>
                     <span className="font-medium">
                       {new Date(course.createdAt).toLocaleDateString()}
                     </span>
                   </div>
-                </div>
-              </div>
-
-              {/* Enrollment Progress */}
-              <div className="bg-white rounded-lg shadow-sm border p-6 space-y-3">
-                <h3 className="font-semibold text-gray-900">Enrollment Progress</h3>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">{course.enrolled_students}/{course.max_students} enrolled</span>
-                    <span className="font-medium">{Math.round(enrollmentPercentage)}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div
-                      className="bg-gradient-to-r from-blue-600 to-blue-500 h-3 rounded-full transition-all duration-500"
-                      style={{ width: `${enrollmentPercentage}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-600">
-                    {course.max_students - course.enrolled_students} spots remaining
-                  </p>
                 </div>
               </div>
             </div>
