@@ -6,7 +6,9 @@ include(__DIR__ . "/dbconnect.php");
 $allowedOrigins = [
     "http://localhost:5173",
     "http://192.168.1.8:5173",
-    "https://modelling-sheets-kelkoo-eventually.trycloudflare.com"
+    "https://www.harshitbhuju.com.np",
+    "https://harshitbhuju.com.np",
+    "https://harmanbhuju.com.np"
     // Replace with your LAN IP of frontend device
 ];
 // $_SERVER['HTTP_ORIGIN'] shows localhost:5173 or LAN IP of frontend device

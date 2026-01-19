@@ -1,18 +1,19 @@
 <?php
-require_once __DIR__ . '/../session_config.php';
-include(__DIR__ . "/../header.php");
+require_once __DIR__ . '/../../../config/session_config.php';
+include(__DIR__ . "/../../../config/header.php");
+
 
 try {
     $products = [];
-    
+
     // Get optional filters
     $category = isset($_GET['category']) ? trim($_GET['category']) : '';
     $audience = isset($_GET['audience']) ? trim($_GET['audience']) : '';
     $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 50; // Default 50 products
-    
+
     // Current month for prioritizing recent activity
     $current_month = date('Y-m-01');
-    
+
     // Build the query with popularity metrics
     $query = "
         SELECT 
@@ -47,11 +48,11 @@ try {
           AND p.stock > 0
           AND pi.image_url IS NOT NULL
     ";
-    
+
     // Initialize params
     $params = [$current_month];
     $types = "s";
-    
+
     // Add category filter if provided
     if (!empty($category)) {
         $valid_categories = ['cultural-clothes', 'musical-instruments', 'handicraft-decors'];
@@ -61,7 +62,7 @@ try {
             $types .= "s";
         }
     }
-    
+
     // Add audience filter if provided (only for cultural-clothes)
     if (!empty($audience)) {
         $valid_audiences = ['men', 'women', 'boy', 'girl'];
@@ -71,7 +72,7 @@ try {
             $types .= "s";
         }
     }
-    
+
     // Complete the query with ordering and limit
     $query .= "
         ORDER BY 
@@ -82,16 +83,16 @@ try {
             p.created_at DESC
         LIMIT ?
     ";
-    
+
     $params[] = $limit;
     $types .= "i";
-    
+
     // Execute query
     $stmt = $conn->prepare($query);
     $stmt->bind_param($types, ...$params);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     while ($row = $result->fetch_assoc()) {
         // Get product tags
         $tagStmt = $conn->prepare("
@@ -102,13 +103,13 @@ try {
         $tagStmt->bind_param("i", $row['id']);
         $tagStmt->execute();
         $tagResult = $tagStmt->get_result();
-        
+
         $tags = [];
         while ($tagRow = $tagResult->fetch_assoc()) {
             $tags[] = $tagRow['tag'];
         }
         $tagStmt->close();
-        
+
         // Get additional culture info for cultural-clothes
         $culture = null;
         if ($row['category'] === 'cultural-clothes') {
@@ -126,7 +127,7 @@ try {
             }
             $cultureStmt->close();
         }
-        
+
         $products[] = [
             'id' => (int)$row['id'],
             'seller_id' => (int)$row['seller_id'],
@@ -149,7 +150,7 @@ try {
         ];
     }
     $stmt->close();
-    
+
     // Return success response
     echo json_encode([
         'success' => true,
@@ -164,7 +165,6 @@ try {
             ? 'Popular products loaded successfully'
             : 'No popular products available'
     ]);
-    
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode([

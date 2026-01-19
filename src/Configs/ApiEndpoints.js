@@ -1,11 +1,13 @@
 const getBaseUrl = () => {
   const hostname = window.location.hostname;
+
+  // Local development
   if (hostname === "localhost" || hostname === "127.0.0.1") {
     return "http://localhost/CultureConnect/backend";
-  } else {
-    return `https://scanned-aluminium-decrease-sugar.trycloudflare.com/cultureconnect/backend`;
-    // return `http://${hostname}/CultureConnect/backend`;
   }
+
+  // Production
+  return "https://api.harmanbhuju.com.np/cultureconnect/backend";
 };
 
 export const BASE_URL = getBaseUrl();
@@ -32,17 +34,18 @@ const API = {
   // Seller
   SELLER_REGISTRATION: `${BASE_URL}/seller/seller_registration.php`,
   GET_SELLER_PROFILE: `${BASE_URL}/seller/get_seller_profile.php`,
+
   UPDATE_SELLER_PROFILE: `${BASE_URL}/seller/seller_profile_update.php`,
 
   // Products
-  PRODUCT_UPLOAD: `${BASE_URL}/product/product_upload.php`,
+  PRODUCT_UPLOAD: `${BASE_URL}/seller/product_upload.php`,
   PRODUCT_IMAGES: `${BASE_URL}/uploads/product_images`,
-  GET_SELLER_PRODUCTS: `${BASE_URL}/product/get_seller_products.php`,
-  DELETE_PRODUCT: `${BASE_URL}/product/product_delete.php`,
-  GET_PRODUCT_DETAILS: `${BASE_URL}/product/get_product_details.php`,
-  UPDATE_PRODUCT: `${BASE_URL}/product/product_update.php`,
-  UPDATE_PRODUCT_STATUS: `${BASE_URL}/product/product_status_update.php`,
-  GET_DRAFT_PRODUCTS: `${BASE_URL}/product/get_draft_products.php`,
+  GET_SELLER_PRODUCTS: `${BASE_URL}/seller/get_seller_products.php`,
+  DELETE_PRODUCT: `${BASE_URL}/seller/product_delete.php`,
+  GET_PRODUCT_DETAILS: `${BASE_URL}/seller/get_product_details.php`,
+  UPDATE_PRODUCT: `${BASE_URL}/seller/product_update.php`,
+  UPDATE_PRODUCT_STATUS: `${BASE_URL}/seller/product_status_update.php`,
+  GET_DRAFT_PRODUCTS: `${BASE_URL}/seller/get_draft_products.php`,
 
   // Orders
   GET_ALL_ORDERS: `${BASE_URL}/order/get_all_orders.php`,
@@ -68,7 +71,7 @@ const API = {
 
   // Analytics
   GET_ANALYTICS_STATS: `${BASE_URL}/seller/get_analytics_stats.php`,
-  GET_TOP_SELLING_PRODUCTS: `${BASE_URL}/product/get_top_selling_products.php`,
+  GET_TOP_SELLING_PRODUCTS: `${BASE_URL}/seller/get_top_selling_products.php`,
 
   // Reviews
   SUBMIT_REVIEW: `${BASE_URL}/review/submit_review.php`,
@@ -82,9 +85,10 @@ const API = {
   GET_USER_FOLLOWING: `${BASE_URL}/user/get_user_following.php`,
 
   // Home/Products
-  GET_POPULAR_PRODUCTS: `${BASE_URL}/product/home/get_popular_products.php`,
-  GET_TRENDING_PRODUCTS: `${BASE_URL}/product/home/get_trending_products.php`,
-  GET_POPULAR_WEEKLY_PRODUCTS: `${BASE_URL}/product/home/get_popular_week.php`,
+  GET_POPULAR_PRODUCTS: `${BASE_URL}/product/seller_product/marketplace/get_popular_products.php`,
+  GET_TRENDING_PRODUCTS: `${BASE_URL}/product/seller_product/marketplace/get_trending_products.php`,
+  GET_POPULAR_WEEKLY_PRODUCTS: `${BASE_URL}/product/seller_product/marketplace/get_popular_week.php`,
+
   // Teacher
   TEACHER_REGISTRATION: `${BASE_URL}/teacher/teacher_registration.php`,
   TEACHER_PROFILE_PICTURES: `${BASE_URL}/uploads/teacher_datas/profile_pictures`,
@@ -109,7 +113,7 @@ const API = {
   // Course Videos
   COURSE_VIDEOS: `${BASE_URL}/uploads/teacher_datas/course_videos`,
 
-  // Course Thumbnails (if you add thumbnail upload later)
+  // Course Thumbnails
   COURSE_THUMBNAILS: `${BASE_URL}/uploads/teacher_datas/course_thumbnails`,
 };
 

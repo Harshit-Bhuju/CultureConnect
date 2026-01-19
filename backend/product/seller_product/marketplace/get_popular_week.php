@@ -1,6 +1,7 @@
 <?php
-require_once __DIR__ . '/../../config/session_config.php';
-include(__DIR__ . "/../../config/header.php");
+require_once __DIR__ . '/../../../config/session_config.php';
+include(__DIR__ . "/../../../config/header.php");
+
 
 try {
     $products = [];
