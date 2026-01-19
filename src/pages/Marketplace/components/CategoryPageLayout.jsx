@@ -78,7 +78,7 @@ const CategoryPageLayout = ({ title, description, products }) => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentProducts = sortedProducts.slice(
     startIndex,
-    startIndex + itemsPerPage
+    startIndex + itemsPerPage,
   );
 
   const handlePageChange = (page) => {
@@ -92,14 +92,14 @@ const CategoryPageLayout = ({ title, description, products }) => {
     setSelectedConditions((prev) =>
       prev.includes(condition)
         ? prev.filter((c) => c !== condition)
-        : [...prev, condition]
+        : [...prev, condition],
     );
     setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const toggleAvailability = (item) => {
     setSelectedAvailability((prev) =>
-      prev.includes(item) ? prev.filter((a) => a !== item) : [...prev, item]
+      prev.includes(item) ? prev.filter((a) => a !== item) : [...prev, item],
     );
     setCurrentPage(1); // Reset to first page when filter changes
   };
@@ -113,7 +113,7 @@ const CategoryPageLayout = ({ title, description, products }) => {
   };
 
   return (
-    <div className="bg-white">
+    <div className="bg-gray-100">
       <div className="max-w-[1440px] mx-auto py-10 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Sidebar - Refined & Aesthetic */}
@@ -159,7 +159,7 @@ const CategoryPageLayout = ({ title, description, products }) => {
                     key={rating}
                     onClick={() => {
                       setSelectedRating(
-                        selectedRating === rating ? null : rating
+                        selectedRating === rating ? null : rating,
                       );
                       setCurrentPage(1);
                     }}
@@ -304,7 +304,7 @@ const CategoryPageLayout = ({ title, description, products }) => {
 
             {/* Products Grid */}
             {currentProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              <div className="grid grid-cols-4 min-[540px]:grid-cols-5 md:grid-cols-6 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-4">
                 {currentProducts.map((product) => (
                   <div key={product.id} className="group">
                     <Card product={product} />
@@ -349,7 +349,7 @@ const CategoryPageLayout = ({ title, description, products }) => {
                       }`}>
                       {page}
                     </button>
-                  )
+                  ),
                 )}
 
                 <button

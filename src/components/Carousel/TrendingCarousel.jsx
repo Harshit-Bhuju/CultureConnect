@@ -6,8 +6,6 @@ import { Mousewheel } from "swiper/modules";
 import { useSidebar } from "../ui/sidebar";
 import Card from "../cardLayout/Card";
 import API from "../../Configs/ApiEndpoints";
-import toast from "react-hot-toast";
-import Loading from "../common/Loading";
 import "./TrendingCarousel.css";
 
 export default function TrendingCarousel() {

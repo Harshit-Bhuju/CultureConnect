@@ -113,6 +113,8 @@ export const teachers = [
 export const products = [
   {
     id: "daura-suruwal-001",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Traditional Daura Suruwal",
     category: "traditional-clothing",
     price: "Rs. 8,500",
@@ -132,6 +134,8 @@ export const products = [
   },
   {
     id: "gunyo-cholo",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Traditional Gunyo Cholo",
     category: "traditional-clothing",
     price: "Rs. 6,500",
@@ -147,6 +151,8 @@ export const products = [
   },
   {
     id: "handwoven-bhoto",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Handwoven Bhoto",
     category: "traditional-clothing",
     price: "Rs. 3,200",
@@ -162,6 +168,8 @@ export const products = [
   },
   {
     id: "dhaka-topi",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Palpali Dhaka Topi",
     category: "traditional-clothing",
     price: "Rs. 1,200",
@@ -177,6 +185,8 @@ export const products = [
   },
   {
     id: "saree-001",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Handloom Saree",
     category: "traditional-clothing",
     price: "Rs. 15,000",
@@ -192,6 +202,8 @@ export const products = [
   },
   {
     id: "thangka-painting-001",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Wheel of Life Thangka",
     category: "arts-decor",
     price: "Rs. 25,000",
@@ -210,6 +222,8 @@ export const products = [
   },
   {
     id: "paubha-painting",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Paubha Painting",
     category: "arts-decor",
     price: "Rs. 30,000",
@@ -225,6 +239,8 @@ export const products = [
   },
   {
     id: "wooden-mask",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Traditional Wooden Mask",
     category: "arts-decor",
     price: "Rs. 5,000",
@@ -240,6 +256,8 @@ export const products = [
   },
   {
     id: "prayer-wheel",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Handheld Prayer Wheel",
     category: "arts-decor",
     price: "Rs. 2,500",
@@ -255,6 +273,8 @@ export const products = [
   },
   {
     id: "clay-pottery",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Traditional Clay Pottery",
     category: "arts-decor",
     price: "Rs. 1,500",
@@ -270,6 +290,8 @@ export const products = [
   },
   {
     id: "singing-bowl",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Tibetan Singing Bowl",
     category: "musical-instruments",
     price: "Rs. 8,000",
@@ -285,6 +307,8 @@ export const products = [
   },
   {
     id: "traditional-madal",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Handcrafted Madal",
     category: "musical-instruments",
     price: "Rs. 4,500",
@@ -303,6 +327,8 @@ export const products = [
   },
   {
     id: "raditional-sarangi",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Traditional Sarangi",
     category: "musical-instruments",
     price: "Rs. 12,000",
@@ -318,6 +344,8 @@ export const products = [
   },
   {
     id: "bamboo-flute",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Classical Bansuri",
     category: "musical-instruments",
     price: "Rs. 1,800",
@@ -333,6 +361,8 @@ export const products = [
   },
   {
     id: "tungna",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Tungna",
     category: "musical-instruments",
     price: "Rs. 5,500",
@@ -348,6 +378,8 @@ export const products = [
   },
   {
     id: "damphu",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Tamang Damphu",
     category: "musical-instruments",
     price: "Rs. 3,500",
@@ -363,6 +395,8 @@ export const products = [
   },
   {
     id: "khukuri",
+    sellerId: "mock-seller-1",
+    seller_id: "mock-seller-1",
     name: "Decorative Khukuri",
     category: "arts-decor",
     price: "Rs. 10,000",

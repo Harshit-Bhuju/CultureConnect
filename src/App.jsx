@@ -12,14 +12,14 @@ const Home = lazy(() => import("./pages/Home/Home"));
 const Login = lazy(() => import("./pages/Login/Login"));
 const SignUp = lazy(() => import("./pages/SignUp/SignUp"));
 const OTP = lazy(() => import("./pages/Otp/Otp"));
-const ForgotPassword = lazy(() =>
-  import("./pages/ForgotPassword/ForgotPassword")
+const ForgotPassword = lazy(
+  () => import("./pages/ForgotPassword/ForgotPassword"),
 );
-const ForgotPasswordOtp = lazy(() =>
-  import("./pages/ForgotPassword/ForgotPasswordOtp")
+const ForgotPasswordOtp = lazy(
+  () => import("./pages/ForgotPassword/ForgotPasswordOtp"),
 );
-const ChangePassword = lazy(() =>
-  import("./pages/ChangePassword/ChangePassword")
+const ChangePassword = lazy(
+  () => import("./pages/ChangePassword/ChangePassword"),
 );
 const SetPassword = lazy(() => import("./pages/SetPassword/SetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
@@ -33,84 +33,86 @@ const ArtCrafts = lazy(() => import("./pages/LearnCulture/ArtCrafts"));
 
 // Marketplace pages
 const MarketPlace = lazy(() => import("./pages/Marketplace/Marketplace"));
-const TraditionalClothing = lazy(() =>
-  import("./pages/Marketplace/TraditionalClothing")
+const TraditionalClothing = lazy(
+  () => import("./pages/Marketplace/TraditionalClothing"),
 );
 const Instruments = lazy(() => import("./pages/Marketplace/Instruments"));
 const Arts = lazy(() => import("./pages/Marketplace/Arts"));
 // Decorations merged into Arts
 
-const SellerProductUpload = lazy(() =>
-  import("./components/ManageProducts/CardHandling/SellerProductUpload")
+const SellerProductUpload = lazy(
+  () => import("./components/ManageProducts/CardHandling/SellerProductUpload"),
 );
-const SellerProductEdit = lazy(() =>
-  import("./components/ManageProducts/CardHandling/SellerProductEditPage")
+const SellerProductEdit = lazy(
+  () =>
+    import("./components/ManageProducts/CardHandling/SellerProductEditPage"),
 );
-const ProductDetailRouter = lazy(() =>
-  import("./components/Products/ProductRouter/ProductDetailRouter")
+const ProductDetailRouter = lazy(
+  () => import("./components/Products/ProductRouter/ProductDetailRouter"),
 );
-const SellerAnalyticsDashboard = lazy(() =>
-  import("./components/ManageProducts/Analytics/SellerAnalyticsDashboard")
+const SellerAnalyticsDashboard = lazy(
+  () =>
+    import("./components/ManageProducts/Analytics/SellerAnalyticsDashboard"),
 );
-const DraftProducts = lazy(() =>
-  import("./components/ManageProducts/Drafts/Drafts")
+const DraftProducts = lazy(
+  () => import("./components/ManageProducts/Drafts/Drafts"),
 );
 
 // Settings pages
 const Settings = lazy(() => import("./pages/Settings/Settings"));
-const Personal_Settings = lazy(() =>
-  import("./pages/Settings/Personal_Settings")
+const Personal_Settings = lazy(
+  () => import("./pages/Settings/Personal_Settings"),
 );
-const Password_Settings = lazy(() =>
-  import("./pages/Settings/Password_Settings")
+const Password_Settings = lazy(
+  () => import("./pages/Settings/Password_Settings"),
 );
-const AdminProtectedRoute = lazy(() =>
-  import("./components/Auth/Route/AdminProtectedRoute")
+const AdminProtectedRoute = lazy(
+  () => import("./components/Auth/Route/AdminProtectedRoute"),
 );
 const AdminPanel = lazy(() => import("./admin/AdminPanel"));
-const ProtectedSellerRoute = lazy(() =>
-  import("./components/Auth/Route/ProtectedSellerRoute")
+const ProtectedSellerRoute = lazy(
+  () => import("./components/Auth/Route/ProtectedSellerRoute"),
 );
-const SellerRegistrationRoute = lazy(() =>
-  import("./components/Auth/Route/SellerRegistrationRoute")
+const SellerRegistrationRoute = lazy(
+  () => import("./components/Auth/Route/SellerRegistrationRoute"),
 );
 
 // Teacher pages
-const TeacherRegistration = lazy(() =>
-  import("./pages/Teacher/Teacher_Registration")
+const TeacherRegistration = lazy(
+  () => import("./pages/Teacher/Teacher_Registration"),
 );
 const TeacherProfile = lazy(() => import("./pages/Teacher/Teacher_Profile"));
-const CustomizeTeacherProfile = lazy(() =>
-  import("./pages/Teacher/CustomizeTeacherProfile")
+const CustomizeTeacherProfile = lazy(
+  () => import("./pages/Teacher/CustomizeTeacherProfile"),
 );
-const ManageClasses = lazy(() =>
-  import("./pages/Teacher/ManageCourses/ManageClasses")
+const ManageClasses = lazy(
+  () => import("./pages/Teacher/ManageCourses/ManageClasses"),
 );
-const TeacherCourseUpload = lazy(() =>
-  import("./pages/Teacher/TeacherPagesHandling/TeacherCourseUpload")
+const TeacherCourseUpload = lazy(
+  () => import("./pages/Teacher/TeacherPagesHandling/TeacherCourseUpload"),
 );
-const TeacherClassEdit = lazy(() =>
-  import("./pages/Teacher/TeacherPagesHandling/TeacherClassEdit")
+const TeacherClassEdit = lazy(
+  () => import("./pages/Teacher/TeacherPagesHandling/TeacherClassEdit"),
 );
 
 // Course pages
-const CourseDetailRouter = lazy(() =>
-  import("./components/Auth/Route/TeacherRoute/CourseDetailRouter")
+const CourseDetailRouter = lazy(
+  () => import("./components/Auth/Route/TeacherRoute/CourseDetailRouter"),
 );
 
 // Protected Teacher Route component
-const ProtectedTeacherRoute = lazy(() =>
-  import("./components/Auth/Route/TeacherRoute/ProtectedTeacherRoute")
+const ProtectedTeacherRoute = lazy(
+  () => import("./components/Auth/Route/TeacherRoute/ProtectedTeacherRoute"),
 );
 
 // Seller pages
 const Seller = lazy(() => import("./pages/BeSeller/Seller"));
 const SellerProfile = lazy(() => import("./pages/BeSeller/SellerProfile"));
-const CustomizeProfile = lazy(() =>
-  import("./pages/BeSeller/CustomiseProfile")
+const CustomizeProfile = lazy(
+  () => import("./pages/BeSeller/CustomiseProfile"),
 );
-const ProductManagement = lazy(() =>
-  import("./pages/BeSeller/ProductManagement")
+const ProductManagement = lazy(
+  () => import("./pages/BeSeller/ProductManagement"),
 );
 
 // Checkout & Cart
@@ -382,7 +384,6 @@ function App() {
                 <LearnCulture />
               </ProtectedRoute>
             }>
-            <Route index element={<Navigate to="dances" />} />
             <Route path="dances" element={<Dances />} />
             <Route path="singing" element={<Singing />} />
             <Route path="instruments" element={<LCInstruments />} />

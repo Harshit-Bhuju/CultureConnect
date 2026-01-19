@@ -1,120 +1,245 @@
 import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
+import { motion } from "framer-motion";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 
+import { ArrowRight } from "lucide-react";
 import { products } from "../../data/homeData";
-import { ShoppingBag, Eye, Heart, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import Rating from "../Rating/Rating";
+import { BASE_URL } from "../../Configs/ApiEndpoints";
+import { useAuth } from "../../context/AuthContext";
 
 const ProductCard = ({ product }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Handle both sellerId and seller_id
+  const sellerId = product.sellerId || product.seller_id;
+  const productId = product.id;
+
+  // Check if it's seller's own product
+  const isOwnProduct =
+    user?.seller_id && sellerId && user.seller_id === sellerId;
+
+  const productLink = isOwnProduct
+    ? `/seller/products/${user.seller_id}/${productId}`
+    : `/products/${sellerId}/${productId}`;
+
+  // Flexible image handling
+  const getFirstImage = () => {
+    if (product.images?.length > 0) {
+      return Array.isArray(product.images) ? product.images[0] : product.images;
+    }
+    return (
+      product.image ||
+      product.image_url ||
+      product.imageUrl ||
+      product.imagePath ||
+      null
+    );
+  };
+
+  const rawImage = getFirstImage();
+  const imageUrl = rawImage
+    ? rawImage.startsWith("http") || rawImage.startsWith("/")
+      ? rawImage
+      : `${BASE_URL}/uploads/product_images/${rawImage}`
+    : "/placeholder-image.png";
+
+  // Product name fallback
+  const productName =
+    product.productName ||
+    product.name ||
+    product.title ||
+    product.product_name ||
+    "Unnamed Product";
+
+  // Price formatting
+  const price = (() => {
+    const p = product.price;
+    if (typeof p === "number") return p.toLocaleString();
+    if (typeof p === "string") {
+      // Remove "Rs. " prefix if present
+      const cleanPrice = p.replace(/Rs\.\s*/i, "").replace(/,/g, "");
+      return parseFloat(cleanPrice || 0).toLocaleString();
+    }
+    return "0";
+  })();
+
+  // Rating normalization
+  const rating = product.averageRating ?? product.rating ?? 0;
+  const reviews =
+    product.totalReviews ?? product.reviews ?? product.reviewCount ?? 0;
+
+  const handleCardClick = (e) => {
+    e.preventDefault();
+
+    // Validate required IDs before navigation
+    if (!productId || !sellerId) {
+      console.error("Missing required IDs for navigation:", {
+        productId,
+        sellerId,
+        product,
+      });
+      return;
+    }
+
+    const currentLocation = location.pathname + (location.search || "");
+    console.log("Navigating to:", productLink);
+    navigate(productLink, { state: { from: currentLocation } });
+  };
+
   return (
-    <div className="p-2 h-full">
-      <div className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 border border-gray-100 h-full flex flex-col">
-        {/* Image */}
-        <div className="relative w-full aspect-[4/3] bg-gray-100 overflow-hidden">
-          <img
-            src={product.imagePath}
-            alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+    <motion.div
+      className="p-2"
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}>
+      <motion.div
+        className="group relative bg-white overflow-hidden border border-gray-200 h-[280px] flex shadow-sm hover:shadow-xl cursor-pointer"
+        whileHover={{ y: -8 }}
+        transition={{ duration: 0.3 }}
+        onClick={handleCardClick}>
+        {/* Image - Wider, Less Height */}
+        <div className="relative w-2/5 bg-gray-100 overflow-hidden">
+          <motion.img
+            src={imageUrl}
+            alt={productName}
+            className="w-full h-full object-cover"
+            whileHover={{ scale: 1.1 }}
+            transition={{ duration: 0.6 }}
+            onError={(e) => {
+              e.target.src = "/placeholder-image.png";
+            }}
           />
-          <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider text-black">
-            {product.category.replace("-", " ")}
-          </span>
 
-          {/* Quick Actions Overlay */}
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-300">
-            {[ShoppingBag, Eye, Heart].map((Icon, idx) => (
-              <button
-                key={idx}
-                className={`bg-white p-3 rounded-full hover:bg-heritage-red hover:text-white transition-all duration-300 shadow-lg transform translate-y-4 group-hover:translate-y-0 delay-${
-                  idx * 75
-                }`}>
-                <Icon className="w-5 h-5" />
-              </button>
-            ))}
+          {/* Category Badge */}
+          <div className="absolute top-3 left-3 bg-black text-white text-xs font-bold px-3 py-1 uppercase tracking-wide">
+            {product.category?.replace("-", " ") || "Product"}
           </div>
         </div>
 
-        {/* Details */}
-        <div className="p-4 flex flex-col flex-1 justify-between">
+        {/* Content - Takes remaining space */}
+        <div className="w-3/5 p-5 flex flex-col justify-between">
           <div>
-            <h3 className="font-heading font-bold text-lg text-gray-900 group-hover:text-heritage-red line-clamp-1">
-              {product.name}
+            <h3 className="font-bold text-lg text-gray-900 group-hover:text-red-600 transition-colors duration-300 line-clamp-2 mb-2">
+              {productName}
             </h3>
-            <p className="text-sm text-gray-500 font-medium line-clamp-1">
-              by {product.artisan}
+            <p className="text-sm text-gray-600 mb-3">
+              by {product.artisan || "Artisan"}
             </p>
+            <span className="font-bold text-lg text-gray-900">Rs. {price}</span>
           </div>
 
-          <div className="mt-3 flex justify-between items-center">
-            <span className="font-bold text-lg text-gray-900">
-              {product.price}
-            </span>
-          </div>
+          <div className="space-y-2">
+            {/* Rating & Stock */}
+            <div className="flex justify-between items-center text-sm border-t border-gray-200 pt-3">
+              <Rating rating={rating} reviews={reviews} />
+            </div>
 
-          <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500 uppercase tracking-widest">
-            <span className="line-clamp-1">{product.region}</span>
-            <span
-              className={`font-bold whitespace-nowrap ${
-                product.inStock ? "text-green-600" : "text-red-600"
-              }`}>
-              {product.inStock ? "In Stock" : "Sold Out"}
-            </span>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full bg-red-600 text-white py-2.5 text-sm font-bold hover:bg-red-700 transition-colors duration-300"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCardClick(e);
+              }}>
+              Buy Now
+            </motion.button>
           </div>
         </div>
-      </div>
-    </div>
+
+        {/* Hover Border */}
+        <motion.div
+          className="absolute inset-0 border-2 border-red-600 opacity-0 group-hover:opacity-100 pointer-events-none"
+          initial={false}
+          transition={{ duration: 0.3 }}
+        />
+      </motion.div>
+    </motion.div>
   );
 };
 
 const FeaturedProducts = () => {
+  const navigate = useNavigate();
+
+  const handleViewAllClick = () => {
+    navigate("/products");
+  };
+
   return (
-    <section className="py-24 bg-stone-50 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 mb-12 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
-        <div>
-          <h2 className="text-4xl font-heading font-bold mb-4">
-            Masterpiece Collection
-          </h2>
-          <p className="text-gray-600 max-w-xl">
-            Exclusive handcrafted items that tell a story of centuries-old
-            traditions.
-          </p>
+    <section className="py-8 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 mb-12 relative z-10">
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}>
+            <span className="inline-block text-sm font-bold tracking-wider uppercase text-red-600 mb-3">
+              Handpicked For You
+            </span>
+            <h2 className="text-5xl md:text-6xl font-bold mb-4 text-gray-900">
+              Featured <span className="text-red-600">Collection</span>
+            </h2>
+            <p className="text-gray-600 text-lg max-w-xl">
+              Exclusive handcrafted items that tell a story of centuries-old
+              traditions.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}>
+            <motion.button
+              className="hidden md:flex items-center gap-3 px-6 py-3 bg-red-600 text-white font-bold hover:bg-red-700 transition-colors duration-300 group"
+              whileHover={{ x: 5 }}
+              onClick={handleViewAllClick}>
+              View All Products
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </motion.button>
+          </motion.div>
         </div>
-        <Link
-          to="/marketplace"
-          className="hidden md:flex items-center gap-2 text-heritage-red font-medium hover:text-red-700 transition-colors">
-          View All Products <ArrowRight className="w-5 h-5" />
-        </Link>
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-6">
+      <div className="max-w-[1400px] mx-auto px-6 relative z-10">
         <Swiper
           modules={[Autoplay, Pagination, Navigation]}
-          spaceBetween={23}
+          spaceBetween={20}
           slidesPerView={1}
           loop
           autoplay={{
-            delay: 3000,
+            delay: 4000,
             disableOnInteraction: false,
             pauseOnMouseEnter: true,
           }}
-          pagination={{ clickable: true, dynamicBullets: true }}
+          pagination={{
+            clickable: true,
+            dynamicBullets: true,
+          }}
           navigation={true}
           breakpoints={{
-            640: { slidesPerView: 2 },
-            768: { slidesPerView: 3 },
-            1024: { slidesPerView: 4 },
+            640: { slidesPerView: 1 },
+            768: { slidesPerView: 2 },
+            1024: { slidesPerView: 2 },
+            1280: { slidesPerView: 3 },
           }}
-          className="w-full"
+          className="w-full pb-10"
           style={{
-            paddingBottom: "12px",
-            "--swiper-pagination-bottom": "0px",
-            "--swiper-theme-color": "#D4145A",
-            "--swiper-navigation-color": "#D4145A",
-            "--swiper-navigation-size": "24px",
+            "--swiper-pagination-color": "#DC2626",
+            "--swiper-pagination-bullet-inactive-color": "#D1D5DB",
+            "--swiper-navigation-color": "#DC2626",
+            "--swiper-navigation-size": "28px",
+            paddingBottom: "80px",
           }}>
           {products.map((product) => (
             <SwiperSlide key={product.id}>
@@ -124,13 +249,19 @@ const FeaturedProducts = () => {
         </Swiper>
       </div>
 
-      <div className="md:hidden px-6 mt-6">
-        <Link
-          to="/marketplace"
-          className="flex w-full items-center justify-center gap-2 py-3 border border-gray-300 rounded-full font-medium">
+      {/* Mobile CTA */}
+      <motion.div
+        className="md:hidden px-6 mt-8 relative z-10"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}>
+        <button
+          className="flex w-full items-center justify-center gap-2 py-4 bg-red-600 text-white font-bold hover:bg-red-700 transition-colors"
+          onClick={handleViewAllClick}>
           View All Products
-        </Link>
-      </div>
+          <ArrowRight className="w-5 h-5" />
+        </button>
+      </motion.div>
     </section>
   );
 };
