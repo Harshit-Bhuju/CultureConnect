@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Star, Users, MapPin, ArrowRight } from "lucide-react";
 import { teachers } from "../../data/homeData";
+import { Link } from "react-router-dom";
 
 const TeacherCard = ({ teacher, index }) => {
   return (
@@ -178,12 +179,14 @@ const TeacherSection = () => {
                 Join our community of verified teachers and share your knowledge
                 with students globally.
               </p>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-red-600 text-white px-8 py-3 font-bold hover:bg-red-700 transition-colors duration-300 shadow-xl">
-                Apply to Teach
-              </motion.button>
+              <Link to="/teacher-registration">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-red-600 text-white px-8 py-3 font-bold hover:bg-red-700 transition-colors duration-300 shadow-xl">
+                  Apply to Teach
+                </motion.button>
+              </Link>
             </div>
           </motion.div>
         </div>
