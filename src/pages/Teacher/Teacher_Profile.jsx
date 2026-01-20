@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import Loading from "../../components/common/Loading";
 import API from "../../Configs/ApiEndpoints";
+import FollowersModal from "../../components/Common/FollowersModal";
 
 const TeacherProfile = () => {
   const navigate = useNavigate();
@@ -22,6 +23,11 @@ const TeacherProfile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
+
+  // Followers Modal State
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [followersList, setFollowersList] = useState([]);
+  const [followersLoading, setFollowersLoading] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -123,6 +129,30 @@ const TeacherProfile = () => {
       toast.error("Error updating follow status");
     } finally {
       setFollowLoading(false);
+    }
+  };
+
+
+
+  const handleShowFollowers = async () => {
+    setShowFollowersModal(true);
+    setFollowersLoading(true);
+    try {
+      const response = await fetch(`${API.GET_TEACHER_FOLLOWERS}?teacher_id=${id}`, {
+        method: "GET",
+        credentials: "include",
+      });
+      const result = await response.json();
+      if (result.status === "success") {
+        setFollowersList(result.followers);
+      } else {
+        toast.error("Failed to load followers");
+      }
+    } catch (err) {
+      console.error("Fetch followers error:", err);
+      toast.error("Error loading followers");
+    } finally {
+      setFollowersLoading(false);
     }
   };
 
@@ -232,10 +262,15 @@ const TeacherProfile = () => {
 
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center gap-6 text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <Heart className="w-4 h-4" />
-                      <span>{followersCount} Followers</span>
-                    </div>
+                    <button
+                      onClick={handleShowFollowers}
+                      className="group flex items-center gap-1.5 hover:text-gray-900 transition-colors cursor-pointer"
+                    >
+                      <span className="font-bold text-gray-900 group-hover:underline decoration-1 underline-offset-2">
+                        {followersCount}
+                      </span>
+                      <span>Followers</span>
+                    </button>
                     <div>
                       <span>
                         {classes.length} Published Class
@@ -264,11 +299,10 @@ const TeacherProfile = () => {
                   <button
                     onClick={handleFollowToggle}
                     disabled={followLoading}
-                    className={`px-6 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                      isFollowing
-                        ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                        : "bg-gray-800 text-white hover:bg-gray-700"
-                    } ${followLoading ? "opacity-50 cursor-not-allowed" : ""}`}>
+                    className={`px-6 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 ${isFollowing
+                      ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                      : "bg-gray-800 text-white hover:bg-gray-700"
+                      } ${followLoading ? "opacity-50 cursor-not-allowed" : ""}`}>
                     {followLoading ? (
                       <>
                         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
@@ -305,20 +339,18 @@ const TeacherProfile = () => {
               <nav className="flex gap-8 text-gray-600">
                 <button
                   onClick={() => setActiveTab("classes")}
-                  className={`py-3 px-1 font-medium transition-colors border-b-2 ${
-                    activeTab === "classes"
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent hover:text-gray-800"
-                  }`}>
+                  className={`py-3 px-1 font-medium transition-colors border-b-2 ${activeTab === "classes"
+                    ? "border-blue-600 text-blue-600"
+                    : "border-transparent hover:text-gray-800"
+                    }`}>
                   Classes
                 </button>
                 <button
                   onClick={() => setActiveTab("about")}
-                  className={`py-3 px-1 font-medium transition-colors border-b-2 ${
-                    activeTab === "about"
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent hover:text-gray-800"
-                  }`}>
+                  className={`py-3 px-1 font-medium transition-colors border-b-2 ${activeTab === "about"
+                    ? "border-blue-600 text-blue-600"
+                    : "border-transparent hover:text-gray-800"
+                    }`}>
                   About
                 </button>
               </nav>
@@ -386,6 +418,13 @@ const TeacherProfile = () => {
           </div>
         </div>
       </SidebarInset>
+      <FollowersModal
+        isOpen={showFollowersModal}
+        onClose={() => setShowFollowersModal(false)}
+        title="Followers"
+        followers={followersList}
+        loading={followersLoading}
+      />
     </SidebarProvider>
   );
 };
