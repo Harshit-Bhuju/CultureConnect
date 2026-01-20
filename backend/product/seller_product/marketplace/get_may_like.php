@@ -16,7 +16,13 @@ try {
     // Limit for products (default 100, max 100)
     $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 100) : 100;
 
-    // Query: Get popular products based on views, sales, and engagement
+    // Popularity Score Formula:
+    // 1. Sales this month (x15) - Highest weight for current trends.
+    // 2. Total product sales (x2) - Long-term reliability.
+    // 3. Store Authority (x0.5) - A small "Trust Bonus" for proven sellers. 
+    //    Helps reliable stores launch new items with better visibility.
+    // 4. Quality impact (Avg Rating * Reviews) - Verified satisfaction score.
+    // 5. Freshness Boost (+10) - Discoverability boost for items < 30 days old.
     $stmt = $conn->prepare("
         SELECT 
             p.id,
@@ -29,13 +35,12 @@ try {
             p.total_sales,
             pi.image_url AS image,
             s.store_name,
-            -- Calculate popularity score (works even with 0 sales)
             (
-                (COALESCE(current_ps.sales_count, 0) * 10) +  -- Sales this month
-                (COALESCE(p.total_sales, 0) * 1) +            -- Total sales (default to 0)
-                (COALESCE(p.average_rating, 0) * COALESCE(p.total_reviews, 0) * 0.5) + -- Rating impact
-                (COALESCE(p.total_reviews, 0) * 0.2) +        -- Review count
-                (CASE WHEN p.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 5 ELSE 0 END) -- Boost new products
+                (COALESCE(current_ps.sales_count, 0) * 15) +  
+                (COALESCE(p.total_sales, 0) * 2) +            
+                (COALESCE(s.total_sales, 0) * 0.5) +          
+                (COALESCE(p.average_rating, 0) * COALESCE(p.total_reviews, 1) * 0.5) + 
+                (CASE WHEN p.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 10 ELSE 0 END) 
             ) AS popularity_score
         FROM products p
         INNER JOIN sellers s ON p.seller_id = s.id

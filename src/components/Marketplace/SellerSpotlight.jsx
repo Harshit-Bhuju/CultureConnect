@@ -90,7 +90,7 @@ const SellerSpotlight = () => {
               <p className="text-xs text-gray-500 mb-1">{seller.specialty}</p>
               <div className="flex items-center gap-2 text-xs">
                 <span className="flex items-center gap-0.5 text-yellow-500 font-medium">
-                  <Star size={12} fill="currentColor" /> {seller.rating}
+                  <Star size={12} fill="currentColor" /> {seller.rating} Average Rating
                 </span>
                 <span className="text-gray-300">|</span>
                 <span className="text-gray-500">

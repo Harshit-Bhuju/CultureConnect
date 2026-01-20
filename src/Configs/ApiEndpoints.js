@@ -34,8 +34,8 @@ const API = {
   // Seller
   SELLER_REGISTRATION: `${BASE_URL}/seller/seller_registration.php`,
   GET_SELLER_PROFILE: `${BASE_URL}/seller/get_seller_profile.php`,
-  SELLER_LOGOS: `${BASE_URL}/seller/seller_img_datas/seller_logos`,
-  SELLER_BANNERS: `${BASE_URL}/seller/seller_img_datas/seller_banners`,
+  SELLER_LOGOS: `${BASE_URL}/uploads/seller_img_datas/seller_logos`,
+  SELLER_BANNERS: `${BASE_URL}/uploads/seller_img_datas/seller_banners`,
 
   UPDATE_SELLER_PROFILE: `${BASE_URL}/seller/seller_profile_update.php`,
 
@@ -91,6 +91,7 @@ const API = {
   GET_TRENDING_PRODUCTS: `${BASE_URL}/product/seller_product/marketplace/get_trending_products.php`,
   GET_MAY_LIKE_PRODUCTS: `${BASE_URL}/product/seller_product/marketplace/get_may_like.php`,
   GET_SUGGESTED_SELLERS: `${BASE_URL}/product/seller_product/marketplace/get_suggested_sellers.php`,
+  GET_CATEGORY_COUNTS: `${BASE_URL}/product/seller_product/marketplace/get_category_counts.php`,
 
   // Teacher
   TEACHER_REGISTRATION: `${BASE_URL}/teacher/teacher_registration.php`,

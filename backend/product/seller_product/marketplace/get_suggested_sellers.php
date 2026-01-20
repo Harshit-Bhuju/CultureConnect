@@ -40,8 +40,9 @@ try {
         ORDER BY 
             (s.sales_this_month > 0) DESC,
             (
-                (COALESCE(AVG(CASE WHEN p.total_reviews > 0 THEN p.average_rating ELSE NULL END), 0) * 15) + 
-                (s.total_sales * 0.1) +                    
+                (s.sales_this_month * 50) +                
+                (s.total_sales * 5) +                      
+                (COALESCE(AVG(CASE WHEN p.total_reviews > 0 THEN p.average_rating ELSE NULL END), 0) * 10) + 
                 (COUNT(p.id) * 0.5)                         
             ) DESC
         LIMIT 10
