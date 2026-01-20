@@ -211,10 +211,8 @@ const SellerProfile = () => {
                   <div className="flex items-center gap-6 text-gray-500">
                     <button
                       onClick={handleShowFollowers}
-                      className="group flex items-center gap-1.5 hover:text-gray-900 transition-colors cursor-pointer">
-                      <span className="font-bold text-gray-900 group-hover:underline decoration-1 underline-offset-2">
-                        {followersCount}
-                      </span>
+                      className="group flex items-center gap-1.5 hover:text-gray-900 transition-colors group-hover:underline decoration-1 underline-offset-2 cursor-pointer">
+                      <span className="font-bold">{followersCount}</span>
                       <span>Followers</span>
                     </button>
                     <div className="flex items-center gap-1">
