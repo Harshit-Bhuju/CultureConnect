@@ -10,9 +10,9 @@ const useOrders = (selectedPeriod = 'Until now') => {
   const [error, setError] = useState(null);
 
   // Fetch all data from API
-  const fetchOrders = async () => {
+  const fetchOrders = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError(null);
 
       const params = new URLSearchParams({ period: selectedPeriod });
@@ -207,8 +207,8 @@ const useOrders = (selectedPeriod = 'Until now') => {
       const data = await response.json();
 
       if (data.success) {
-        // Refresh cart items
-        await fetchOrders();
+        // Refresh cart items silently
+        await fetchOrders(true);
         toast.success(`${item.productName} ${data.updated ? 'quantity updated' : 'added to cart'}!`);
       } else {
         console.error('Failed to add to cart:', data.error);

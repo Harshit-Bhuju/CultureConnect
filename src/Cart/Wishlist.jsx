@@ -1,10 +1,10 @@
-// components/Wishlist.jsx
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Heart, Package, Trash2, ShoppingCart, AlertCircle, Sparkles, Star, ChevronDown } from 'lucide-react';
-import useOrders from '../hooks/useOrdersCart';
+import { BASE_URL } from '../Configs/ApiEndpoints';
 
-const Wishlist = ({ selectedPeriod }) => {
-  const { wishlistItems, removeFromWishlist, addToCart, loading } = useOrders(selectedPeriod);
+const Wishlist = ({ selectedPeriod, wishlistItems, removeFromWishlist, addToCart, loading }) => {
+  const navigate = useNavigate();
   const [sortOrder, setSortOrder] = useState('newest');
 
   // Sort wishlist items
@@ -81,13 +81,13 @@ const Wishlist = ({ selectedPeriod }) => {
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
           {sortedWishlist.map(item => (
-            <div 
-              key={item.id} 
+            <div
+              key={item.id}
               className="group relative bg-gradient-to-b from-gray-50 to-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-pink-200 transition-all duration-300"
             >
               {/* Remove Button */}
-              <button 
-                onClick={() => removeFromWishlist(item.id)} 
+              <button
+                onClick={() => removeFromWishlist(item.id)}
                 className="absolute top-2 right-2 z-10 w-7 h-7 bg-white/90 backdrop-blur-sm text-rose-500 hover:bg-rose-500 hover:text-white rounded-full shadow-md transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -101,19 +101,33 @@ const Wishlist = ({ selectedPeriod }) => {
               )}
 
               {/* Product Image */}
-              <div className={`relative w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ${!item.inStock ? 'opacity-50' : ''}`}>
-                <Package className="w-10 h-10 text-gray-400 group-hover:scale-110 transition-transform duration-300" />
+              <div
+                onClick={() => navigate(`/products/${item.sellerId}/${item.productId}`)}
+                className={`relative w-full h-40 bg-gray-50 flex items-center justify-center cursor-pointer border-b border-gray-100 overflow-hidden ${!item.inStock ? 'opacity-50' : ''}`}
+              >
+                {item.productImage ? (
+                  <img
+                    src={`${BASE_URL}/uploads/product_images/${item.productImage}`}
+                    alt={item.productName}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                ) : (
+                  <Package className="w-10 h-10 text-gray-400 group-hover:scale-110 transition-transform duration-300" />
+                )}
                 {item.inStock && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 )}
               </div>
 
               {/* Product Info */}
               <div className="p-3">
-                <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1 min-h-[2.5rem] leading-tight">
+                <h3
+                  onClick={() => navigate(`/products/${item.sellerId}/${item.productId}`)}
+                  className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1 min-h-[2.5rem] leading-tight cursor-pointer hover:text-pink-600 transition-colors"
+                >
                   {item.productName}
                 </h3>
-                
+
                 <div className="flex items-baseline gap-1.5 mb-3">
                   <span className="text-base font-bold text-pink-600">
                     Rs. {item.price.toLocaleString()}
@@ -122,7 +136,7 @@ const Wishlist = ({ selectedPeriod }) => {
 
                 {/* Action Button */}
                 {item.inStock ? (
-                  <button 
+                  <button
                     onClick={() => addToCart(item)}
                     className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-xs font-semibold py-2 rounded-lg transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-1.5"
                   >
@@ -130,7 +144,7 @@ const Wishlist = ({ selectedPeriod }) => {
                     Add to Cart
                   </button>
                 ) : (
-                  <button 
+                  <button
                     className="w-full bg-gray-100 text-gray-400 text-xs font-semibold py-2 rounded-lg cursor-not-allowed flex items-center justify-center gap-1.5"
                   >
                     <AlertCircle className="w-3.5 h-3.5" />

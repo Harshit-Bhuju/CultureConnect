@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../session_config.php';
-include(__DIR__ . "/../header.php");
+require_once __DIR__ . '/../../config/session_config.php';
+include(__DIR__ . "/../../config/header.php");
 
 try {
     if (!isset($_SESSION['user_email'])) {
@@ -116,4 +116,3 @@ try {
 }
 
 $conn->close();
-?>

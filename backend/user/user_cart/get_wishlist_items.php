@@ -46,7 +46,9 @@ try {
             p.status,
             p.category,
             pi.image_url as imageUrl,
-            s.store_name as storeName
+            s.id as sellerId,
+            s.store_name as storeName,
+            s.store_logo as storeLogo
         FROM user_wishlist uw
         JOIN products p ON uw.product_id = p.id
         LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.`order` = 1
@@ -73,6 +75,8 @@ try {
             'category' => $row['category'],
             'productImage' => $row['imageUrl'],
             'storeName' => $row['storeName'],
+            'storeLogo' => $row['storeLogo'],
+            'sellerId' => (int)$row['sellerId'],
             'addedAt' => date("j F Y g:i A", strtotime($row['addedAt']))
         ];
     }

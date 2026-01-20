@@ -89,58 +89,14 @@ export default function CheckOutPage() {
     : path.includes('confirmation') ? 'confirmation'
       : 'checkout';
 
+  // Removed strict redirection to allow direct access to checkout URL
   useEffect(() => {
-    if (hasRedirected.current) return;
-
-    const isFromProductPage = location.state?.fromProductPage === true;
-    const isFromCheckout = location.state?.fromCheckout === true;
-    const isFromPayment = location.state?.fromPayment === true;
-    const hasOrderId = sessionStorage.getItem('checkout_orderId');
-    const hasLocation = sessionStorage.getItem('checkout_selectedLocation');
-
-    if (currentStep === 'checkout' && !isFromProductPage) {
-      hasRedirected.current = true;
-      toast.error('Please access checkout from the product page');
-      navigate(`/products/${sellerId}/${productId}`, { replace: true });
-      return;
+    // If we're missing crucial params, redirect back
+    if (!sellerId || !productId) {
+      toast.error('Invalid checkout session');
+      navigate('/', { replace: true });
     }
-
-    if (currentStep === 'payment') {
-      if (!isFromCheckout && !hasOrderId) {
-        hasRedirected.current = true;
-        toast.error('Please complete the checkout process first');
-        navigate(`/checkout/${sellerId}/${productId}`, {
-          replace: true,
-          state: { fromProductPage: true }
-        });
-        return;
-      }
-      if (!hasLocation) {
-        hasRedirected.current = true;
-        toast.error('Session expired. Please start checkout again');
-        navigate(`/products/${sellerId}/${productId}`, { replace: true });
-        return;
-      }
-    }
-
-    if (currentStep === 'confirmation') {
-      if (!isFromPayment && !hasOrderId) {
-        hasRedirected.current = true;
-        toast.error('Please complete the payment process first');
-        navigate(`/checkout/${sellerId}/${productId}`, {
-          replace: true,
-          state: { fromProductPage: true }
-        });
-        return;
-      }
-      if (!hasLocation) {
-        hasRedirected.current = true;
-        toast.error('Session expired. Please start checkout again');
-        navigate(`/products/${sellerId}/${productId}`, { replace: true });
-        return;
-      }
-    }
-  }, [currentStep, location.state, navigate, sellerId, productId]);
+  }, [sellerId, productId, navigate]);
 
 
 
@@ -221,14 +177,18 @@ export default function CheckOutPage() {
 
     if (isValid) {
       setOrderItem(prev => ({ ...prev, quantity: newQuantity }));
+      setTimeout(() => handleProceedToPayment(true), 100);
     }
   };
 
   const decrementQuantity = () => {
-    setOrderItem(prev => ({
-      ...prev,
-      quantity: Math.max(1, prev.quantity - 1)
-    }));
+    if (orderItem.quantity > 1) {
+      setOrderItem(prev => ({
+        ...prev,
+        quantity: prev.quantity - 1
+      }));
+      setTimeout(() => handleProceedToPayment(true), 100);
+    }
   };
 
   const subtotal = orderItem ? orderItem.price * orderItem.quantity : 0;
@@ -239,7 +199,7 @@ export default function CheckOutPage() {
     return !modalProvince || !modalDistrict || !modalMunicipal || !modalWard;
   };
 
-  const handleSaveLocation = () => {
+  const handleSaveLocation = async () => {
     const name = `${modalProvince}, ${modalDistrict}, ${modalMunicipal}, ${modalWard}`;
     const locationData = {
       name,
@@ -252,6 +212,7 @@ export default function CheckOutPage() {
     setSelectedLocation(locationData);
     setShowLocationModal(false);
 
+    // Reset local modal state
     setModalProvince('');
     setModalDistrict('');
     setModalMunicipal('');
@@ -261,8 +222,11 @@ export default function CheckOutPage() {
     setHookSelectedMunicipal('');
     setHookSelectedWard('');
 
-    setOrderDetails(null);
-    sessionStorage.removeItem('checkout_orderDetails');
+    // Trigger order update to get new delivery charge
+    // We pass true for silent mode to avoid navigation
+    setTimeout(() => {
+      handleProceedToPayment(true);
+    }, 100);
   };
 
   const handleProvinceChange = (v) => {
@@ -316,13 +280,15 @@ export default function CheckOutPage() {
     setShowLocationModal(true);
   };
 
-  const handleProceedToPayment = async () => {
+  const handleProceedToPayment = async (silent = false) => {
     if (!selectedLocation) {
-      toast.error('Please select a delivery location');
+      if (!silent) toast.error('Please select a delivery location');
       return;
     }
 
     try {
+      if (silent) toast('Calculating delivery fees...');
+
       const formData = new FormData();
       formData.append('seller_id', sellerId);
       formData.append('product_id', productId);
@@ -348,10 +314,14 @@ export default function CheckOutPage() {
         sessionStorage.setItem('checkout_orderNumber', data.order.order_number);
         sessionStorage.setItem('checkout_orderDetails', JSON.stringify(data));
 
-        toast.success('Order created! Proceed to payment');
-        navigate(`/checkout/payment/${sellerId}/${productId}`, {
-          state: { fromCheckout: true }
-        });
+        if (!silent) {
+          toast.success('Order created! Proceed to payment');
+          navigate(`/checkout/payment/${sellerId}/${productId}`, {
+            state: { fromCheckout: true }
+          });
+        } else {
+          toast.success('Delivery fees updated!');
+        }
       } else {
         toast.error(data.error || 'Failed to create order');
 
@@ -510,6 +480,7 @@ export default function CheckOutPage() {
           onMunicipalChange={handleMunicipalChange}
           onWardChange={handleWardChange}
           subtotal={subtotal}
+          deliveryCharge={total - subtotal}
           total={total}
           navigate={navigate}
           sellerId={sellerId}
@@ -517,7 +488,7 @@ export default function CheckOutPage() {
           openLocationModal={openLocationModal}
           incrementQuantity={incrementQuantity}
           decrementQuantity={decrementQuantity}
-          handleProceedToPayment={handleProceedToPayment}
+          handleProceedToPayment={() => handleProceedToPayment(false)}
           onBack={() => navigate(-1)}
         />
       )}

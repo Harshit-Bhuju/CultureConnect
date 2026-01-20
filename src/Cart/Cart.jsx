@@ -6,44 +6,53 @@ import TransactionHistory from './TransactionHistory';
 import Wishlist from './Wishlist';
 import MyOrders from './MyOrders';
 import useOrders from '../hooks/useOrdersCart';
+import { BASE_URL } from '../Configs/ApiEndpoints';
 
 const CustomerCartComponent = () => {
   const [activeTab, setActiveTab] = useState('cart');
   const [selectedPeriod, setSelectedPeriod] = useState('Until now');
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedItemId, setSelectedItemId] = useState(null);
   const [cartSortOrder, setCartSortOrder] = useState('newest');
   const navigate = useNavigate();
-  
+
   // Get all data from the hook
-  const { 
-    cartItems = [], 
-    updateCartQuantity, 
+  const {
+    cartItems = [],
+    wishlistItems = [],
+    updateCartQuantity,
     removeFromCart,
-    loading 
+    removeFromWishlist,
+    addToCart,
+    loading
   } = useOrders(selectedPeriod);
+
+  // Derived selected item to ensure live updates when quantity changes
+  const selectedItem = React.useMemo(() => {
+    return cartItems.find(item => item.id === selectedItemId);
+  }, [cartItems, selectedItemId]);
 
   // Filter cart items by period
   const filteredCartItems = React.useMemo(() => {
     if (selectedPeriod === 'Until now') {
       return cartItems;
     }
-    
+
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
-    
+
     return cartItems.filter((item) => {
       const itemDate = new Date(item.addedAt);
-      
+
       if (selectedPeriod === 'This month') {
-        return itemDate.getFullYear() === currentYear && 
-               itemDate.getMonth() === currentMonth;
+        return itemDate.getFullYear() === currentYear &&
+          itemDate.getMonth() === currentMonth;
       }
-      
+
       if (selectedPeriod === 'This year') {
         return itemDate.getFullYear() === currentYear;
       }
-      
+
       return true;
     });
   }, [cartItems, selectedPeriod]);
@@ -68,12 +77,11 @@ const CustomerCartComponent = () => {
   }, [filteredCartItems, cartSortOrder]);
 
   const handleSelectItem = (item) => {
-    setSelectedItem(item);
+    setSelectedItemId(item.id);
   };
 
   const selectedItemTotal = selectedItem ? selectedItem.price * selectedItem.quantity : 0;
-  const deliveryCharge = selectedItem ? 100 : 0;
-  const finalTotal = selectedItemTotal + deliveryCharge;
+  const finalTotal = selectedItemTotal;
 
   // Show loading state
   if (loading && activeTab === 'cart') {
@@ -102,70 +110,65 @@ const CustomerCartComponent = () => {
               <div className="h-6 w-px bg-gray-300"></div>
               <h1 className="text-2xl font-bold text-gray-900">My Orders & Cart</h1>
             </div>
-            
-         
+
+
           </div>
-          
+
           {/* Navigation Tabs */}
           <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            <button
-              onClick={() => setActiveTab('cart')}
-              className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${
-                activeTab === 'cart'
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              <button
+                onClick={() => setActiveTab('cart')}
+                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'cart'
                   ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              <ShoppingCart className="w-4 h-4" />
-              Cart
-            </button>
-            <button
-              onClick={() => setActiveTab('orders')}
-              className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${
-                activeTab === 'orders'
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              <Package className="w-4 h-4" />
-              Orders
-            </button>
-            <button
-              onClick={() => setActiveTab('wishlist')}
-              className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${
-                activeTab === 'wishlist'
+                  }`}
+              >
+                <ShoppingCart className="w-4 h-4" />
+                Cart
+              </button>
+              <button
+                onClick={() => setActiveTab('wishlist')}
+                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'wishlist'
                   ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg shadow-pink-500/30'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              <Heart className="w-4 h-4" />
-              Wishlist
-            </button>
-            <button
-              onClick={() => setActiveTab('cancelled')}
-              className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${
-                activeTab === 'cancelled'
+                  }`}
+              >
+                <Heart className="w-4 h-4" />
+                Wishlist
+              </button>
+              <button
+                onClick={() => setActiveTab('orders')}
+                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'orders'
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+              >
+                <Package className="w-4 h-4" />
+                Orders
+              </button>
+              <button
+                onClick={() => setActiveTab('cancelled')}
+                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'cancelled'
                   ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/30'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              <XCircle className="w-4 h-4" />
-              Cancelled
-            </button>
-            <button
-              onClick={() => setActiveTab('history')}
-              className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${
-                activeTab === 'history'
+                  }`}
+              >
+                <XCircle className="w-4 h-4" />
+                Cancelled
+              </button>
+              <button
+                onClick={() => setActiveTab('history')}
+                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'history'
                   ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/30'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              <CheckCircle2 className="w-4 h-4" />
-             Transaction History
-            </button>
-          </div>
-             {/* Period Filter */}
+                  }`}
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Transaction History
+              </button>
+            </div>
+            {/* Period Filter */}
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-gray-500" />
               <div className="relative">
@@ -184,7 +187,7 @@ const CustomerCartComponent = () => {
                 <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
               </div>
             </div>
-            </div>
+          </div>
         </div>
       </header>
 
@@ -221,15 +224,15 @@ const CustomerCartComponent = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 {filteredCartItems.length === 0 ? (
                   <div className="text-center py-16">
                     <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full mb-4">
                       <ShoppingCart className="w-10 h-10 text-orange-600" />
                     </div>
                     <p className="text-gray-700 font-semibold text-lg">
-                      {selectedPeriod === 'Until now' 
-                        ? 'Your cart is empty' 
+                      {selectedPeriod === 'Until now'
+                        ? 'Your cart is empty'
                         : `No items added ${selectedPeriod.toLowerCase()}`}
                     </p>
                     <p className="text-sm text-gray-500 mt-2">
@@ -238,7 +241,7 @@ const CustomerCartComponent = () => {
                         : 'Try selecting a different time period'}
                     </p>
                     {selectedPeriod !== 'Until now' && cartItems.length > 0 && (
-                      <button 
+                      <button
                         onClick={() => setSelectedPeriod('Until now')}
                         className="mt-6 px-6 py-2.5 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors"
                       >
@@ -265,23 +268,21 @@ const CustomerCartComponent = () => {
                         {/* Store Items */}
                         <div className="space-y-3">
                           {items.map((item) => (
-                            <div 
-                              key={item.id} 
-                              className={`border-2 rounded-xl p-4 transition-all cursor-pointer ${
-                                selectedItem?.id === item.id 
-                                  ? 'border-orange-500 bg-orange-50 shadow-md' 
-                                  : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                              }`}
+                            <div
+                              key={item.id}
+                              className={`border-2 rounded-xl p-4 transition-all cursor-pointer ${selectedItem?.id === item.id
+                                ? 'border-orange-500 bg-orange-50 shadow-md'
+                                : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                                }`}
                               onClick={() => handleSelectItem(item)}
                             >
                               <div className="flex items-center gap-4">
                                 {/* Selection Radio */}
                                 <div className="flex-shrink-0">
-                                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                    selectedItem?.id === item.id 
-                                      ? 'border-orange-500 bg-orange-500' 
-                                      : 'border-gray-300'
-                                  }`}>
+                                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedItem?.id === item.id
+                                    ? 'border-orange-500 bg-orange-500'
+                                    : 'border-gray-300'
+                                    }`}>
                                     {selectedItem?.id === item.id && (
                                       <div className="w-2 h-2 bg-white rounded-full"></div>
                                     )}
@@ -289,17 +290,40 @@ const CustomerCartComponent = () => {
                                 </div>
 
                                 {/* Product Image */}
-                                <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                                  <Package className="w-8 h-8 text-gray-400" />
+                                <div className="w-20 h-20 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-100 overflow-hidden">
+                                  {item.productImage ? (
+                                    <img
+                                      src={`${BASE_URL}/uploads/product_images/${item.productImage}`}
+                                      alt={item.productName}
+                                      className="w-full h-full object-cover cursor-pointer"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/products/${item.sellerId}/${item.productId}`);
+                                      }}
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = 'https://via.placeholder.com/80?text=No+Image';
+                                      }}
+                                    />
+                                  ) : (
+                                    <Package className="w-8 h-8 text-gray-400" />
+                                  )}
                                 </div>
-                                
+
                                 {/* Product Details */}
                                 <div className="flex-1 min-w-0">
-                                  <h3 className="font-semibold text-gray-900 truncate">{item.productName}</h3>
-                                  <p className="text-xs text-gray-500 mt-0.5">ID: {item.productId}</p>
+                                  <h3
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate(`/products/${item.sellerId}/${item.productId}`);
+                                    }}
+                                    className="font-semibold text-gray-900 truncate hover:text-orange-600 transition-colors cursor-pointer"
+                                  >
+                                    {item.productName}
+                                  </h3>
                                   <p className="text-lg font-bold text-orange-600 mt-1">Rs. {item.price.toLocaleString()}</p>
                                 </div>
-                                
+
                                 {/* Quantity Controls */}
                                 <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
                                   <button
@@ -322,20 +346,20 @@ const CustomerCartComponent = () => {
                                     <Plus className="w-3 h-3" />
                                   </button>
                                 </div>
-                                
+
                                 {/* Total */}
                                 <div className="text-right flex-shrink-0 w-24">
                                   <p className="text-xs text-gray-500">Subtotal</p>
                                   <p className="font-bold text-gray-900">Rs. {(item.price * item.quantity).toLocaleString()}</p>
                                 </div>
-                                
+
                                 {/* Remove Button */}
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     removeFromCart(item.id);
-                                    if (selectedItem?.id === item.id) {
-                                      setSelectedItem(null);
+                                    if (selectedItemId === item.id) {
+                                      setSelectedItemId(null);
                                     }
                                   }}
                                   className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
@@ -369,7 +393,7 @@ const CustomerCartComponent = () => {
             <div className="lg:col-span-1">
               <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Order Summary</h3>
-                
+
                 {!selectedItem ? (
                   <div className="text-center py-8">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-3">
@@ -382,8 +406,16 @@ const CustomerCartComponent = () => {
                     {/* Selected Item Details */}
                     <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Package className="w-6 h-6 text-orange-600" />
+                        <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-100 overflow-hidden">
+                          {selectedItem.productImage ? (
+                            <img
+                              src={`${BASE_URL}/uploads/product_images/${selectedItem.productImage}`}
+                              alt={selectedItem.productName}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Package className="w-6 h-6 text-orange-600" />
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-semibold text-gray-900 text-sm truncate">{selectedItem.productName}</h4>
@@ -398,10 +430,6 @@ const CustomerCartComponent = () => {
                         <span className="text-gray-600">Item Subtotal</span>
                         <span className="font-semibold text-gray-900">Rs. {selectedItemTotal.toLocaleString()}</span>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Delivery Charge</span>
-                        <span className="font-semibold text-gray-900">Rs. {deliveryCharge}</span>
-                      </div>
                     </div>
 
                     {/* Total */}
@@ -411,7 +439,10 @@ const CustomerCartComponent = () => {
                     </div>
 
                     {/* Checkout Button */}
-                    <button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3.5 rounded-lg transition-all shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => navigate(`/checkout/${selectedItem.sellerId}/${selectedItem.productId}?qty=${selectedItem.quantity}&size=`)}
+                      className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3.5 rounded-lg transition-all shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 flex items-center justify-center gap-2"
+                    >
                       Proceed to Checkout
                       <ArrowRight className="w-5 h-5" />
                     </button>
@@ -445,7 +476,13 @@ const CustomerCartComponent = () => {
 
         {/* WISHLIST TAB */}
         {activeTab === 'wishlist' && (
-          <Wishlist selectedPeriod={selectedPeriod} />
+          <Wishlist
+            selectedPeriod={selectedPeriod}
+            wishlistItems={wishlistItems}
+            removeFromWishlist={removeFromWishlist}
+            addToCart={addToCart}
+            loading={loading}
+          />
         )}
 
         {/* CANCELLED ORDERS TAB */}

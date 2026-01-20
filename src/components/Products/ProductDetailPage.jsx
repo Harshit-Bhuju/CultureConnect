@@ -80,11 +80,10 @@ const ProductDetailPage = () => {
       });
 
       const data = await response.json();
-
-      const items = Array.isArray(data.items) ? data.items : [];
+      const items = Array.isArray(data.wishlistItems) ? data.wishlistItems : [];
 
       const inWishlist = items.some(
-        item => Number(item.product_id) === Number(id)
+        item => Number(item.productId) === Number(id)
       );
 
       setIsWishlisted(inWishlist);

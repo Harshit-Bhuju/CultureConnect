@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../session_config.php';
-include(__DIR__ . "/../header.php");
+require_once __DIR__ . '/../../config/session_config.php';
+include(__DIR__ . "/../../config/header.php");
 
 try {
     if (!isset($_SESSION['user_email'])) {
@@ -97,7 +97,7 @@ try {
             VALUES (?, ?, ?, ?, ?)
         ");
         $stmt->bind_param("iisss", $order_id, $user_id, $reason, $description, $cancelled_by);
-        
+
         if (!$stmt->execute()) {
             throw new Exception('Failed to record cancellation');
         }

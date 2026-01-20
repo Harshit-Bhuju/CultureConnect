@@ -24,6 +24,7 @@ export default function Checkout({
   onMunicipalChange,
   onWardChange,
   subtotal,
+  deliveryCharge,
   total,
   navigate,
   sellerId,
@@ -184,11 +185,9 @@ export default function Checkout({
               </div>
             </div>
 
-            {/* Important Info */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p className="text-sm text-yellow-800">
-                <span className="font-semibold">Note:</span> Delivery charges and estimated delivery time
-                will be calculated and shown in the next step based on your selected location.
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800">
+                <span className="font-semibold">Note:</span> Delivery charges are calculated live based on your selected location and distance from the seller.
               </p>
             </div>
           </div>
@@ -199,20 +198,16 @@ export default function Checkout({
 
             <div className="space-y-4 mb-6">
               <div className="flex items-center justify-between text-black">
-                <span className="text-gray-700">
-                  Subtotal ({orderItem.quantity} item{orderItem.quantity > 1 ? 's' : ''})
+                <span className="text-gray-700">Delivery Fee</span>
+                <span className={`font-medium ${deliveryCharge === 0 ? 'text-gray-400' : 'text-green-600'}`}>
+                  {deliveryCharge === 0 ? 'Calculating...' : `Rs. ${deliveryCharge}`}
                 </span>
-                <span className="font-medium">Rs. {subtotal}</span>
-              </div>
-
-              <div className="text-sm text-gray-600 bg-white rounded p-3 border border-gray-200">
-                ℹ️ Delivery fee will be calculated in the next step based on distance from seller to your location
               </div>
 
               <div className="border-t border-gray-300 pt-4">
                 <div className="flex justify-between text-black">
-                  <span className="text-lg font-bold">Subtotal</span>
-                  <span className="text-lg font-bold">Rs. {subtotal}</span>
+                  <span className="text-lg font-bold">Total Amount</span>
+                  <span className="text-lg font-bold">Rs. {total}</span>
                 </div>
               </div>
             </div>
