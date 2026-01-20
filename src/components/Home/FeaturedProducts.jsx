@@ -118,11 +118,6 @@ const ProductCard = ({ product }) => {
               e.target.src = "/placeholder-image.png";
             }}
           />
-
-          {/* Category Badge */}
-          <div className="absolute top-3 left-3 bg-black text-white text-xs font-bold px-3 py-1 uppercase tracking-wide">
-            {product.category?.replace("-", " ") || "Product"}
-          </div>
         </div>
 
         {/* Content - Takes remaining space */}
