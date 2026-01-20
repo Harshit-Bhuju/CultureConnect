@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Star, Users, MapPin, ArrowRight } from "lucide-react";
 import { teachers } from "../../data/homeData";
 import { Link } from "react-router-dom";
+import Rating from "../Rating/Rating";
 
 const TeacherCard = ({ teacher, index }) => {
   return (
@@ -22,59 +23,34 @@ const TeacherCard = ({ teacher, index }) => {
           loading="lazy"
           decoding="async"
           whileHover={{ scale: 1.1 }}
-          transition={{ duration: 0.6 }}
         />
-
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-        {/* Rating Badge */}
-        <div className="absolute top-4 left-4 bg-white px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 shadow-lg">
-          <Star className="w-3.5 h-3.5 text-red-600 fill-red-600" />
-          {teacher.rating}
-        </div>
-
-        {/* Specialty Label at Bottom */}
-        <div className="absolute bottom-4 left-4 right-4">
-          <span className="inline-block bg-red-600 text-white text-xs font-bold px-3 py-1 uppercase tracking-wide">
-            {teacher.specialty.split("&")[0].trim()}
-          </span>
+        {/* Experience Badge */}
+        <div className="absolute top-4 left-4 z-10">
+          <div className="bg-red-600 text-white px-3 py-1 text-xs font-bold tracking-wider uppercase rounded-full">
+            {teacher.experience}+ Years
+          </div>
         </div>
       </div>
 
-      {/* Content Section - 60% width */}
-      <div className="w-3/5 p-6 flex flex-col justify-between">
+      {/* Content Side - 60% width */}
+      <div className="w-3/5 p-6 flex flex-col justify-between relative bg-white">
         <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-red-600 transition-colors duration-300">
+          <h3 className="text-2xl font-bold text-gray-900 group-hover:text-red-600 transition-colors duration-300">
             {teacher.name}
           </h3>
-          <p className="text-sm text-gray-600 line-clamp-2 mb-4">
-            {teacher.bio}
+          <p className="text-red-600 font-bold text-sm uppercase tracking-widest mb-4">
+            {teacher.specialty}
           </p>
-
-          {/* Stats */}
-          <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
-            <div className="flex items-center gap-1.5">
-              <Users className="w-4 h-4" />
-              <span>{teacher.students}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <MapPin className="w-4 h-4" />
-              <span>Online</span>
-            </div>
-          </div>
+          <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed italic">
+            "{teacher.bio}"
+          </p>
         </div>
 
-        {/* Bottom Section */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-          <div>
-            <span className="block text-xs text-gray-500 mb-1">
-              Hourly Rate
-            </span>
-            <span className="text-lg font-bold text-gray-900">
-              {teacher.hourlyRate}
-            </span>
+        <div className="space-y-4 pt-4">
+          <div className="flex justify-between items-center text-sm border-t border-gray-100 pt-4">
+            <Rating rating={teacher.rating} reviews={teacher.reviews} />
           </div>
+
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

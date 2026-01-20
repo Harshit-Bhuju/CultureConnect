@@ -35,185 +35,161 @@ export default function MayLikeCourse() {
           {
             id: 1,
             title: "Complete Web Design: from Figma to Webflow to Freelancing",
-            instructor: "Vako Shvili",
+            teacher_name: "Vako Shvili",
             description:
               "3 in 1 Course: Learn to design websites with Figma, build with Webflow, and make a living freelancing.",
-            rating: 4.7,
-            students: "16,741",
-            price: "14,99€",
-            originalPrice: "89,99€",
+            average_rating: 4.7,
+            enrolled_students: "16,741",
+            price: 1499,
             image:
               "https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=800",
             badge: "Bestseller",
             teacherId: 1,
-            teacher_id: 1,
           },
           {
             id: 2,
             title: "Master Traditional Nepali Dance",
-            instructor: "Maya Tamang",
+            teacher_name: "Maya Tamang",
             description:
               "Learn authentic Nepali folk dances with expert guidance and cultural insights.",
-            rating: 4.8,
-            students: "8,234",
-            price: "Rs.1,999",
-            originalPrice: "Rs.4,999",
+            average_rating: 4.8,
+            enrolled_students: "8,234",
+            price: 1999,
             image:
               "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800",
             teacherId: 1,
-            teacher_id: 1,
           },
           {
             id: 3,
             title: "Madal Playing for Beginners",
-            instructor: "Rajesh Maharjan",
+            teacher_name: "Rajesh Maharjan",
             description:
               "Master the traditional Nepali drum with step-by-step lessons from basic to advanced.",
-            rating: 4.6,
-            students: "5,421",
-            price: "Rs.2,499",
-            originalPrice: "Rs.5,999",
+            average_rating: 4.6,
+            enrolled_students: "5,421",
+            price: 2499,
             image:
               "https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=800",
             teacherId: 1,
-            teacher_id: 1,
           },
           {
             id: 4,
             title: "Traditional Thangka Painting",
-            instructor: "Karma Lama",
+            teacher_name: "Karma Lama",
             description:
               "Learn the ancient art of Thangka painting with traditional techniques and modern applications.",
-            rating: 4.9,
-            students: "3,156",
-            price: "Rs.3,999",
-            originalPrice: "Rs.7,999",
+            average_rating: 4.9,
+            enrolled_students: "3,156",
+            price: 3999,
             image:
               "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=800",
             badge: "Popular",
             teacherId: 1,
-            teacher_id: 1,
           },
           {
             id: 5,
             title: "Nepali Folk Songs Masterclass",
-            instructor: "Sita Gurung",
+            teacher_name: "Sita Gurung",
             description:
               "Discover and master beautiful Nepali folk songs with vocal training and cultural context.",
-            rating: 4.7,
-            students: "6,892",
-            price: "Rs.1,799",
-            originalPrice: "Rs.3,999",
+            average_rating: 4.7,
+            enrolled_students: "6,892",
+            price: 1799,
             image:
               "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800",
             teacherId: 1,
-            teacher_id: 1,
           },
           {
             id: 6,
             title: "Sarangi: The Soul of Nepal",
-            instructor: "Ganesh Rasaili",
+            teacher_name: "Ganesh Rasaili",
             description:
               "Learn to play the traditional Nepali Sarangi from master musicians.",
-            rating: 4.8,
-            students: "4,567",
-            price: "Rs.2,999",
-            originalPrice: "Rs.6,999",
+            average_rating: 4.8,
+            enrolled_students: "4,567",
+            price: 2999,
             image:
               "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800",
             teacherId: 1,
-            teacher_id: 1,
           },
           {
             id: 7,
             title: "Classical Newari Dance Forms",
-            instructor: "Indira Shakya",
+            teacher_name: "Indira Shakya",
             description:
               "Explore the elegant movements and cultural significance of classical Newari dance.",
-            rating: 4.9,
-            students: "2,890",
-            price: "Rs.3,499",
-            originalPrice: "Rs.7,499",
+            average_rating: 4.9,
+            enrolled_students: "2,890",
+            price: 3499,
             image:
               "https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=800",
             badge: "New",
             teacherId: 1,
-            teacher_id: 1,
           },
           {
             id: 8,
             title: "Dhime: Traditional Drum Mastery",
-            instructor: "Prakash Shrestha",
+            teacher_name: "Prakash Shrestha",
             description:
               "Master the powerful sounds of the Dhime drum used in traditional festivals.",
-            rating: 4.7,
-            students: "3,234",
-            price: "Rs.2,199",
-            originalPrice: "Rs.4,999",
+            average_rating: 4.7,
+            enrolled_students: "3,234",
+            price: 2199,
             image:
               "https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=800",
             teacherId: 1,
-            teacher_id: 1,
           },
           {
             id: 9,
             title: "Paubha Painting Techniques",
-            instructor: "Lok Chitrakar",
+            teacher_name: "Lok Chitrakar",
             description:
               "Learn the intricate art of traditional Paubha painting with expert guidance.",
-            rating: 4.8,
-            students: "1,987",
-            price: "Rs.4,499",
-            originalPrice: "Rs.8,999",
+            average_rating: 4.8,
+            enrolled_students: "1,987",
+            price: 4499,
             image:
               "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800",
             teacherId: 1,
-            teacher_id: 1,
           },
           {
             id: 10,
             title: "Lakhe Dance: Mask & Movement",
-            instructor: "Bishal Maharjan",
+            teacher_name: "Bishal Maharjan",
             description:
               "Discover the mystical Lakhe dance tradition and its cultural importance.",
-            rating: 4.6,
-            students: "2,456",
-            price: "Rs.2,799",
-            originalPrice: "Rs.5,499",
+            average_rating: 4.6,
+            enrolled_students: "2,456",
+            price: 2799,
             image:
               "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800",
             teacherId: 1,
-            teacher_id: 1,
           },
           {
             id: 11,
             title: "Traditional Pottery Workshop",
-            instructor: "Ram Prajapati",
+            teacher_name: "Ram Prajapati",
             description:
               "Create authentic Nepali pottery using traditional wheel techniques.",
-            rating: 4.7,
-            students: "3,678",
-            price: "Rs.1,999",
-            originalPrice: "Rs.4,499",
+            average_rating: 4.7,
+            enrolled_students: "3,678",
+            price: 1999,
             image:
               "https://images.unsplash.com/photo-1493106641515-6b5631de4bb9?w=800",
             teacherId: 1,
-            teacher_id: 1,
           },
           {
             id: 12,
             title: "Deuda Dance Fundamentals",
-            instructor: "Kamala Bhandari",
+            teacher_name: "Kamala Bhandari",
             description:
               "Learn the energetic Far Western folk dance with authentic movements.",
-            rating: 4.8,
-            students: "4,123",
-            price: "Rs.1,599",
-            originalPrice: "Rs.3,499",
+            average_rating: 4.8,
+            enrolled_students: "4,123",
+            price: 1599,
             image:
               "https://images.unsplash.com/photo-1504609773096-104ff2c73ba4?w=800",
             teacherId: 1,
-            teacher_id: 1,
           },
         ];
 
@@ -365,7 +341,12 @@ export default function MayLikeCourse() {
         {/* Course Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {courses.slice(0, visibleCount).map((course) => (
-            <CourseCard key={course.id} course={course} />
+            <CourseCard
+              key={course.id}
+              course={course}
+              teacherId={course.teacherId}
+              teacherName={course.teacher_name}
+            />
           ))}
         </div>
 

@@ -1,5 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, ShoppingCart, Bell, X, Menu, Mic,MessageCircle } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  Bell,
+  X,
+  Menu,
+  Mic,
+  MessageCircle,
+} from "lucide-react";
 import { SidebarTrigger, useSidebar } from "../../components/ui/sidebar";
 import { useAuth } from "../../context/AuthContext";
 import CultureConnectLogo from "../../assets/logo/cultureconnect__fav.png";
@@ -15,7 +23,7 @@ const Navbar = () => {
   const [isMobileSearch, setIsMobileSearch] = useState(false);
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
-const [isMessageOpen, setIsMessageOpen] = useState(false);
+  const [isMessageOpen, setIsMessageOpen] = useState(false);
   const searchInputRef = useRef(null);
   const voiceModalRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -32,9 +40,7 @@ const [isMessageOpen, setIsMessageOpen] = useState(false);
     "Music festivals",
     "Handmade products",
     "Local artisans",
-  ].filter((item) =>
-    item.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ].filter((item) => item.toLowerCase().includes(searchQuery.toLowerCase()));
 
   // Focus search input when search is open
   useEffect(() => {
@@ -184,14 +190,13 @@ const [isMessageOpen, setIsMessageOpen] = useState(false);
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search..."
-                className="w-full pl-4 pr-20 py-2 border border-gray-300 rounded-md
+                className="w-full pl-4 pr-20 py-2 border border-gray-300 rounded-full
                            focus:outline-none focus:border-blue-500 transition-colors
                            text-sm md:text-base"
               />
               <button
                 onClick={startVoiceSearch}
-                className="absolute right-12 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100"
-              >
+                className="absolute right-12 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100">
                 <Mic className="w-5 h-5 text-gray-500" />
               </button>
               <button className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100">
@@ -204,8 +209,7 @@ const [isMessageOpen, setIsMessageOpen] = useState(false);
                     <button
                       key={i}
                       onClick={() => setSearchQuery(s)}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-100 flex items-center gap-3"
-                    >
+                      className="w-full px-4 py-3 text-left hover:bg-gray-100 flex items-center gap-3">
                       <Search className="w-5 h-5 text-gray-400" />
                       <span>{s}</span>
                     </button>
@@ -218,27 +222,33 @@ const [isMessageOpen, setIsMessageOpen] = useState(false);
             {isMobileSearch && !isSearchOpen && (
               <button
                 onClick={handleSearchToggle}
-                className="lg:hidden p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
+                className="lg:hidden p-2 hover:bg-gray-100 rounded-full transition-colors">
                 <Search className="w-5 h-5 md:w-6 md:h-6" />
               </button>
             )}
 
             {/* Cart */}
             {!isSearchOpen && (
-              <button className="relative p-2 hover:bg-gray-100 rounded-full transition-colors" onClick={() => navigate("/cart")}>
+              <button
+                className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+                onClick={() => navigate("/cart")}>
                 <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
               </button>
             )}
-      {/* Message */}
-{!isSearchOpen && (
-  <button
-    onClick={() => {  window.open('https://peaky-willa-glucinic.ngrok-free.dev', '_blank', 'noopener,noreferrer'); }}
-    className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
-  >
-    <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
-  </button>
-)}
+            {/* Message */}
+            {!isSearchOpen && (
+              <button
+                onClick={() => {
+                  window.open(
+                    "https://peaky-willa-glucinic.ngrok-free.dev",
+                    "_blank",
+                    "noopener,noreferrer",
+                  );
+                }}
+                className="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
+              </button>
+            )}
 
             {/* Notifications */}
             {/* {!isSearchOpen && (
@@ -268,8 +278,7 @@ const [isMessageOpen, setIsMessageOpen] = useState(false);
           <div className="flex items-center gap-3 mb-4">
             <button
               onClick={handleSearchToggle}
-              className="p-3 hover:bg-gray-100 rounded-full transition-colors"
-            >
+              className="p-3 hover:bg-gray-100 rounded-full transition-colors">
               <X size={28} />
             </button>
             <div className="flex-1 relative">
@@ -284,8 +293,7 @@ const [isMessageOpen, setIsMessageOpen] = useState(false);
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-6 h-6" />
               <button
                 onClick={startVoiceSearch}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-gray-100"
-              >
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-gray-100">
                 <Mic className="w-6 h-6 text-gray-500" />
               </button>
             </div>
@@ -300,8 +308,7 @@ const [isMessageOpen, setIsMessageOpen] = useState(false);
                     setSearchQuery(suggestion);
                     setIsSearchOpen(false);
                   }}
-                  className="w-full px-4 py-4 text-left hover:bg-gray-100 flex items-center gap-3 border-b border-gray-100 last:border-b-0 transition-colors"
-                >
+                  className="w-full px-4 py-4 text-left hover:bg-gray-100 flex items-center gap-3 border-b border-gray-100 last:border-b-0 transition-colors">
                   <Search className="text-gray-400 w-5 h-5" />
                   <span className="text-base">{suggestion}</span>
                 </button>
@@ -316,8 +323,7 @@ const [isMessageOpen, setIsMessageOpen] = useState(false);
         <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-2">
           <div
             ref={voiceModalRef}
-            className="bg-white rounded-xl shadow-xl w-full max-w-sm p-4 overflow-hidden"
-          >
+            className="bg-white rounded-xl shadow-xl w-full max-w-sm p-4 overflow-hidden">
             <div className="bg-blue-500 p-4 text-white text-center rounded-t-xl">
               <h2 className="text-lg font-semibold">
                 {isListening ? "Listening..." : "Initializing..."}
@@ -358,10 +364,7 @@ const [isMessageOpen, setIsMessageOpen] = useState(false);
         </div>
       )}
       {/* Message Sidebar */}
-<Message
-  isOpen={isMessageOpen}
-  onClose={() => setIsMessageOpen(false)}
-/>
+      <Message isOpen={isMessageOpen} onClose={() => setIsMessageOpen(false)} />
     </header>
   );
 };

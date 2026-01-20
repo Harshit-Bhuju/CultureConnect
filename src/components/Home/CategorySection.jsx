@@ -12,7 +12,7 @@ const CategoryCard = ({ category, index }) => {
       transition={{ duration: 0.5, delay: index * 0.1 }}
       viewport={{ once: true }}
       whileHover={{ y: -10 }}
-      className="group relative overflow-hidden h-[450px] cursor-pointer bg-gray-900">
+      className="group relative overflow-hidden h-[450px] cursor-pointer bg-gray-900 rounded-2xl">
       {/* Background Image */}
       <div className="absolute inset-0">
         <motion.img
@@ -44,7 +44,7 @@ const CategoryCard = ({ category, index }) => {
             initial={{ scale: 0 }}
             whileInView={{ scale: 1 }}
             transition={{ delay: index * 0.1 + 0.2, type: "spring" }}
-            className="inline-flex items-center justify-center w-14 h-14 bg-white/10 backdrop-blur-sm border border-white/20 text-3xl">
+            className="inline-flex items-center justify-center w-14 h-14 bg-white/10 backdrop-blur-sm border border-white/20 text-3xl rounded-full">
             {category.icon}
           </motion.div>
         </div>
@@ -76,7 +76,7 @@ const CategoryCard = ({ category, index }) => {
       </div>
 
       {/* Border on Hover */}
-      <div className="absolute inset-0 border-2 border-transparent group-hover:border-red-600 transition-colors duration-300 pointer-events-none" />
+      <div className="absolute inset-0 border-2 border-transparent group-hover:border-red-600 transition-colors duration-300 pointer-events-none rounded-2xl" />
     </motion.div>
   );
 };

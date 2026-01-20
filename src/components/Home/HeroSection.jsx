@@ -219,7 +219,7 @@ const HeroSection = ({ containerRef }) => {
                     <motion.button
                       whileHover={{ scale: 1.05, x: 5 }}
                       whileTap={{ scale: 0.95 }}
-                      className="group px-8 py-4 text-black font-semibold text-base rounded-none flex items-center gap-3 transition-all duration-300"
+                      className="group px-8 py-4 text-black font-semibold text-base rounded-full flex items-center gap-3 transition-all duration-300"
                       style={{
                         backgroundColor: heroSlides[currentSlide].accent,
                         boxShadow: `0 10px 40px ${heroSlides[currentSlide].accent}40`,
@@ -232,7 +232,7 @@ const HeroSection = ({ containerRef }) => {
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="px-8 py-4 border-2 text-white font-semibold text-base backdrop-blur-md hover:bg-white/10 transition-all duration-300"
+                      className="px-8 py-4 border-2 text-white font-semibold text-base rounded-full backdrop-blur-md hover:bg-white/10 transition-all duration-300"
                       style={{ borderColor: heroSlides[currentSlide].accent }}>
                       Learn More
                     </motion.button>
@@ -246,7 +246,7 @@ const HeroSection = ({ containerRef }) => {
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 1.2, duration: 0.8 }}
-                  className="backdrop-blur-xl bg-white/5 border border-white/10 p-8 rounded-sm max-w-sm">
+                  className="backdrop-blur-xl bg-white/5 border border-white/10 p-8 rounded-2xl max-w-sm">
                   <div className="space-y-4">
                     <div className="flex items-baseline gap-2">
                       <span
@@ -266,7 +266,7 @@ const HeroSection = ({ containerRef }) => {
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 1.4, duration: 0.8 }}
-                  className="backdrop-blur-xl bg-white/5 border border-white/10 p-8 rounded-sm max-w-xs">
+                  className="backdrop-blur-xl bg-white/5 border border-white/10 p-8 rounded-2xl max-w-xs">
                   <div className="space-y-4">
                     <div className="flex items-baseline gap-2">
                       <span
@@ -295,7 +295,7 @@ const HeroSection = ({ containerRef }) => {
             onClick={() => setCurrentSlide(index)}
             className="group relative">
             <div
-              className={`h-1 transition-all duration-500 ${
+              className={`h-1 rounded-full transition-all duration-500 ${
                 index === currentSlide ? "w-16" : "w-8"
               }`}
               style={{

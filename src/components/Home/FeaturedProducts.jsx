@@ -102,7 +102,7 @@ const ProductCard = ({ product }) => {
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}>
       <motion.div
-        className="group relative bg-white overflow-hidden border border-gray-200 h-[280px] flex shadow-sm hover:shadow-xl cursor-pointer"
+        className="group relative bg-white overflow-hidden border border-gray-200 h-[280px] flex shadow-sm hover:shadow-xl cursor-pointer rounded-2xl"
         whileHover={{ y: -8 }}
         transition={{ duration: 0.3 }}
         onClick={handleCardClick}>
@@ -118,11 +118,6 @@ const ProductCard = ({ product }) => {
               e.target.src = "/placeholder-image.png";
             }}
           />
-
-          {/* Category Badge */}
-          <div className="absolute top-3 left-3 bg-black text-white text-xs font-bold px-3 py-1 uppercase tracking-wide">
-            {product.category?.replace("-", " ") || "Product"}
-          </div>
         </div>
 
         {/* Content - Takes remaining space */}
@@ -146,7 +141,7 @@ const ProductCard = ({ product }) => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full bg-red-600 text-white py-2.5 text-sm font-bold hover:bg-red-700 transition-colors duration-300"
+              className="w-full bg-red-600 text-white py-2.5 text-sm font-bold hover:bg-red-700 transition-colors duration-300 rounded-full"
               onClick={(e) => {
                 e.stopPropagation();
                 handleCardClick(e);
@@ -158,7 +153,7 @@ const ProductCard = ({ product }) => {
 
         {/* Hover Border */}
         <motion.div
-          className="absolute inset-0 border-2 border-red-600 opacity-0 group-hover:opacity-100 pointer-events-none"
+          className="absolute inset-0 border-2 border-red-600 opacity-0 group-hover:opacity-100 pointer-events-none rounded-2xl"
           initial={false}
           transition={{ duration: 0.3 }}
         />
@@ -201,7 +196,7 @@ const FeaturedProducts = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}>
             <motion.button
-              className="hidden md:flex items-center gap-3 px-6 py-3 bg-red-600 text-white font-bold hover:bg-red-700 transition-colors duration-300 group"
+              className="hidden md:flex items-center gap-3 px-6 py-3 bg-red-600 text-white font-bold hover:bg-red-700 transition-colors duration-300 group rounded-full"
               whileHover={{ x: 5 }}
               onClick={handleViewAllClick}>
               View All Products

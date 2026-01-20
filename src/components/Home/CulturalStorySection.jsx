@@ -77,9 +77,9 @@ const CulturalStorySection = () => {
                     transition={{ delay: 0.3 + index * 0.1 }}
                     viewport={{ once: true }}
                     whileHover={{ y: -5 }}
-                    className="group relative bg-gray-50 border border-gray-200 p-6 hover:border-red-600 transition-all duration-300">
+                    className="group relative bg-gray-50 border border-gray-200 p-6 hover:border-red-600 transition-all duration-300 rounded-2xl">
                     {/* Icon */}
-                    <div className="inline-flex items-center justify-center w-12 h-12 bg-red-600 text-white mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-red-600 text-white mb-4 group-hover:scale-110 transition-transform duration-300 rounded-full">
                       <Icon className="w-6 h-6" />
                     </div>
 
@@ -93,18 +93,6 @@ const CulturalStorySection = () => {
                 );
               })}
             </div>
-
-            {/* CTA Button */}
-            <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              whileHover={{ x: 5 }}
-              whileTap={{ scale: 0.95 }}
-              className="group inline-flex items-center gap-3 bg-red-600 text-white font-bold px-8 py-4 hover:bg-red-700 transition-colors duration-300">
-              Read Our Full Story
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
           </motion.div>
 
           {/* Right Side - Image Gallery */}
@@ -122,21 +110,21 @@ const CulturalStorySection = () => {
                 transition={{ delay: 0.2, duration: 0.6 }}
                 viewport={{ once: true }}
                 whileHover={{ scale: 1.02 }}
-                className="relative overflow-hidden border-4 border-white shadow-2xl">
+                className="relative overflow-hidden border-4 border-white shadow-2xl rounded-2xl">
                 <img
                   src="/Home-Images/about/artisan-story.jpg"
                   alt="Artisan at work"
                   className="w-full h-[500px] object-cover"
                 />
-                {/* Red Accent Overlay */}
-                <div className="absolute inset-0 border-4 border-red-600 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                {/* Red Accent Overlay - Added rounding */}
+                <div className="absolute inset-0 border-4 border-red-600 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl" />
 
                 {/* Info Badge */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
-                  className="absolute bottom-6 left-6 bg-white px-6 py-3 shadow-xl z-20">
+                  className="absolute bottom-6 left-6 bg-white px-6 py-3 shadow-xl z-20 rounded-xl">
                   <p className="text-sm font-bold text-gray-900">
                     Master Craftsperson
                   </p>
@@ -151,7 +139,7 @@ const CulturalStorySection = () => {
                 transition={{ delay: 0.4, duration: 0.6 }}
                 viewport={{ once: true }}
                 whileHover={{ scale: 1.05 }}
-                className="absolute -bottom-8 -right-8 w-56 h-56 overflow-hidden border-8 border-white shadow-2xl">
+                className="absolute -bottom-8 -right-8 w-56 h-56 overflow-hidden border-8 border-white shadow-2xl rounded-2xl">
                 <img
                   src="/Home-Images/about/workshop.png"
                   alt="Traditional Art"
@@ -166,14 +154,14 @@ const CulturalStorySection = () => {
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                className="absolute -top-4 -left-4 w-24 h-24 border-2 border-red-600"
+                className="absolute -top-4 -left-4 w-24 h-24 border-2 border-red-600 rounded-xl"
               />
 
               <motion.div
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
-                className="absolute -bottom-4 -right-4 w-24 h-24 border-2 border-gray-300"
+                className="absolute -bottom-4 -right-4 w-24 h-24 border-2 border-gray-300 rounded-xl"
               />
             </div>
           </motion.div>
