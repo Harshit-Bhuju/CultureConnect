@@ -1,27 +1,33 @@
 // components/TransactionHistory.jsx
-import React, { useMemo, useState } from 'react';
-import { CheckCircle2, Package, Hash, MapPin, Clock, ChevronDown } from 'lucide-react';
-import useOrders from '../hooks/useOrdersCart';
-import { BASE_URL } from '../Configs/ApiEndpoints';
+import React, { useMemo, useState } from "react";
+import {
+  CheckCircle2,
+  Package,
+  Hash,
+  MapPin,
+  Clock,
+  ChevronDown,
+} from "lucide-react";
 
-const TransactionHistory = ({ selectedPeriod }) => {
-  const { completedOrders, loading } = useOrders(selectedPeriod);
-  const [sortOrder, setSortOrder] = useState('newest');
+import { BASE_URL } from "../Configs/ApiEndpoints";
+
+const TransactionHistory = ({ completedOrders, loading, selectedPeriod }) => {
+  const [sortOrder, setSortOrder] = useState("newest");
 
   // Helper function to format date labels based on period
   const formatDateLabel = (date, period) => {
-    if (period === 'This month') {
+    if (period === "This month") {
       // Show full date: "December 16, 2025"
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
     } else {
       // Show month and year: "December 2025"
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long'
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
       });
     }
   };
@@ -31,14 +37,14 @@ const TransactionHistory = ({ selectedPeriod }) => {
     orders.sort((a, b) => {
       const dateA = new Date(a.updatedAt || a.orderDate);
       const dateB = new Date(b.updatedAt || b.orderDate);
-      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
     });
     return orders;
   }, [completedOrders, sortOrder]);
 
   const groupedOrders = useMemo(() => {
     const groups = {};
-    sortedOrders.forEach(order => {
+    sortedOrders.forEach((order) => {
       const date = new Date(order.updatedAt || order.orderDate);
       const key = formatDateLabel(date, selectedPeriod);
       groups[key] = groups[key] || [];
@@ -57,12 +63,12 @@ const TransactionHistory = ({ selectedPeriod }) => {
 
   const getPeriodLabel = () => {
     switch (selectedPeriod) {
-      case 'This month':
-        return 'this month';
-      case 'This year':
-        return 'this year';
+      case "This month":
+        return "this month";
+      case "This year":
+        return "this year";
       default:
-        return 'all time';
+        return "all time";
     }
   };
 
@@ -94,8 +100,7 @@ const TransactionHistory = ({ selectedPeriod }) => {
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
-              className="appearance-none pl-4 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer transition-colors"
-            >
+              className="appearance-none pl-4 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer transition-colors">
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
             </select>
@@ -114,9 +119,7 @@ const TransactionHistory = ({ selectedPeriod }) => {
               <p className="text-xs text-gray-500 mt-1">Total Orders</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">
-                {totalItems}
-              </p>
+              <p className="text-2xl font-bold text-green-600">{totalItems}</p>
               <p className="text-xs text-gray-500 mt-1">Items Purchased</p>
             </div>
             <div className="text-center">
@@ -137,11 +140,11 @@ const TransactionHistory = ({ selectedPeriod }) => {
             </div>
             <p className="text-gray-500 font-medium">No completed orders yet</p>
             <p className="text-sm text-gray-400 mt-1">
-              {selectedPeriod === 'This month'
-                ? 'No completed orders this month'
-                : selectedPeriod === 'This year'
-                  ? 'No completed orders this year'
-                  : 'Completed orders will appear here'}
+              {selectedPeriod === "This month"
+                ? "No completed orders this month"
+                : selectedPeriod === "This year"
+                  ? "No completed orders this year"
+                  : "Completed orders will appear here"}
             </p>
           </div>
         ) : (
@@ -153,7 +156,7 @@ const TransactionHistory = ({ selectedPeriod }) => {
                 </div>
                 <div className="flex-1 h-px bg-gray-200 ml-4"></div>
                 <div className="text-xs text-gray-500 ml-4">
-                  {orders.length} order{orders.length !== 1 ? 's' : ''}
+                  {orders.length} order{orders.length !== 1 ? "s" : ""}
                 </div>
               </div>
 
@@ -161,8 +164,7 @@ const TransactionHistory = ({ selectedPeriod }) => {
                 {orders.map((order) => (
                   <div
                     key={order.order_number}
-                    className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow bg-white"
-                  >
+                    className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow bg-white">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-start gap-4">
@@ -192,7 +194,9 @@ const TransactionHistory = ({ selectedPeriod }) => {
                                   <MapPin className="w-3 h-3" />
                                   Delivery Location
                                 </p>
-                                <p className="text-sm text-gray-900">{order.delivery_location}</p>
+                                <p className="text-sm text-gray-900">
+                                  {order.delivery_location}
+                                </p>
                               </div>
                               <div>
                                 <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
@@ -209,26 +213,42 @@ const TransactionHistory = ({ selectedPeriod }) => {
                                     <Hash className="w-3 h-3" />
                                     Transaction UUID
                                   </p>
-                                  <p className="text-sm text-gray-900 font-mono">{order.transaction_uuid}</p>
+                                  <p className="text-sm text-gray-900 font-mono">
+                                    {order.transaction_uuid}
+                                  </p>
                                 </div>
                               )}
                             </div>
 
                             <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-100">
                               <div>
-                                <p className="text-xs text-gray-500 font-medium">Unit Price</p>
-                                <p className="text-sm text-gray-900">Rs. {order.productPrice?.toLocaleString()}</p>
+                                <p className="text-xs text-gray-500 font-medium">
+                                  Unit Price
+                                </p>
+                                <p className="text-sm text-gray-900">
+                                  Rs. {order.productPrice?.toLocaleString()}
+                                </p>
                               </div>
                               <div>
-                                <p className="text-xs text-gray-500 font-medium">Quantity</p>
-                                <p className="text-sm text-gray-900">{order.quantity}</p>
+                                <p className="text-xs text-gray-500 font-medium">
+                                  Quantity
+                                </p>
+                                <p className="text-sm text-gray-900">
+                                  {order.quantity}
+                                </p>
                               </div>
                               <div>
-                                <p className="text-xs text-gray-500 font-medium">Delivery Charge</p>
-                                <p className="text-sm text-gray-900">Rs. {order.delivery_charge}</p>
+                                <p className="text-xs text-gray-500 font-medium">
+                                  Delivery Charge
+                                </p>
+                                <p className="text-sm text-gray-900">
+                                  Rs. {order.delivery_charge}
+                                </p>
                               </div>
                               <div>
-                                <p className="text-xs text-gray-500 font-medium">Total Amount</p>
+                                <p className="text-xs text-gray-500 font-medium">
+                                  Total Amount
+                                </p>
                                 <p className="text-lg font-bold text-gray-900">
                                   Rs. {order.totalAmount.toLocaleString()}
                                 </p>

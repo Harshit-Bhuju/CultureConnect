@@ -1,7 +1,7 @@
 // ProductDetailPage.jsx - Connected to Database
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 import ImageGallery from "./ImageGallery";
 import ProductInfo from "./ProductInfo";
@@ -9,7 +9,7 @@ import Tabs from "./Tabs";
 import ReviewFormModal from "./ReviewFormModal";
 import DeleteReviewModal from "./DeleteReviewModal";
 import { ArrowLeft, Heart, Package, Share2 } from "lucide-react";
-import API, { BASE_URL } from '../../Configs/ApiEndpoints';
+import API, { BASE_URL } from "../../Configs/ApiEndpoints";
 import Loading from "../Common/Loading";
 
 const ProductDetailPage = () => {
@@ -36,24 +36,28 @@ const ProductDetailPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingReviewId, setDeletingReviewId] = useState(null);
 
-  const previousPage = location.state?.from || '/';
+  const previousPage = location.state?.from || "/";
 
   const fetchProductDetails = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${API.GET_PRODUCT_DETAILS}?product_id=${id}&seller_id=${sellerId}`, {
-        method: 'GET',
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${API.GET_PRODUCT_DETAILS}?product_id=${id}&seller_id=${sellerId}`,
+        {
+          method: "GET",
+          credentials: "include",
+        },
+      );
 
       const data = await response.json();
 
       if (data.success) {
         setProduct(data.product);
 
-        const defaultSize = data.product.adultSizes?.[0] ||
+        const defaultSize =
+          data.product.adultSizes?.[0] ||
           data.product.childAgeGroups?.[0] ||
           "";
         setSelectedSize(defaultSize);
@@ -63,10 +67,10 @@ const ProductDetailPage = () => {
           checkWishlistStatus();
         }
       } else {
-        setError(data.error || 'Failed to fetch product details');
+        setError(data.error || "Failed to fetch product details");
       }
     } catch (err) {
-      setError('Network error while fetching product');
+      setError("Network error while fetching product");
     } finally {
       setLoading(false);
     }
@@ -75,20 +79,20 @@ const ProductDetailPage = () => {
   const checkWishlistStatus = async () => {
     try {
       const response = await fetch(API.GET_WISHLIST_ITEMS, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
       });
 
       const data = await response.json();
       const items = Array.isArray(data.wishlistItems) ? data.wishlistItems : [];
 
       const inWishlist = items.some(
-        item => Number(item.productId) === Number(id)
+        (item) => Number(item.productId) === Number(id),
       );
 
       setIsWishlisted(inWishlist);
     } catch (err) {
-      console.error('Error checking wishlist status:', err);
+      console.error("Error checking wishlist status:", err);
       setIsWishlisted(false);
     }
   };
@@ -103,7 +107,6 @@ const ProductDetailPage = () => {
     }
   }, [user, id]);
 
-
   const toastShown = useRef(false);
 
   // SINGLE error handler - only handle errors ONCE
@@ -111,23 +114,23 @@ const ProductDetailPage = () => {
     if (toastShown.current) return;
 
     const params = new URLSearchParams(location.search);
-    const paymentStatus = params.get('payment');
-    const error = params.get('error');
+    const paymentStatus = params.get("payment");
+    const error = params.get("error");
 
     // Only show toast if we have BOTH error and failed status
-    if (paymentStatus === 'failed' && error) {
+    if (paymentStatus === "failed" && error) {
       toastShown.current = true;
       toast.error(decodeURIComponent(error), { duration: 5000 });
 
       // Clean up URL immediately to prevent double toast
-      params.delete('payment');
-      params.delete('error');
+      params.delete("payment");
+      params.delete("error");
       const newUrl = params.toString()
         ? `${location.pathname}?${params.toString()}`
         : location.pathname;
 
       // Use replace to avoid adding to history
-      window.history.replaceState({}, '', newUrl);
+      window.history.replaceState({}, "", newUrl);
     }
   }, []); // Empty dependency array - run ONLY ONCE on mount
 
@@ -149,7 +152,7 @@ const ProductDetailPage = () => {
         textArea.select();
 
         try {
-          const successful = document.execCommand('copy');
+          const successful = document.execCommand("copy");
           if (successful) {
             toast.success("Link copied to clipboard!");
           } else {
@@ -168,11 +171,12 @@ const ProductDetailPage = () => {
   const handleAddToCart = async () => {
     if (!user) {
       toast.error("Please login to add items to cart");
-      navigate('/login', { state: { from: location.pathname } });
+      navigate("/login", { state: { from: location.pathname } });
       return;
     }
 
-    const hasSizes = product.adultSizes?.length > 0 || product.childAgeGroups?.length > 0;
+    const hasSizes =
+      product.adultSizes?.length > 0 || product.childAgeGroups?.length > 0;
     if (hasSizes && !selectedSize) {
       toast.error("Please select a size");
       return;
@@ -182,15 +186,15 @@ const ProductDetailPage = () => {
 
     try {
       const formData = new FormData();
-      formData.append('productId', product.id);
-      formData.append('quantity', quantity);
+      formData.append("productId", product.id);
+      formData.append("quantity", quantity);
       if (selectedSize) {
-        formData.append('size', selectedSize);
+        formData.append("size", selectedSize);
       }
 
       const response = await fetch(API.ADD_TO_CART, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         body: formData,
       });
 
@@ -199,15 +203,20 @@ const ProductDetailPage = () => {
       toast.dismiss(loadingToast);
 
       if (data.success) {
-        toast.success(data.updated ? "Cart updated successfully!" : "Added to cart successfully!", {
-          icon: "🛒",
-        });
+        toast.success(
+          data.updated
+            ? "Cart updated successfully!"
+            : "Added to cart successfully!",
+          {
+            icon: "🛒",
+          },
+        );
       } else {
         toast.error(data.error || "Failed to add to cart");
       }
     } catch (err) {
       toast.dismiss(loadingToast);
-      console.error('Error adding to cart:', err);
+      console.error("Error adding to cart:", err);
       toast.error("Network error. Please try again.");
     }
   };
@@ -215,32 +224,34 @@ const ProductDetailPage = () => {
   const handleBuyNow = () => {
     if (!user) {
       toast.error("Please login to continue");
-      navigate('/login', { state: { from: location.pathname } });
+      navigate("/login", { state: { from: location.pathname } });
       return;
     }
 
-    const hasSizes = product.adultSizes?.length > 0 || product.childAgeGroups?.length > 0;
+    const hasSizes =
+      product.adultSizes?.length > 0 || product.childAgeGroups?.length > 0;
     if (hasSizes && !selectedSize) {
       toast.error("Please select a size");
       return;
     }
 
-    navigate(`/checkout/${sellerId}/${id}?qty=${quantity}&size=${selectedSize || ''}`, {
-      state: {
-        fromProductPage: true,
-        productPageReturn: previousPage
-      }
-    });
+    navigate(
+      `/checkout/${sellerId}/${id}?qty=${quantity}&size=${selectedSize || ""}`,
+      {
+        state: {
+          fromProductPage: true,
+          productPageReturn: previousPage,
+        },
+      },
+    );
   };
 
   const handleWishlist = async () => {
-
-
     const nextState = !isWishlisted;
     setIsWishlisted(nextState); // optimistic UI update
 
     const loadingToast = toast.loading(
-      nextState ? "Adding to wishlist..." : "Removing from wishlist..."
+      nextState ? "Adding to wishlist..." : "Removing from wishlist...",
     );
 
     try {
@@ -248,31 +259,31 @@ const ProductDetailPage = () => {
       if (nextState) {
         // ADD
         const formData = new FormData();
-        formData.append('productId', product.id);
+        formData.append("productId", product.id);
         const res = await fetch(API.ADD_TO_WISHLIST, {
-          method: 'POST',
-          credentials: 'include',
+          method: "POST",
+          credentials: "include",
           body: formData,
         });
         data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to add');
+        if (!data.success) throw new Error(data.error || "Failed to add");
       } else {
         // REMOVE - NOW SEND productId
         const formData = new FormData();
-        formData.append('productId', product.id);  // ← THIS IS KEY
+        formData.append("productId", product.id); // ← THIS IS KEY
 
         const res = await fetch(API.REMOVE_FROM_WISHLIST, {
-          method: 'POST',
-          credentials: 'include',
+          method: "POST",
+          credentials: "include",
           body: formData,
         });
         data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Failed to remove');
+        if (!data.success) throw new Error(data.error || "Failed to remove");
       }
 
       toast.dismiss(loadingToast);
       toast.success(
-        nextState ? "Added to wishlist ❤️" : "Removed from wishlist 💔"
+        nextState ? "Added to wishlist ❤️" : "Removed from wishlist 💔",
       );
     } catch (err) {
       setIsWishlisted(!nextState); // rollback
@@ -281,9 +292,8 @@ const ProductDetailPage = () => {
     }
   };
 
-
   const handleBack = () => {
-    navigate(previousPage);
+    navigate(-1);
   };
 
   const openReviewForm = (review = null) => {
@@ -328,16 +338,16 @@ const ProductDetailPage = () => {
 
     try {
       const formData = new FormData();
-      formData.append('product_id', product.id);
-      formData.append('rating', reviewRating);
-      formData.append('comment', reviewText.trim());
+      formData.append("product_id", product.id);
+      formData.append("rating", reviewRating);
+      formData.append("comment", reviewText.trim());
       if (editingReviewId) {
-        formData.append('review_id', editingReviewId);
+        formData.append("review_id", editingReviewId);
       }
 
       const response = await fetch(API.SUBMIT_REVIEW, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         body: formData,
       });
 
@@ -347,7 +357,7 @@ const ProductDetailPage = () => {
         let updatedReviews;
         if (editingReviewId) {
           updatedReviews = product.reviews.map((r) =>
-            r.id === editingReviewId ? data.review : r
+            r.id === editingReviewId ? data.review : r,
           );
           toast.success("Review updated successfully!");
         } else {
@@ -356,7 +366,8 @@ const ProductDetailPage = () => {
         }
 
         const totalReviews = updatedReviews.length;
-        const avgRating = updatedReviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews;
+        const avgRating =
+          updatedReviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews;
 
         setProduct({
           ...product,
@@ -375,7 +386,7 @@ const ProductDetailPage = () => {
         toast.error(data.error || "Failed to submit review");
       }
     } catch (err) {
-      console.error('Error submitting review:', err);
+      console.error("Error submitting review:", err);
       toast.error("Network error. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -390,28 +401,33 @@ const ProductDetailPage = () => {
   const handleDeleteReview = async () => {
     try {
       const formData = new FormData();
-      formData.append('review_id', deletingReviewId);
+      formData.append("review_id", deletingReviewId);
 
       const response = await fetch(API.DELETE_REVIEW, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         body: formData,
       });
 
       const data = await response.json();
 
       if (data.success) {
-        const updatedReviews = product.reviews.filter((r) => r.id !== deletingReviewId);
+        const updatedReviews = product.reviews.filter(
+          (r) => r.id !== deletingReviewId,
+        );
         const totalReviews = updatedReviews.length;
-        const avgRating = totalReviews > 0
-          ? updatedReviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews
-          : 0;
+        const avgRating =
+          totalReviews > 0
+            ? updatedReviews.reduce((acc, r) => acc + r.rating, 0) /
+              totalReviews
+            : 0;
 
         setProduct({
           ...product,
           reviews: updatedReviews,
           totalReviews,
-          averageRating: totalReviews > 0 ? Math.round(avgRating * 100) / 100 : 0,
+          averageRating:
+            totalReviews > 0 ? Math.round(avgRating * 100) / 100 : 0,
         });
 
         toast.success("Review deleted successfully");
@@ -421,7 +437,7 @@ const ProductDetailPage = () => {
         toast.error(data.error || "Failed to delete review");
       }
     } catch (err) {
-      console.error('Error deleting review:', err);
+      console.error("Error deleting review:", err);
       toast.error("Network error. Please try again.");
     }
   };
@@ -436,15 +452,14 @@ const ProductDetailPage = () => {
         <div className="text-center p-8 bg-white rounded-lg shadow">
           <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {error ? 'Error Loading Product' : 'Product Not Found'}
+            {error ? "Error Loading Product" : "Product Not Found"}
           </h2>
           <p className="text-gray-600 mb-6">
             {error || "The product you're looking for doesn't exist."}
           </p>
           <button
             onClick={handleBack}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
-          >
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
             Go Back
           </button>
         </div>
@@ -485,8 +500,7 @@ const ProductDetailPage = () => {
           <div className="flex items-center justify-between">
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition group"
-            >
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition group">
               <ArrowLeft className="w-5 h-5" />
               <span className="font-medium">Back</span>
             </button>
@@ -494,15 +508,17 @@ const ProductDetailPage = () => {
               <button
                 onClick={handleWishlist}
                 className="p-2 rounded-lg hover:bg-gray-100 transition"
-                title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-              >
-                <Heart className={`w-6 h-6 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`} />
+                title={
+                  isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+                }>
+                <Heart
+                  className={`w-6 h-6 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+                />
               </button>
               <button
                 onClick={handleShare}
                 className="p-2 rounded-lg hover:bg-gray-100 transition"
-                title="Share product"
-              >
+                title="Share product">
                 <Share2 className="w-6 h-6 text-gray-600" />
               </button>
             </div>
