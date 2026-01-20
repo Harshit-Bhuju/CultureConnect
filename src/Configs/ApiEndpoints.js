@@ -34,6 +34,7 @@ const API = {
   // Seller
   SELLER_REGISTRATION: `${BASE_URL}/seller/seller_registration.php`,
   GET_SELLER_PROFILE: `${BASE_URL}/seller/get_seller_profile.php`,
+  GET_SELLER_FOLLOWERS: `${BASE_URL}/seller/get_seller_followers.php`,
   SELLER_LOGOS: `${BASE_URL}/uploads/seller_img_datas/seller_logos`,
   SELLER_BANNERS: `${BASE_URL}/uploads/seller_img_datas/seller_banners`,
 
@@ -92,12 +93,14 @@ const API = {
   GET_MAY_LIKE_PRODUCTS: `${BASE_URL}/product/seller_product/marketplace/get_may_like.php`,
   GET_SUGGESTED_SELLERS: `${BASE_URL}/product/seller_product/marketplace/get_suggested_sellers.php`,
   GET_CATEGORY_COUNTS: `${BASE_URL}/product/seller_product/marketplace/get_category_counts.php`,
+  GET_CATEGORY_PRODUCTS: `${BASE_URL}/product/seller_product/category/get_category_products.php`,
 
   // Teacher
   TEACHER_REGISTRATION: `${BASE_URL}/teacher/teacher_registration.php`,
   TEACHER_PROFILE_PICTURES: `${BASE_URL}/uploads/teacher_datas/profile_pictures`,
   TEACHER_CERTIFICATES: `${BASE_URL}/uploads/teacher_datas/certificates`,
   GET_TEACHER_PROFILE_WITH_COURSES: `${BASE_URL}/teacher/get_teacher_profile.php`,
+  GET_TEACHER_FOLLOWERS: `${BASE_URL}/teacher/get_teacher_followers.php`,
   UPDATE_TEACHER_PROFILE: `${BASE_URL}/teacher/teacher_profile_update.php`,
   GET_PENDING_TEACHERS: `${BASE_URL}/teacher/get_pending_teachers.php`,
   APPROVE_TEACHER: `${BASE_URL}/teacher/approve_teacher.php`,

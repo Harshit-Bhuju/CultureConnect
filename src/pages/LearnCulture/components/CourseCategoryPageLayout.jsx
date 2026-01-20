@@ -16,10 +16,8 @@ const CourseCategoryPageLayout = ({ title, description, courses }) => {
   // Filters State
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
   const [selectedRating, setSelectedRating] = useState(null);
-  const [selectedLevels, setSelectedLevels] = useState([]);
 
-  // Filter Options
-  const levels = ["Beginner", "Intermediate", "Advanced", "All Levels"];
+
 
   // 1. Filter Logic
   const filteredCourses = useMemo(() => {
@@ -38,16 +36,9 @@ const CourseCategoryPageLayout = ({ title, description, courses }) => {
       const rating = course.average_rating || course.rating || 0;
       if (selectedRating && rating < selectedRating) return false;
 
-      // Level Filter
-      if (selectedLevels.length > 0) {
-        if (!course.level || !selectedLevels.includes(course.level)) {
-          return false;
-        }
-      }
-
       return true;
     });
-  }, [courses, priceRange, selectedRating, selectedLevels]);
+  }, [courses, priceRange, selectedRating]);
 
   // 2. Sort Logic
   const sortedCourses = useMemo(() => {
@@ -116,17 +107,11 @@ const CourseCategoryPageLayout = ({ title, description, courses }) => {
     }
   };
 
-  const toggleLevel = (level) => {
-    setSelectedLevels((prev) =>
-      prev.includes(level) ? prev.filter((l) => l !== level) : [...prev, level],
-    );
-    setCurrentPage(1);
-  };
+
 
   const clearAllFilters = () => {
     setPriceRange({ min: "", max: "" });
     setSelectedRating(null);
-    setSelectedLevels([]);
     setCurrentPage(1);
   };
 
@@ -194,11 +179,10 @@ const CourseCategoryPageLayout = ({ title, description, courses }) => {
                     }}
                     className="flex items-center gap-3 w-full group hover:bg-teal-50 p-2 rounded-xl transition-all -ml-2">
                     <div
-                      className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                        selectedRating === rating
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${selectedRating === rating
                           ? "bg-teal-600 border-teal-600"
                           : "border-gray-300 group-hover:border-teal-400"
-                      }`}>
+                        }`}>
                       {selectedRating === rating && (
                         <Check size={12} className="text-white" />
                       )}
@@ -223,39 +207,6 @@ const CourseCategoryPageLayout = ({ title, description, courses }) => {
               </div>
             </div>
 
-            {/* Level Filter */}
-            <div>
-              <h3 className="font-bold text-gray-900 mb-5 text-sm uppercase tracking-wider border-l-4 border-teal-600 pl-3">
-                Difficulty Level
-              </h3>
-              <div className="space-y-3">
-                {levels.map((level) => (
-                  <label
-                    key={level}
-                    className="flex items-center gap-3 cursor-pointer group">
-                    <div
-                      className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                        selectedLevels.includes(level)
-                          ? "bg-teal-600 border-teal-600"
-                          : "border-gray-300 group-hover:border-teal-400"
-                      }`}>
-                      <input
-                        type="checkbox"
-                        className="hidden"
-                        checked={selectedLevels.includes(level)}
-                        onChange={() => toggleLevel(level)}
-                      />
-                      {selectedLevels.includes(level) && (
-                        <Check size={12} className="text-white" />
-                      )}
-                    </div>
-                    <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
-                      {level}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
           </aside>
 
           {/* Main Content */}
@@ -349,11 +300,10 @@ const CourseCategoryPageLayout = ({ title, description, courses }) => {
                     <button
                       key={page}
                       onClick={() => handlePageChange(page)}
-                      className={`w-12 h-12 flex items-center justify-center rounded-full text-sm font-bold transition-all ${
-                        currentPage === page
+                      className={`w-12 h-12 flex items-center justify-center rounded-full text-sm font-bold transition-all ${currentPage === page
                           ? "bg-teal-600 text-white shadow-lg shadow-teal-100 scale-110"
                           : "bg-white text-gray-600 hover:bg-teal-50 border border-transparent"
-                      }`}>
+                        }`}>
                       {page}
                     </button>
                   ),

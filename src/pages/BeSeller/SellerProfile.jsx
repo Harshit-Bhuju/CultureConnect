@@ -9,6 +9,7 @@ import API, { BASE_URL } from "../../Configs/ApiEndpoints";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import Loading from "../../components/common/Loading";
+import FollowersModal from "../../components/Common/FollowersModal";
 
 const SellerProfile = () => {
   const { id } = useParams();
@@ -22,6 +23,11 @@ const SellerProfile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
+
+  // Followers Modal State
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [followersList, setFollowersList] = useState([]);
+  const [followersLoading, setFollowersLoading] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -137,6 +143,28 @@ const SellerProfile = () => {
     }
   };
 
+  const handleShowFollowers = async () => {
+    setShowFollowersModal(true);
+    setFollowersLoading(true);
+    try {
+      const response = await fetch(`${API.GET_SELLER_FOLLOWERS}?seller_id=${id}`, {
+        method: "GET",
+        credentials: "include",
+      });
+      const result = await response.json();
+      if (result.status === "success") {
+        setFollowersList(result.followers);
+      } else {
+        toast.error("Failed to load followers");
+      }
+    } catch (err) {
+      console.error("Fetch followers error:", err);
+      toast.error("Error loading followers");
+    } finally {
+      setFollowersLoading(false);
+    }
+  };
+
   if (isLoading) {
     return (<Loading message='Loading Profile...' />);
   }
@@ -193,10 +221,15 @@ const SellerProfile = () => {
 
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center gap-6 text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <Heart className="w-4 h-4" />
-                      <span>{followersCount} Followers</span>
-                    </div>
+                    <button
+                      onClick={handleShowFollowers}
+                      className="group flex items-center gap-1.5 hover:text-gray-900 transition-colors cursor-pointer"
+                    >
+                      <span className="font-bold text-gray-900 group-hover:underline decoration-1 underline-offset-2">
+                        {followersCount}
+                      </span>
+                      <span>Followers</span>
+                    </button>
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 text-yellow-500 fill-current" />
                       <span>{sellerData.average_rating} Average Rating</span>
@@ -321,6 +354,13 @@ const SellerProfile = () => {
           </div>
         </div>
       </SidebarInset>
+      <FollowersModal
+        isOpen={showFollowersModal}
+        onClose={() => setShowFollowersModal(false)}
+        title="Followers"
+        followers={followersList}
+        loading={followersLoading}
+      />
     </SidebarProvider>
   );
 };
