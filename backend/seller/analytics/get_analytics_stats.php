@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../config/session_config.php';
-include("header.php");
+require_once __DIR__ . '/../../config/session_config.php';
+include("../../config/header.php");
 
 try {
     if (!isset($_SESSION['user_email'])) {
@@ -24,7 +24,7 @@ try {
     $user = $result->fetch_assoc();
     $stmt->close();
 
-    if (!$user || !$user['seller_id']) {    
+    if (!$user || !$user['seller_id']) {
         echo json_encode(["success" => false, "error" => "No seller account found"]);
         exit;
     }
@@ -116,7 +116,6 @@ try {
             'total_products' => (int)$product_data['total_products']
         ]
     ]);
-
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode([
@@ -126,5 +125,3 @@ try {
 }
 
 $conn->close();
-
-

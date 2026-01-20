@@ -419,7 +419,7 @@ const ProductDetailPage = () => {
         const avgRating =
           totalReviews > 0
             ? updatedReviews.reduce((acc, r) => acc + r.rating, 0) /
-              totalReviews
+            totalReviews
             : 0;
 
         setProduct({
