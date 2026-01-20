@@ -108,10 +108,10 @@ const CustomerCartComponent = () => {
                 <span className="font-medium">Back</span>
               </button>
               <div className="h-6 w-px bg-gray-300"></div>
-              <h1 className="text-2xl font-bold text-gray-900">My Orders & Cart</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                My Orders & Cart
+              </h1>
             </div>
-
-
           </div>
 
           {/* Navigation Tabs */}
@@ -494,7 +494,6 @@ const CustomerCartComponent = () => {
         {activeTab === 'history' && (
           <TransactionHistory selectedPeriod={selectedPeriod} />
         )}
-
       </main>
     </div>
   );
