@@ -102,7 +102,7 @@ try {
         if ($existing_order) {
             // Update existing order
             $order_id = $existing_order['id'];
-            
+
             $stmt = $conn->prepare("
                 UPDATE orders SET
                     quantity = ?,
@@ -238,4 +238,3 @@ try {
 }
 
 $conn->close();
-?>

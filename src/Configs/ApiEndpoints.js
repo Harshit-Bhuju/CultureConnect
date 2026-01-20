@@ -73,8 +73,8 @@ const API = {
   GET_COMPLETED_ORDERS: `${BASE_URL}/user/user_cart/get_completed_orders.php`,
 
   // Analytics
-  GET_ANALYTICS_STATS: `${BASE_URL}/seller/get_analytics_stats.php`,
-  GET_TOP_SELLING_PRODUCTS: `${BASE_URL}/seller/get_top_selling_products.php`,
+  GET_ANALYTICS_STATS: `${BASE_URL}/seller/analytics/get_analytics_stats.php`,
+  GET_TOP_SELLING_PRODUCTS: `${BASE_URL}/seller/analytics/get_top_selling_products.php`,
 
   // Reviews
   SUBMIT_REVIEW: `${BASE_URL}/review/submit_review.php`,
