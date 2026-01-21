@@ -31,7 +31,7 @@ export default function StudentCourseSidebar({
                         {course.price === 0 ? (
                             <span className="text-green-600">Free</span>
                         ) : (
-                            `₹${course.price.toLocaleString()}`
+                            `Rs.${course.price.toLocaleString()}`
                         )}
                     </p>
                     {course.price > 0 && (

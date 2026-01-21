@@ -40,7 +40,7 @@ const StudentCourseDetailPage = () => {
         {
           method: "GET",
           credentials: "include",
-        }
+        },
       );
 
       const data = await response.json();
@@ -83,15 +83,15 @@ const StudentCourseDetailPage = () => {
           })(),
           teacher: data.teacher
             ? {
-              id: data.teacher.id,
-              name: data.teacher.name || "Unknown Teacher",
-              profile_picture: data.teacher.profile_picture
-                ? `${API.TEACHER_PROFILE_PICTURES}/${data.teacher.profile_picture}`
-                : "https://ui-avatars.com/api/?name=" +
-                encodeURIComponent(data.teacher.name || "Teacher"),
-              experience_years: parseInt(data.teacher.experience_years) || 0,
-              bio: data.teacher.bio || "",
-            }
+                id: data.teacher.id,
+                name: data.teacher.name || "Unknown Teacher",
+                profile_picture: data.teacher.profile_picture
+                  ? `${API.TEACHER_PROFILE_PICTURES}/${data.teacher.profile_picture}`
+                  : "https://ui-avatars.com/api/?name=" +
+                    encodeURIComponent(data.teacher.name || "Teacher"),
+                experience_years: parseInt(data.teacher.experience_years) || 0,
+                bio: data.teacher.bio || "",
+              }
             : null,
           videos: (data.videos || [])
             .map((video, index) => ({
@@ -110,8 +110,8 @@ const StudentCourseDetailPage = () => {
             .sort((a, b) => a.order - b.order),
           learningOutcomes: data.course.what_you_will_learn
             ? data.course.what_you_will_learn
-              .split("\n")
-              .filter((item) => item.trim())
+                .split("\n")
+                .filter((item) => item.trim())
             : [],
           requirements: data.course.requirements
             ? data.course.requirements.split("\n").filter((item) => item.trim())
@@ -150,7 +150,7 @@ const StudentCourseDetailPage = () => {
         `${API.CHECK_COURSE_WISHLIST}?course_id=${id}`,
         {
           credentials: "include",
-        }
+        },
       );
       const data = await response.json();
       setIsWishlisted(data.is_wishlisted || false);
@@ -215,7 +215,7 @@ const StudentCourseDetailPage = () => {
       if (data.status === "success") {
         setIsWishlisted(!isWishlisted);
         toast.success(
-          isWishlisted ? "Removed from wishlist" : "Added to wishlist ❤️"
+          isWishlisted ? "Removed from wishlist" : "Added to wishlist ❤️",
         );
       } else {
         toast.error(data.message || "Failed to update wishlist");
@@ -271,7 +271,7 @@ const StudentCourseDetailPage = () => {
         <button
           onClick={handleBack}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition group">
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition" />
+          <ArrowLeft className="w-5 h-5" />
           <span className="font-medium">Back to Teacher Profile</span>
         </button>
 
