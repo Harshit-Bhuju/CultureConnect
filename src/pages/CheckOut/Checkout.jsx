@@ -32,6 +32,7 @@ export default function Checkout({
   openLocationModal,
   incrementQuantity,
   decrementQuantity,
+  updateSize,
   handleProceedToPayment,
 }) {
   return (
@@ -188,6 +189,33 @@ export default function Checkout({
                         ({orderItem.stock} available)
                       </span>
                     </div>
+
+                    {/* Size Selector */}
+                    {orderItem.availableSizes?.length > 0 && (
+                      <div className="mt-3">
+                        <span className="text-gray-600 text-sm block mb-2">
+                          Size:
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          {orderItem.availableSizes.map((size) => (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateSize(size);
+                              }}
+                              className={`px-3 py-1.5 border-2 rounded-lg text-sm font-medium transition ${
+                                orderItem.size === size
+                                  ? "border-black bg-black text-white"
+                                  : "border-gray-300 hover:border-gray-400 text-gray-700"
+                              }`}>
+                              {size}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-black text-lg">

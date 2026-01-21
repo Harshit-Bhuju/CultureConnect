@@ -69,7 +69,6 @@ const ProductDetailPage = () => {
       setLoading(false);
     }
   };
-
   const checkWishlistStatus = async () => {
     try {
       const response = await fetch(API.GET_WISHLIST_ITEMS, {
@@ -184,9 +183,14 @@ const ProductDetailPage = () => {
     try {
       const formData = new FormData();
       formData.append("productId", product.id);
+      formData.append("product_id", product.id);
+      formData.append("sellerId", sellerId);
+      formData.append("seller_id", sellerId);
       formData.append("quantity", quantity);
       if (selectedSize) {
         formData.append("size", selectedSize);
+        formData.append("product_size", selectedSize);
+        formData.append("selected_size", selectedSize);
       }
 
       const response = await fetch(API.ADD_TO_CART, {

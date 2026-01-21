@@ -15,6 +15,7 @@ export default function CheckOutPage() {
 
   const searchParams = new URLSearchParams(location.search);
   const initialQty = parseInt(searchParams.get("qty"), 10) || 1;
+  const initialSize = searchParams.get("size") || "";
 
   const { sellerId, productId } = useParams();
 
@@ -119,6 +120,16 @@ export default function CheckOutPage() {
         if (data.success) {
           setProductInfo(data.product);
 
+          // Get available sizes from product
+          const availableSizes =
+            data.product.sizes?.length > 0
+              ? data.product.sizes
+              : data.product.ageGroups?.length > 0
+                ? data.product.ageGroups
+                : data.product.adultSizes?.length > 0
+                  ? data.product.adultSizes
+                  : data.product.childAgeGroups || [];
+
           setOrderItem({
             id: data.product.id,
             name: data.product.name,
@@ -126,6 +137,8 @@ export default function CheckOutPage() {
             quantity: initialQty,
             image: data.product.product_image,
             stock: data.product.stock,
+            size: initialSize,
+            availableSizes: availableSizes,
           });
 
           if (data.hasLocation && data.location && !selectedLocation) {
@@ -189,6 +202,13 @@ export default function CheckOutPage() {
       }));
       setTimeout(() => handleProceedToPayment(true), 100);
     }
+  };
+
+  const updateSize = (newSize) => {
+    setOrderItem((prev) => ({
+      ...prev,
+      size: newSize,
+    }));
   };
 
   const subtotal = orderItem ? orderItem.price * orderItem.quantity : 0;
@@ -293,6 +313,9 @@ export default function CheckOutPage() {
       formData.append("seller_id", sellerId);
       formData.append("product_id", productId);
       formData.append("quantity", orderItem.quantity);
+      if (orderItem.size) {
+        formData.append("size", orderItem.size);
+      }
       formData.append("delivery_province", selectedLocation.province);
       formData.append("delivery_district", selectedLocation.district);
       formData.append("delivery_municipality", selectedLocation.municipality);
@@ -494,6 +517,7 @@ export default function CheckOutPage() {
           openLocationModal={openLocationModal}
           incrementQuantity={incrementQuantity}
           decrementQuantity={decrementQuantity}
+          updateSize={updateSize}
           handleProceedToPayment={() => handleProceedToPayment(false)}
           onBack={() => navigate(-1)}
         />

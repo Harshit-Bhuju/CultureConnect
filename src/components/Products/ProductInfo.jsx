@@ -67,7 +67,6 @@ const ProductInfo = ({
     return audiences[audience] || audience;
   };
 
-  // Wrapper for handleAddToCart with validation
   const onAddToCart = () => {
     handleAddToCart();
   };

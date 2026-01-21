@@ -21,10 +21,10 @@ const CartContent = ({
   removeFromCart,
   loading,
 }) => {
+  console.log(cartItems);
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [cartSortOrder, setCartSortOrder] = useState("newest");
   const navigate = useNavigate();
-
   // Derived selected item to ensure live updates when quantity changes
   const selectedItem = useMemo(() => {
     return cartItems.find((item) => item.id === selectedItemId);
@@ -231,6 +231,12 @@ const CartContent = ({
                               className="font-semibold text-gray-900 truncate cursor-pointer">
                               {item.productName}
                             </h3>
+                            {item.size && (
+                              <p className="text-sm text-gray-600 mt-0.5">
+                                Size:{" "}
+                                <span className="font-medium">{item.size}</span>
+                              </p>
+                            )}
                             <p className="text-lg font-bold text-orange-600 mt-1">
                               Rs. {item.price.toLocaleString()}
                             </p>
@@ -342,6 +348,11 @@ const CartContent = ({
                     <h4 className="font-semibold text-gray-900 text-sm truncate">
                       {selectedItem.productName}
                     </h4>
+                    {selectedItem.size && (
+                      <p className="text-xs text-gray-600">
+                        Size: {selectedItem.size}
+                      </p>
+                    )}
                     <p className="text-xs text-gray-600">
                       Qty: {selectedItem.quantity}
                     </p>
@@ -373,7 +384,7 @@ const CartContent = ({
               <button
                 onClick={() =>
                   navigate(
-                    `/checkout/${selectedItem.sellerId}/${selectedItem.productId}?qty=${selectedItem.quantity}&size=`,
+                    `/checkout/${selectedItem.sellerId}/${selectedItem.productId}?qty=${selectedItem.quantity}&size=${selectedItem.size || ""}`,
                   )
                 }
                 className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3.5 rounded-lg transition-all shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 flex items-center justify-center gap-2">

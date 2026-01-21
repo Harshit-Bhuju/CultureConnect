@@ -148,6 +148,11 @@ export default function PaymentPage({
                     <p className="text-xs text-gray-500">
                       Qty: {order.quantity}
                     </p>
+                    {order.size && (
+                      <p className="text-xs text-gray-500">
+                        Size: {order.size}
+                      </p>
+                    )}
                     {order.store_name && (
                       <div className="flex items-center gap-1 mt-1">
                         {order.store_logo ? (
