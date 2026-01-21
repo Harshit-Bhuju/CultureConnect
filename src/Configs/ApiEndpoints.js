@@ -108,6 +108,13 @@ const API = {
   CHECK_TEACHER_FOLLOW_STATUS: `${BASE_URL}/user/check_teacher_follow_status.php`,
   GET_USER_FOLLOWING_TEACHERS: `${BASE_URL}/user/get_user_following_teacher.php`,
 
+  // Enrollemnt & Wishlist
+  CHECK_ENROLLMENT: `${BASE_URL}/course/check_enrollment.php`,
+  CHECK_COURSE_WISHLIST: `${BASE_URL}/course/check_wishlist.php`,
+  ENROLL_COURSE: `${BASE_URL}/course/enroll_course.php`,
+  ADD_COURSE_WISHLIST: `${BASE_URL}/course/add_wishlist.php`,
+  REMOVE_COURSE_WISHLIST: `${BASE_URL}/course/remove_wishlist.php`,
+
   // Teacher Courses
   COURSE_UPLOAD: `${BASE_URL}/course/course_upload.php`,
   GET_TEACHER_COURSES: `${BASE_URL}/get_teacher_courses.php`,
@@ -116,6 +123,13 @@ const API = {
   UPDATE_COURSE: `${BASE_URL}/course/course_update.php`,
   DELETE_COURSE: `${BASE_URL}/course/course_delete.php`,
   UPDATE_COURSE_STATUS: `${BASE_URL}/course/course_status_update.php`,
+
+  // Teacher Analytics
+  GET_TEACHER_ANALYTICS_STATS: `${BASE_URL}/teacher/analytics/get_analytics_stats.php`,
+  GET_TOP_PERFORMING_COURSES: `${BASE_URL}/teacher/analytics/get_top_courses.php`,
+  GET_RECENT_ENROLLMENTS: `${BASE_URL}/teacher/analytics/get_recent_enrollments.php`,
+  GET_TEACHER_TRANSACTION_HISTORY: `${BASE_URL}/teacher/analytics/get_transaction_history.php`,
+  GET_CANCELLED_ENROLLMENTS: `${BASE_URL}/teacher/analytics/get_cancelled_enrollments.php`,
 
   // Course Videos
   COURSE_VIDEOS: `${BASE_URL}/uploads/teacher_datas/course_videos`,

@@ -270,10 +270,11 @@ const TeacherProfile = () => {
                   <button
                     onClick={handleFollowToggle}
                     disabled={followLoading}
-                    className={`px-6 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 ${isFollowing
+                    className={`px-6 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                      isFollowing
                         ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
                         : "bg-gray-800 text-white hover:bg-gray-700"
-                      } ${followLoading ? "opacity-50 cursor-not-allowed" : ""}`}>
+                    } ${followLoading ? "opacity-50 cursor-not-allowed" : ""}`}>
                     {followLoading ? (
                       <>
                         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
@@ -296,9 +297,11 @@ const TeacherProfile = () => {
                       </button>
                     </Link>
                     <button
-                      onClick={handleAddCourses}
-                      className="px-5 py-2.5 border border-gray-800 text-gray-800 rounded-lg hover:bg-gray-100 transition-colors font-medium">
-                      Add New Class
+                      onClick={() =>
+                        navigate(`/teacher/manageclasses/${user?.teacher_id}`)
+                      }
+                      className="px-5 py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium ml-2 shadow-sm">
+                      Manage Courses
                     </button>
                   </>
                 )}
@@ -310,18 +313,20 @@ const TeacherProfile = () => {
               <nav className="flex gap-8 text-gray-600">
                 <button
                   onClick={() => setActiveTab("classes")}
-                  className={`py-3 px-1 font-medium transition-colors border-b-2 ${activeTab === "classes"
+                  className={`py-3 px-1 font-medium transition-colors border-b-2 ${
+                    activeTab === "classes"
                       ? "border-blue-600 text-blue-600"
                       : "border-transparent hover:text-gray-800"
-                    }`}>
+                  }`}>
                   Classes
                 </button>
                 <button
                   onClick={() => setActiveTab("about")}
-                  className={`py-3 px-1 font-medium transition-colors border-b-2 ${activeTab === "about"
+                  className={`py-3 px-1 font-medium transition-colors border-b-2 ${
+                    activeTab === "about"
                       ? "border-blue-600 text-blue-600"
                       : "border-transparent hover:text-gray-800"
-                    }`}>
+                  }`}>
                   About
                 </button>
               </nav>

@@ -85,14 +85,23 @@ const TeacherProfile = lazy(() => import("./pages/Teacher/Teacher_Profile"));
 const CustomizeTeacherProfile = lazy(
   () => import("./pages/Teacher/CustomizeTeacherProfile"),
 );
-const ManageClasses = lazy(
-  () => import("./pages/Teacher/ManageCourses/ManageClasses"),
+const CourseManagement = lazy(
+  () => import("./pages/Teacher/ManageCourses/CourseManagement"),
 );
 const TeacherCourseUpload = lazy(
-  () => import("./pages/Teacher/TeacherPagesHandling/TeacherCourseUpload"),
+  () =>
+    import("./components/ManageCourses/CardHandling/TeacherCourseUpload/TeacherCourseUpload"),
 );
 const TeacherClassEdit = lazy(
-  () => import("./pages/Teacher/TeacherPagesHandling/TeacherClassEdit"),
+  () =>
+    import("./components/ManageCourses/CardHandling/TeacherCourseEdit/TeacherCourseEditPage"),
+);
+const TeacherAnalyticsDashboard = lazy(
+  () =>
+    import("./components/ManageCourses/Analytics/TeacherAnalyticsDashboard"),
+);
+const DraftCourses = lazy(
+  () => import("./components/ManageCourses/Drafts/DraftCourses"),
 );
 
 // Course pages
@@ -297,7 +306,7 @@ function App() {
             path="/teacher/manageclasses/:teacherId"
             element={
               <ProtectedTeacherRoute>
-                <ManageClasses />
+                <CourseManagement />
               </ProtectedTeacherRoute>
             }
           />
@@ -316,6 +325,24 @@ function App() {
             element={
               <ProtectedTeacherRoute>
                 <TeacherClassEdit />
+              </ProtectedTeacherRoute>
+            }
+          />
+
+          <Route
+            path="/teacher/analytics/:teacherId"
+            element={
+              <ProtectedTeacherRoute>
+                <TeacherAnalyticsDashboard />
+              </ProtectedTeacherRoute>
+            }
+          />
+
+          <Route
+            path="/teacher/drafts/:teacherId"
+            element={
+              <ProtectedTeacherRoute>
+                <DraftCourses />
               </ProtectedTeacherRoute>
             }
           />

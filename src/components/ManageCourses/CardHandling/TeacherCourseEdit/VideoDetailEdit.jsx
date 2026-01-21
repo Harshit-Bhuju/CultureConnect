@@ -1,15 +1,16 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
-  Upload,
-  Film,
   Image,
+  Upload,
+  Loader2,
+  Film,
   AlertCircle,
   Check,
-  Loader2,
 } from "lucide-react";
 
-export default function VideoDetailUpload({
+// Video Detail Edit Modal Component
+export default function VideoDetailEdit({
   video,
   isOpen,
   onClose,
@@ -20,13 +21,12 @@ export default function VideoDetailUpload({
     title: video?.title || "",
     description: video?.description || "",
     thumbnailFile: null,
-    thumbnailUrl: video?.thumbnailUrl || null, // if you already have one
+    thumbnailUrl: video?.thumbnailUrl || null,
   });
 
   const [errors, setErrors] = useState({});
   const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
 
-  // Sync form when video prop changes
   useEffect(() => {
     if (video) {
       setForm({
@@ -44,12 +44,14 @@ export default function VideoDetailUpload({
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setErrors((prev) => ({ ...prev, thumbnail: "Please select an image file" }));
+      setErrors((prev) => ({
+        ...prev,
+        thumbnail: "Please select an image file",
+      }));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      // 5MB limit
       setErrors((prev) => ({ ...prev, thumbnail: "Image must be under 5MB" }));
       return;
     }
@@ -65,7 +67,7 @@ export default function VideoDetailUpload({
       const { thumbnail: _, ...rest } = prev;
       return rest;
     });
-    setTimeout(() => setIsUploadingThumbnail(false), 300); // simulate small delay
+    setTimeout(() => setIsUploadingThumbnail(false), 300);
     e.target.value = "";
   };
 
@@ -99,20 +101,22 @@ export default function VideoDetailUpload({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-bold text-gray-900">Edit Video Details</h2>
+          <h2 className="text-xl font-bold text-gray-900">
+            Edit Video Details
+          </h2>
           <button
             onClick={onClose}
             disabled={isSaving}
-            className="p-2 hover:bg-gray-100 rounded-full transition"
-          >
+            className="p-2 hover:bg-gray-100 rounded-full transition">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Video Preview */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Video Preview</label>
+            <label className="text-sm font-semibold text-gray-700">
+              Video Preview
+            </label>
             <div className="aspect-video bg-gray-900 rounded-xl overflow-hidden border border-gray-200">
               <video
                 src={video.url}
@@ -120,14 +124,16 @@ export default function VideoDetailUpload({
                 className="w-full h-full object-contain"
               />
             </div>
-            <p className="text-xs text-gray-500">{video.name} • {video.size}</p>
+            <p className="text-xs text-gray-500">
+              {video.name} • {video.durationFormatted || "Unknown duration"} •{" "}
+              {video.size}
+            </p>
           </div>
 
-          {/* Thumbnail Upload */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
               <Image className="w-4 h-4" />
-              Thumbnail (Recommended)
+              Thumbnail (Required)
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -173,9 +179,8 @@ export default function VideoDetailUpload({
                   </label>
                 )}
               </div>
-
               <div className="flex items-center justify-center">
-                <div className="bg-gray-100 rounded-xl aspect-video w-full max-w-md flex items-center justify-center">
+                <div className="bg-gray-100 rounded-xl aspect-video w-full flex items-center justify-center">
                   <Film className="w-16 h-16 text-gray-400" />
                 </div>
               </div>
@@ -188,7 +193,6 @@ export default function VideoDetailUpload({
             )}
           </div>
 
-          {/* Title */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700">
               Video Title <span className="text-red-500">*</span>
@@ -196,7 +200,9 @@ export default function VideoDetailUpload({
             <input
               type="text"
               value={form.title}
-              onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, title: e.target.value }))
+              }
               placeholder="e.g., Introduction to Basic Footwork"
               maxLength="255"
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition ${
@@ -211,7 +217,6 @@ export default function VideoDetailUpload({
             )}
           </div>
 
-          {/* Description */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700">
               Description <span className="text-red-500">*</span>
@@ -225,7 +230,9 @@ export default function VideoDetailUpload({
               maxLength="5000"
               placeholder="What will students learn in this lesson? Key topics, techniques, etc."
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none transition ${
-                errors.description ? "border-red-300 bg-red-50" : "border-gray-300"
+                errors.description
+                  ? "border-red-300 bg-red-50"
+                  : "border-gray-300"
               }`}
             />
             <p className="text-xs text-gray-500">
@@ -244,15 +251,13 @@ export default function VideoDetailUpload({
           <button
             onClick={onClose}
             disabled={isSaving}
-            className="flex-1 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-100 transition"
-          >
+            className="flex-1 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-100 transition">
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 flex items-center justify-center gap-2 transition disabled:opacity-50"
-          >
+            className="flex-1 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 flex items-center justify-center gap-2 transition disabled:opacity-50">
             {isSaving ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />

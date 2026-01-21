@@ -1,9 +1,9 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
-import TeacherCourseDetailPage from '../../../../pages/Teacher/TeacherPagesHandling/TeacherCourseDetailPage';
-import StudentCourseDetailPage from '../../../../pages/Teacher/TeacherPagesHandling/StudentCourseDetailPage';
-import { useAuth } from '../../../../context/AuthContext';
+import React from "react";
+import { useParams } from "react-router-dom";
 
+import { useAuth } from "../../../../context/AuthContext";
+import TeacherCourseDetailPage from "../../../ManageCourses/CardHandling/TeacherCourseDetailPage";
+import StudentCourseDetailPage from "../../../../pages/Teacher/TeacherPagesHandling/StudentCourseDetailPage";
 
 const CourseDetailRouter = () => {
   const { teacherId } = useParams();
