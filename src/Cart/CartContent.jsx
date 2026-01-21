@@ -467,9 +467,9 @@ const CartContent = ({
                 onClick={() => {
                   const sizeParam = selectedSize ? `&size=${encodeURIComponent(selectedSize)}` : "";
                   navigate(
-                    `/checkout/${selectedItem.sellerId}/${selectedItem.productId}?qty=${selectedItem.quantity}&size=`,
-                  )
-                }
+                    `/checkout/${selectedItem.sellerId}/${selectedItem.productId}?qty=${selectedItem.quantity}${sizeParam}`
+                  );
+                }}
                 className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3.5 rounded-lg transition-all shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 flex items-center justify-center gap-2">
                 Proceed to Checkout
                 <ArrowRight className="w-5 h-5" />

@@ -166,8 +166,8 @@ export default function Checkout({
                           }}
                           disabled={orderItem.quantity <= 1}
                           className={`px-2 py-1 text-sm font-semibold ${orderItem.quantity <= 1
-                              ? "text-gray-300 cursor-not-allowed"
-                              : "text-black hover:text-gray-700"
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-black hover:text-gray-700"
                             }`}>
                           -
                         </button>
@@ -182,8 +182,8 @@ export default function Checkout({
                           }}
                           disabled={orderItem.quantity >= orderItem.stock}
                           className={`px-2 py-1 text-sm font-semibold ${orderItem.quantity >= orderItem.stock
-                              ? "text-gray-300 cursor-not-allowed"
-                              : "text-black hover:text-gray-700"
+                            ? "text-gray-300 cursor-not-allowed"
+                            : "text-black hover:text-gray-700"
                             }`}>
                           +
                         </button>
@@ -208,11 +208,10 @@ export default function Checkout({
                                 e.stopPropagation();
                                 updateSize(size);
                               }}
-                              className={`px-3 py-1.5 border-2 rounded-lg text-sm font-medium transition ${
-                                orderItem.size === size
+                              className={`px-3 py-1.5 border-2 rounded-lg text-sm font-medium transition ${orderItem.size === size
                                   ? "border-black bg-black text-white"
                                   : "border-gray-300 hover:border-gray-400 text-gray-700"
-                              }`}>
+                                }`}>
                               {size}
                             </button>
                           ))}
@@ -251,10 +250,12 @@ export default function Checkout({
               <div className="flex items-center justify-between text-black">
                 <span className="text-gray-700">Delivery Fee</span>
                 <span
-                  className={`font-medium ${deliveryCharge === 0 ? "text-gray-400" : "text-green-600"}`}>
-                  {deliveryCharge === 0
-                    ? "Calculating..."
-                    : `Rs. ${deliveryCharge}`}
+                  className={`font-medium ${!selectedLocation ? "text-gray-400" : (deliveryCharge === 0 && !orderDetails) ? "text-orange-500" : "text-green-600"}`}>
+                  {!selectedLocation
+                    ? "Select address"
+                    : (deliveryCharge === 0 && !orderDetails)
+                      ? "Calculating..."
+                      : `Rs. ${deliveryCharge}`}
                 </span>
               </div>
 
@@ -279,8 +280,8 @@ export default function Checkout({
               onClick={handleProceedToPayment}
               disabled={!selectedLocation}
               className={`w-full font-semibold py-4 rounded-lg transition-colors mb-3 ${selectedLocation
-                  ? "bg-black hover:bg-gray-800 text-white"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                ? "bg-black hover:bg-gray-800 text-white"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}>
               {selectedLocation
                 ? "Proceed to Payment"
