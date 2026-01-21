@@ -21,13 +21,13 @@ const CartContent = ({
   removeFromCart,
   loading,
 }) => {
+  console.log(cartItems);
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [cartSortOrder, setCartSortOrder] = useState("newest");
   const [selectedSize, setSelectedSize] = useState(null);
   const [availableSizes, setAvailableSizes] = useState([]);
   const [loadingSizes, setLoadingSizes] = useState(false);
   const navigate = useNavigate();
-
   // Derived selected item to ensure live updates when quantity changes
   const selectedItem = useMemo(() => {
     return cartItems.find((item) => item.id === selectedItemId);
@@ -279,6 +279,12 @@ const CartContent = ({
                               {item.productName}
                             </h3>
                             {item.size && (
+                              <p className="text-sm text-gray-600 mt-0.5">
+                                Size:{" "}
+                                <span className="font-medium">{item.size}</span>
+                              </p>
+                            )}
+                            {item.size && (
                               <p className="text-xs text-gray-500 mt-0.5">
                                 Size: {item.size}
                               </p>
@@ -394,6 +400,11 @@ const CartContent = ({
                     <h4 className="font-semibold text-gray-900 text-sm truncate">
                       {selectedItem.productName}
                     </h4>
+                    {selectedItem.size && (
+                      <p className="text-xs text-gray-600">
+                        Size: {selectedItem.size}
+                      </p>
+                    )}
                     <p className="text-xs text-gray-600">
                       Qty: {selectedItem.quantity}
                     </p>
@@ -456,18 +467,11 @@ const CartContent = ({
                 onClick={() => {
                   const sizeParam = selectedSize ? `&size=${encodeURIComponent(selectedSize)}` : "";
                   navigate(
-                    `/checkout/${selectedItem.sellerId}/${selectedItem.productId}?qty=${selectedItem.quantity}${sizeParam}`
-                  );
-                }}
-                disabled={selectedItem.category === "cultural-clothes" && availableSizes.length > 0 && !selectedSize}
-                className={`w-full font-semibold py-3.5 rounded-lg transition-all flex items-center justify-center gap-2 ${selectedItem.category === "cultural-clothes" && availableSizes.length > 0 && !selectedSize
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40"
-                  }`}
-              >
-                {selectedItem.category === "cultural-clothes" && availableSizes.length > 0 && !selectedSize
-                  ? "Please Select a Size"
-                  : "Proceed to Checkout"}
+                    `/checkout/${selectedItem.sellerId}/${selectedItem.productId}?qty=${selectedItem.quantity}&size=`,
+                  )
+                }
+                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3.5 rounded-lg transition-all shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 flex items-center justify-center gap-2">
+                Proceed to Checkout
                 <ArrowRight className="w-5 h-5" />
               </button>
 
