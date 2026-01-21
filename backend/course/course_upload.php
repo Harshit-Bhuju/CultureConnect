@@ -347,7 +347,7 @@ try {
 
     // Insert tags into course_tags table
     if (!empty($tags)) {
-        $stmt = $conn->prepare("INSERT INTO course_tags (course_id, tag) VALUES (?, ?)");
+        $stmt = $conn->prepare("INSERT INTO teacher_course_tags (course_id, tag) VALUES (?, ?)");
         foreach ($tags as $tag) {
             $tag = trim($tag);
             if (!empty($tag) && strlen($tag) <= 50) {
