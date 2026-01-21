@@ -13,8 +13,13 @@ const FollowersPage = () => {
   const [profileImage, setProfileImage] = useState(null);
 
   const getAvatarUrl = (filename) => {
-    if (!filename || filename === "null" || filename === "undefined") return default_logo;
-    if (filename.startsWith("http") || filename.startsWith("blob:") || filename.startsWith("data:")) {
+    if (!filename || filename === "null" || filename === "undefined")
+      return default_logo;
+    if (
+      filename.startsWith("http") ||
+      filename.startsWith("blob:") ||
+      filename.startsWith("data:")
+    ) {
       return filename;
     }
     return `${BASE_URL}/uploads/profile_pics/${filename}`;
@@ -28,7 +33,12 @@ const FollowersPage = () => {
     const fetchFollowers = async () => {
       try {
         setLoading(true);
-        console.log("🔍 FollowersPage Params:", { sellerId, teacherId, isSeller, id });
+        console.log("🔍 FollowersPage Params:", {
+          sellerId,
+          teacherId,
+          isSeller,
+          id,
+        });
 
         const endpoint = isSeller
           ? `${API.GET_SELLER_FOLLOWERS}?seller_id=${id}`
@@ -78,26 +88,7 @@ const FollowersPage = () => {
             </button>
             <div className="h-6 w-px bg-gray-300"></div>
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200 shadow-sm bg-gray-100 flex items-center justify-center">
-                {profileImage ? (
-                  <img
-                    src={getAvatarUrl(profileImage)}
-                    alt={profileName}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = default_logo;
-                    }}
-                  />
-                ) : (
-                  <div className="bg-gradient-to-br from-blue-500 to-indigo-500 w-full h-full flex items-center justify-center">
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                )}
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">Followers</h1>
-                <p className="text-xs text-gray-500">{profileName}</p>
-              </div>
+              <h1 className="text-lg font-bold text-gray-900">Followers</h1>
             </div>
           </div>
         </div>

@@ -6,6 +6,7 @@ import {
   Calendar,
   List,
   Target,
+  Play,
 } from "lucide-react";
 
 export default function CourseContent({ course, activeTab, setActiveTab }) {
@@ -133,8 +134,22 @@ export default function CourseContent({ course, activeTab, setActiveTab }) {
                   <div
                     key={video.id}
                     className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/50 transition">
-                    <div className="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
-                      {index + 1}
+                    <div className="flex-shrink-0 relative group/thumb">
+                      <div className="w-32 h-20 bg-gray-200 rounded-xl overflow-hidden border border-gray-100 shadow-sm relative">
+                        <img
+                          src={video.thumbnail}
+                          alt={video.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover/thumb:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center group-hover/thumb:bg-black/40 transition-all duration-300">
+                          <div className="w-8 h-8 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center transform scale-90 group-hover/thumb:scale-100 transition-transform duration-300">
+                            <Play className="w-4 h-4 text-white fill-white" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="absolute -top-2 -left-2 w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg ring-2 ring-white z-10">
+                        {index + 1}
+                      </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-3">
@@ -149,11 +164,6 @@ export default function CourseContent({ course, activeTab, setActiveTab }) {
                         <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                           {video.description}
                         </p>
-                      )}
-                      {video.is_intro === 1 && (
-                        <span className="inline-block mt-2 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-medium rounded">
-                          Preview Available
-                        </span>
                       )}
                     </div>
                   </div>
@@ -230,8 +240,6 @@ export default function CourseContent({ course, activeTab, setActiveTab }) {
             )}
           </div>
         )}
-
-        {/* Learning Schedule Tab */}
         {activeTab === "schedule" && (
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-gray-900 mb-4">

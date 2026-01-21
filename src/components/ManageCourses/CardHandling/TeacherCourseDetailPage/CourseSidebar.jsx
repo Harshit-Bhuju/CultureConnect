@@ -150,7 +150,7 @@ export default function CourseSidebar({
               Students
             </span>
             <span className="font-semibold text-gray-900">
-              {course.enrolled_students} / {course.max_students}
+              {course.enrolled_students}
             </span>
           </div>
 
