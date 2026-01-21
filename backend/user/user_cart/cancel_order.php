@@ -130,8 +130,9 @@ try {
         }
         $stmt->close();
 
-        // 4. If payment method is not COD and payment_status is success, set to pending_refund
+        // 4. Update payment status
         if ($order['payment_method'] !== 'cod' && $order['payment_status'] === 'success') {
+            // eSewa/Khalti: Set to pending_refund
             $stmt = $conn->prepare("
                 UPDATE payment_transactions 
                 SET payment_status = 'pending_refund',
@@ -146,6 +147,22 @@ try {
             $stmt->close();
 
             $refund_message = 'Order cancelled. Refund will be processed within 3-7 business days';
+        } elseif ($order['payment_method'] === 'cod') {
+            // COD: Set to no_payment
+            $stmt = $conn->prepare("
+                UPDATE payment_transactions 
+                SET payment_status = 'no_payment',
+                    updated_at = NOW()
+                WHERE id = ?
+            ");
+            $stmt->bind_param("i", $order['transaction_id']);
+
+            if (!$stmt->execute()) {
+                throw new Exception('Failed to update payment status');
+            }
+            $stmt->close();
+
+            $refund_message = 'Order cancelled successfully';
         } else {
             $refund_message = 'Order cancelled successfully';
         }

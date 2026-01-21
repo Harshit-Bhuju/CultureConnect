@@ -167,6 +167,12 @@ try {
         $stmt->execute();
         $stmt->close();
 
+        // New Task: Remove from cart after successful order
+        $stmt = $conn->prepare("DELETE FROM user_cart WHERE user_id = ? AND product_id = ?");
+        $stmt->bind_param("ii", $user_id, $order['product_id']);
+        $stmt->execute();
+        $stmt->close();
+
         $conn->commit();
 
         echo json_encode([

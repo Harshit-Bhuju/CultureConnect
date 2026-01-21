@@ -212,7 +212,7 @@ const RecentOrders = ({ selectedPeriod }) => {
               <div className="space-y-3">
                 {orders.map((order) => (
                   <div
-                    key={order.order_number}
+                    key={order.order_id}
                     className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow bg-white"
                   >
                     <div className="flex items-start justify-between gap-4">
@@ -227,6 +227,11 @@ const RecentOrders = ({ selectedPeriod }) => {
                             <h3 className="text-gray-900 font-semibold text-lg mb-1">
                               {order.productName}
                             </h3>
+                            {order.size && (
+                              <p className="text-sm text-gray-600 mb-1">
+                                Size: {order.size}
+                              </p>
+                            )}
                             <p className="text-xs text-gray-500 font-mono">
                               Order ID: {order.order_number}
                             </p>

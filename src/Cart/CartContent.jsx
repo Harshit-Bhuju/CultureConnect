@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ShoppingCart,
@@ -11,7 +11,7 @@ import {
   CheckCircle2,
   ChevronDown,
 } from "lucide-react";
-import { BASE_URL } from "../Configs/ApiEndpoints";
+import API, { BASE_URL } from "../Configs/ApiEndpoints";
 
 const CartContent = ({
   cartItems,
@@ -24,6 +24,9 @@ const CartContent = ({
   console.log(cartItems);
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [cartSortOrder, setCartSortOrder] = useState("newest");
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [availableSizes, setAvailableSizes] = useState([]);
+  const [loadingSizes, setLoadingSizes] = useState(false);
   const navigate = useNavigate();
   // Derived selected item to ensure live updates when quantity changes
   const selectedItem = useMemo(() => {
@@ -79,7 +82,53 @@ const CartContent = ({
 
   const handleSelectItem = (item) => {
     setSelectedItemId(item.id);
+    // Reset size selection when changing items
+    setSelectedSize(item.size || null);
+    setAvailableSizes([]);
   };
+
+  // Fetch available sizes when a cultural-clothes item is selected
+  useEffect(() => {
+    const fetchProductSizes = async () => {
+      if (!selectedItem) return;
+
+      // Only fetch sizes for cultural-clothes category
+      if (selectedItem.category !== "cultural-clothes") {
+        setAvailableSizes([]);
+        return;
+      }
+
+      setLoadingSizes(true);
+      try {
+        const response = await fetch(
+          `${API.GET_PRODUCT_DETAILS}?seller_id=${selectedItem.sellerId}&product_id=${selectedItem.productId}`,
+          { credentials: "include" }
+        );
+        const data = await response.json();
+
+        if (data.success && data.product) {
+          // Get sizes from the product data
+          const sizes = data.product.sizes ||
+            data.product.adultSizes ||
+            data.product.ageGroups ||
+            data.product.childAgeGroups ||
+            [];
+          setAvailableSizes(sizes);
+
+          // If item already has a size, keep it; otherwise select first available
+          if (!selectedSize && sizes.length > 0) {
+            setSelectedSize(selectedItem.size || sizes[0]);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching product sizes:", error);
+      } finally {
+        setLoadingSizes(false);
+      }
+    };
+
+    fetchProductSizes();
+  }, [selectedItem?.id]);
 
   const selectedItemTotal = selectedItem
     ? selectedItem.price * selectedItem.quantity
@@ -174,21 +223,19 @@ const CartContent = ({
                     {items.map((item) => (
                       <div
                         key={item.id}
-                        className={`border-2 rounded-xl p-4 transition-all cursor-pointer ${
-                          selectedItem?.id === item.id
-                            ? "border-orange-500 bg-orange-50 shadow-md"
-                            : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
-                        }`}
+                        className={`border-2 rounded-xl p-4 transition-all cursor-pointer ${selectedItem?.id === item.id
+                          ? "border-orange-500 bg-orange-50 shadow-md"
+                          : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
+                          }`}
                         onClick={() => handleSelectItem(item)}>
                         <div className="flex items-center gap-4">
                           {/* Selection Radio */}
                           <div className="flex-shrink-0">
                             <div
-                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                selectedItem?.id === item.id
-                                  ? "border-orange-500 bg-orange-500"
-                                  : "border-gray-300"
-                              }`}>
+                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedItem?.id === item.id
+                                ? "border-orange-500 bg-orange-500"
+                                : "border-gray-300"
+                                }`}>
                               {selectedItem?.id === item.id && (
                                 <div className="w-2 h-2 bg-white rounded-full"></div>
                               )}
@@ -235,6 +282,11 @@ const CartContent = ({
                               <p className="text-sm text-gray-600 mt-0.5">
                                 Size:{" "}
                                 <span className="font-medium">{item.size}</span>
+                              </p>
+                            )}
+                            {item.size && (
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                Size: {item.size}
                               </p>
                             )}
                             <p className="text-lg font-bold text-orange-600 mt-1">
@@ -360,6 +412,36 @@ const CartContent = ({
                 </div>
               </div>
 
+              {/* Size Selection for cultural-clothes */}
+              {selectedItem.category === "cultural-clothes" && availableSizes.length > 0 && (
+                <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Select Size
+                  </label>
+                  {loadingSizes ? (
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div>
+                      Loading sizes...
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {availableSizes.map((size) => (
+                        <button
+                          key={size}
+                          onClick={() => setSelectedSize(size)}
+                          className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 transition-all ${selectedSize === size
+                            ? "border-orange-500 bg-orange-50 text-orange-700"
+                            : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+                            }`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Price Breakdown */}
               <div className="space-y-3 mb-4 pb-4 border-b border-gray-200">
                 <div className="flex justify-between text-sm">
@@ -382,11 +464,12 @@ const CartContent = ({
 
               {/* Checkout Button */}
               <button
-                onClick={() =>
+                onClick={() => {
+                  const sizeParam = selectedSize ? `&size=${encodeURIComponent(selectedSize)}` : "";
                   navigate(
-                    `/checkout/${selectedItem.sellerId}/${selectedItem.productId}?qty=${selectedItem.quantity}&size=${selectedItem.size || ""}`,
-                  )
-                }
+                    `/checkout/${selectedItem.sellerId}/${selectedItem.productId}?qty=${selectedItem.quantity}${sizeParam}`
+                  );
+                }}
                 className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3.5 rounded-lg transition-all shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 flex items-center justify-center gap-2">
                 Proceed to Checkout
                 <ArrowRight className="w-5 h-5" />

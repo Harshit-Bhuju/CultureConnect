@@ -14,6 +14,7 @@ try {
     $seller_id = $_POST['seller_id'] ?? null;
     $product_id = $_POST['product_id'] ?? null;
     $quantity = $_POST['quantity'] ?? 1;
+    $size = $_POST['size'] ?? null; // Size for cultural-clothes
     $delivery_province = $_POST['delivery_province'] ?? null;
     $delivery_district = $_POST['delivery_district'] ?? null;
     $delivery_municipality = $_POST['delivery_municipality'] ?? null;
@@ -106,6 +107,7 @@ try {
             $stmt = $conn->prepare("
                 UPDATE orders SET
                     quantity = ?,
+                    size = ?,
                     delivery_province = ?,
                     delivery_district = ?,
                     delivery_municipality = ?,
@@ -115,8 +117,9 @@ try {
             ");
 
             $stmt->bind_param(
-                "issssi",
+                "isssssi",
                 $quantity,
+                $size,
                 $delivery_province,
                 $delivery_district,
                 $delivery_municipality,
@@ -134,20 +137,22 @@ try {
                     seller_id,
                     product_id,
                     quantity,
+                    size,
                     delivery_province,
                     delivery_district,
                     delivery_municipality,
                     delivery_ward,
                     order_status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'no_payment')
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'no_payment')
             ");
 
             $stmt->bind_param(
-                "iiiissss",
+                "iiiisssss",
                 $user_id,
                 $seller_id,
                 $product_id,
                 $quantity,
+                $size,
                 $delivery_province,
                 $delivery_district,
                 $delivery_municipality,
@@ -168,6 +173,7 @@ try {
                 o.seller_id,
                 o.product_id,
                 o.quantity,
+                o.size,
                 o.product_price,
                 o.subtotal,
                 o.delivery_province,
@@ -181,6 +187,7 @@ try {
                 o.estimated_delivery_time,
                 o.created_at,
                 p.product_name,
+                p.category,
                 pi.image_url
             FROM orders o
             JOIN products p ON o.product_id = p.id
@@ -206,7 +213,9 @@ try {
                 "product_id" => (int)$order['product_id'],
                 "product_name" => $order['product_name'],
                 "product_image" => $order['image_url'],
+                "category" => $order['category'],
                 "quantity" => (int)$order['quantity'],
+                "size" => $order['size'],
                 "product_price" => (float)$order['product_price'],
                 "subtotal" => (float)$order['subtotal'],
                 "delivery_charge" => (float)$order['delivery_charge'],

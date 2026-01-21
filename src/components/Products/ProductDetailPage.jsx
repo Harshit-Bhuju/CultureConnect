@@ -168,15 +168,7 @@ const ProductDetailPage = () => {
       return;
     }
 
-    const hasSizes =
-      product.sizes?.length > 0 ||
-      product.ageGroups?.length > 0 ||
-      product.adultSizes?.length > 0 ||
-      product.childAgeGroups?.length > 0;
-    if (hasSizes && !selectedSize) {
-      toast.error("Please select a size");
-      return;
-    }
+    // Size validation removed to allow adding to cart without size
 
     const loadingToast = toast.loading("Adding to cart...");
 
@@ -423,7 +415,7 @@ const ProductDetailPage = () => {
         const avgRating =
           totalReviews > 0
             ? updatedReviews.reduce((acc, r) => acc + r.rating, 0) /
-              totalReviews
+            totalReviews
             : 0;
 
         setProduct({

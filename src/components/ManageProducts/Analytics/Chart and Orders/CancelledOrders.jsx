@@ -64,9 +64,14 @@ const CancelledOrders = ({ selectedPeriod }) => {
       case 'Refunded':
         return 'bg-blue-100 text-blue-700';
       case 'Pending_refund':
+      case 'pending_refund':
+      case 'Pending':
+      case 'pending':
         return 'bg-yellow-100 text-yellow-700';
       case 'Failed':
         return 'bg-red-100 text-red-700';
+      case 'no_payment':
+        return 'bg-blue-100 text-blue-700 font-medium px-4';
       default:
         return 'bg-gray-100 text-gray-700';
     }
@@ -210,7 +215,7 @@ const CancelledOrders = ({ selectedPeriod }) => {
               <div className="space-y-3">
                 {orders.map((order) => (
                   <div
-                    key={order.order_number}
+                    key={order.order_id}
                     className="border border-red-200 rounded-lg p-5 hover:shadow-md transition-shadow bg-red-50/30"
                   >
                     <div className="flex items-start justify-between">
@@ -230,6 +235,11 @@ const CancelledOrders = ({ selectedPeriod }) => {
                                 <h3 className="text-gray-900 font-semibold text-lg">
                                   {order.productName}
                                 </h3>
+                                {order.size && (
+                                  <p className="text-sm text-gray-600 mt-1">
+                                    Size: {order.size}
+                                  </p>
+                                )}
                                 <p className="text-xs text-gray-500 font-mono mt-1">
                                   Order ID: {order.order_number}
                                 </p>
@@ -324,7 +334,9 @@ const CancelledOrders = ({ selectedPeriod }) => {
                               </span>
                               <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${getPaymentStatusColor(order.payment_status)}`}>
                                 <CreditCard className="w-3 h-3 mr-1" />
-                                {order.payment_status === 'Refunded' ? 'Refunded' : order.payment_status === 'Pending' ? 'Refund Pending' : 'Refund Failed'}
+                                {order.payment_status?.toLowerCase() === 'refunded' ? 'Refunded' :
+                                  (order.payment_status?.toLowerCase() === 'pending_refund' || (order.payment_method?.toLowerCase() !== 'cod' && order.payment_status?.toLowerCase() === 'pending')) ? 'Refund Pending' :
+                                    (order.payment_method?.toLowerCase() === 'cod' || order.payment_status?.toLowerCase() === 'no_payment') ? 'No Payment Needed' : 'Refund Failed'}
                               </span>
                               <div className="text-xs text-gray-500">
                                 {order.payment_method}

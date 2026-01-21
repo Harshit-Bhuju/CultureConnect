@@ -29,7 +29,7 @@ try {
 
     // 2. Fetch transaction
     $stmt = $conn->prepare("
-        SELECT pt.*, o.seller_id, o.product_id
+        SELECT pt.*, o.seller_id, o.product_id, o.user_id
         FROM payment_transactions pt
         JOIN orders o ON pt.order_id = o.id
         WHERE pt.transaction_uuid = ?
@@ -79,6 +79,12 @@ try {
         WHERE id = ?
     ");
     $stmt->bind_param("i", $transaction['order_id']);
+    $stmt->execute();
+    $stmt->close();
+
+    // New Task: Remove from cart after successful payment
+    $stmt = $conn->prepare("DELETE FROM user_cart WHERE user_id = ? AND product_id = ?");
+    $stmt->bind_param("ii", $transaction['user_id'], $transaction['product_id']);
     $stmt->execute();
     $stmt->close();
 

@@ -50,11 +50,10 @@ export default function PaymentPage({
               {/* eSewa */}
               <button
                 onClick={() => setSelectedPayment("esewa")}
-                className={`w-full p-6 rounded-lg border-2 transition-all ${
-                  selectedPayment === "esewa"
+                className={`w-full p-6 rounded-lg border-2 transition-all ${selectedPayment === "esewa"
                     ? "border-black bg-gray-50"
                     : "border-gray-300 bg-white hover:border-gray-400"
-                }`}>
+                  }`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 bg-green-600 rounded-lg flex items-center justify-center">
@@ -78,11 +77,10 @@ export default function PaymentPage({
               {/* Cash on Delivery */}
               <button
                 onClick={() => setSelectedPayment("cod")}
-                className={`w-full p-6 rounded-lg border-2 transition-all ${
-                  selectedPayment === "cod"
+                className={`w-full p-6 rounded-lg border-2 transition-all ${selectedPayment === "cod"
                     ? "border-black bg-gray-50"
                     : "border-gray-300 bg-white hover:border-gray-400"
-                }`}>
+                  }`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 bg-gray-300 rounded-lg flex items-center justify-center">
@@ -213,11 +211,11 @@ export default function PaymentPage({
                 <p className="text-sm text-black font-medium">
                   {estimatedDelivery
                     ? new Date(estimatedDelivery).toLocaleDateString("en-US", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
                     : "Calculating..."}
                 </p>
                 <div className="mt-3 pt-3 border-t border-gray-200">
@@ -230,11 +228,10 @@ export default function PaymentPage({
             <button
               onClick={handleConfirmPayment}
               disabled={!selectedPayment}
-              className={`w-full font-semibold py-4 rounded-lg transition-colors mb-3 ${
-                selectedPayment
+              className={`w-full font-semibold py-4 rounded-lg transition-colors mb-3 ${selectedPayment
                   ? "bg-black hover:bg-gray-800 text-white"
                   : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}>
+                }`}>
               {selectedPayment
                 ? `Confirm & Pay Rs. ${total}`
                 : "Select Payment Method"}

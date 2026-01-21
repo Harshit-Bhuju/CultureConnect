@@ -15,7 +15,7 @@ export default function CheckOutPage() {
 
   const searchParams = new URLSearchParams(location.search);
   const initialQty = parseInt(searchParams.get("qty"), 10) || 1;
-  const initialSize = searchParams.get("size") || "";
+  const initialSize = searchParams.get("size") || null;
 
   const { sellerId, productId } = useParams();
 
@@ -73,6 +73,7 @@ export default function CheckOutPage() {
   const [productInfo, setProductInfo] = useState(null);
   const [orderItem, setOrderItem] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   const {
     provinces,
@@ -137,8 +138,9 @@ export default function CheckOutPage() {
             quantity: initialQty,
             image: data.product.product_image,
             stock: data.product.stock,
+            category: data.product.category,
             size: initialSize,
-            availableSizes: availableSizes,
+            availableSizes: availableSizes
           });
 
           if (data.hasLocation && data.location && !selectedLocation) {
@@ -159,6 +161,13 @@ export default function CheckOutPage() {
 
     fetchInitialData();
   }, [productId, navigate, sellerId]);
+
+  // Auto-calculate delivery fee when location and product are available
+  useEffect(() => {
+    if (selectedLocation && orderItem && !orderDetails && !loading) {
+      handleProceedToPayment(true);
+    }
+  }, [selectedLocation, !!orderItem, !!orderDetails, loading]);
 
   const validateQuantity = async (newQuantity) => {
     try {
@@ -306,8 +315,12 @@ export default function CheckOutPage() {
       return;
     }
 
+    if (silent && isCalculating) return;
+
     try {
-      if (silent) toast("Calculating delivery fees...");
+      if (silent) {
+        setIsCalculating(true);
+      }
 
       const formData = new FormData();
       formData.append("seller_id", sellerId);
@@ -359,6 +372,8 @@ export default function CheckOutPage() {
     } catch (error) {
       console.error("Error creating order:", error);
       toast.error("Network error. Please try again.");
+    } finally {
+      setIsCalculating(false);
     }
   };
 
@@ -448,11 +463,11 @@ export default function CheckOutPage() {
           "checkout_selectedLocation",
           JSON.stringify(selectedLocation),
         );
-      } catch (e) {}
+      } catch (e) { }
     } else {
       try {
         sessionStorage.removeItem("checkout_selectedLocation");
-      } catch (e) {}
+      } catch (e) { }
     }
   }, [selectedLocation]);
 
@@ -463,11 +478,11 @@ export default function CheckOutPage() {
           "checkout_selectedPayment",
           JSON.stringify(selectedPayment),
         );
-      } catch (e) {}
+      } catch (e) { }
     } else {
       try {
         sessionStorage.removeItem("checkout_selectedPayment");
-      } catch (e) {}
+      } catch (e) { }
     }
   }, [selectedPayment]);
 
@@ -519,6 +534,7 @@ export default function CheckOutPage() {
           decrementQuantity={decrementQuantity}
           updateSize={updateSize}
           handleProceedToPayment={() => handleProceedToPayment(false)}
+          orderDetails={orderDetails}
           onBack={() => navigate(-1)}
         />
       )}

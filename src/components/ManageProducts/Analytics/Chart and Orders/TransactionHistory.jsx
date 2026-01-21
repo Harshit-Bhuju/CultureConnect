@@ -162,7 +162,7 @@ const TransactionHistory = ({ selectedPeriod }) => {
               <div className="space-y-3">
                 {orders.map((order) => (
                   <div
-                    key={order.order_number}
+                    key={order.order_id}
                     className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow bg-white"
                   >
                     <div className="flex items-start justify-between">
@@ -180,6 +180,11 @@ const TransactionHistory = ({ selectedPeriod }) => {
                                 <h3 className="text-gray-900 font-semibold text-lg">
                                   {order.productName}
                                 </h3>
+                                {order.size && (
+                                  <p className="text-sm text-gray-600 mt-1">
+                                    Size: {order.size}
+                                  </p>
+                                )}
                                 <p className="text-xs text-gray-500 font-mono mt-1">
                                   Order ID: {order.order_number}
                                 </p>

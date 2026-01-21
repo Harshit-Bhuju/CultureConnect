@@ -71,6 +71,7 @@ const API = {
   GET_RECENT_ORDERS: `${BASE_URL}/user/user_cart/get_recent_orders.php`,
   GET_CANCELLED_ORDERS: `${BASE_URL}/user/user_cart/get_cancelled_orders.php`,
   GET_COMPLETED_ORDERS: `${BASE_URL}/user/user_cart/get_completed_orders.php`,
+  CANCEL_ORDER: `${BASE_URL}/user/user_cart/cancel_order.php`,
 
   // Analytics
   GET_ANALYTICS_STATS: `${BASE_URL}/seller/analytics/get_analytics_stats.php`,

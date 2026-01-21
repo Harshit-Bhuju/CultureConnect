@@ -248,9 +248,7 @@ export default function ConfirmationPage({
                   </span>
                   <span className="text-gray-500 ml-2">x{order.quantity}</span>
                   {order.size && (
-                    <span className="text-gray-500 ml-2 text-sm">
-                      (Size: {order.size})
-                    </span>
+                    <span className="text-gray-500 ml-2">• Size: {order.size}</span>
                   )}
                   {order.store_name && (
                     <div className="flex items-center gap-2 mt-1">

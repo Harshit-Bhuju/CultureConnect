@@ -33,6 +33,7 @@ const CustomerCartComponent = () => {
     removeFromCart,
     removeFromWishlist,
     addToCart,
+    refreshOrders,
     loading,
   } = useOrders(selectedPeriod);
 
@@ -62,51 +63,46 @@ const CustomerCartComponent = () => {
             <div className="flex gap-2 overflow-x-auto pb-2">
               <button
                 onClick={() => setActiveTab("cart")}
-                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${
-                  activeTab === "cart"
-                    ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}>
+                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === "cart"
+                  ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}>
                 <ShoppingCart className="w-4 h-4" />
                 Cart
               </button>
               <button
                 onClick={() => setActiveTab("wishlist")}
-                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${
-                  activeTab === "wishlist"
-                    ? "bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg shadow-pink-500/30"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}>
+                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === "wishlist"
+                  ? "bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg shadow-pink-500/30"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}>
                 <Heart className="w-4 h-4" />
                 Wishlist
               </button>
               <button
                 onClick={() => setActiveTab("orders")}
-                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${
-                  activeTab === "orders"
-                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}>
+                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === "orders"
+                  ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}>
                 <Package className="w-4 h-4" />
                 Orders
               </button>
               <button
                 onClick={() => setActiveTab("cancelled")}
-                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${
-                  activeTab === "cancelled"
-                    ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/30"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}>
+                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === "cancelled"
+                  ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/30"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}>
                 <XCircle className="w-4 h-4" />
                 Cancelled
               </button>
               <button
                 onClick={() => setActiveTab("history")}
-                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${
-                  activeTab === "history"
-                    ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/30"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}>
+                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === "history"
+                  ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/30"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}>
                 <CheckCircle2 className="w-4 h-4" />
                 Transaction History
               </button>
@@ -152,6 +148,7 @@ const CustomerCartComponent = () => {
             recentOrders={recentOrders}
             loading={loading}
             selectedPeriod={selectedPeriod}
+            refreshOrders={refreshOrders}
           />
         )}
 

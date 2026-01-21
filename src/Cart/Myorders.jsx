@@ -13,9 +13,9 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { BASE_URL } from "../Configs/ApiEndpoints";
+import API, { BASE_URL } from "../Configs/ApiEndpoints";
 
-const MyOrders = ({ recentOrders, loading, selectedPeriod }) => {
+const MyOrders = ({ recentOrders, loading, selectedPeriod, refreshOrders }) => {
   const [paymentStatusFilter, setPaymentStatusFilter] = useState("all");
   const [orderStatusFilter, setOrderStatusFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("newest");
@@ -46,21 +46,43 @@ const MyOrders = ({ recentOrders, loading, selectedPeriod }) => {
     setCancelDescription("");
   };
 
-  const handleCancelOrder = () => {
+  const handleCancelOrder = async () => {
     if (!cancelReason) {
       toast.error("Please select a reason for cancellation");
       return;
     }
 
-    // TODO: Backend integration will be added here
-    console.log("Cancelling order:", {
-      orderNumber: selectedOrder.order_number,
-      reason: cancelReason,
-      description: cancelDescription,
-    });
+    const loadingToast = toast.loading("Submitting cancellation request...");
 
-    toast.success("Order cancellation request submitted!");
-    handleCloseCancelModal();
+    try {
+      const formData = new FormData();
+      formData.append("orderId", selectedOrder.id);
+      formData.append("reason", cancelReason);
+      formData.append("description", cancelDescription);
+
+      const response = await fetch(API.CANCEL_ORDER, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(data.message || "Order cancelled successfully", {
+          id: loadingToast,
+        });
+        handleCloseCancelModal();
+        if (refreshOrders) refreshOrders();
+      } else {
+        toast.error(data.error || "Failed to cancel order", {
+          id: loadingToast,
+        });
+      }
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      toast.error("A network error occurred", { id: loadingToast });
+    }
   };
 
   // Extract date key for grouping (e.g., "December 2024" or "16 December 2024")
@@ -271,7 +293,7 @@ const MyOrders = ({ recentOrders, loading, selectedPeriod }) => {
                 <div className="space-y-3">
                   {orders.map((order) => (
                     <div
-                      key={order.order_number}
+                      key={order.id}
                       className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow bg-white">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
@@ -288,6 +310,11 @@ const MyOrders = ({ recentOrders, loading, selectedPeriod }) => {
                               <h3 className="text-gray-900 font-semibold text-lg mb-1">
                                 {order.productName}
                               </h3>
+                              {order.size && (
+                                <p className="text-sm text-gray-600 mb-1">
+                                  Size: {order.size}
+                                </p>
+                              )}
                               <p className="text-xs text-gray-500 font-mono">
                                 Order ID: {order.order_number}
                               </p>
