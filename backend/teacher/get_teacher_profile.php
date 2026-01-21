@@ -92,8 +92,8 @@ $courses_result = $courses_stmt->get_result();
 
 $courses = [];
 while ($course = $courses_result->fetch_assoc()) {
-    $duration_display = $course['duration_weeks'] 
-        ? $course['duration_weeks'] . ' weeks' 
+    $duration_display = $course['duration_weeks']
+        ? $course['duration_weeks'] . ' weeks'
         : 'Self-paced';
 
     $courses[] = [
@@ -112,6 +112,21 @@ while ($course = $courses_result->fetch_assoc()) {
 }
 $courses_stmt->close();
 
+// Fetch certificates
+$certs_stmt = $conn->prepare("SELECT id, certificate_filename FROM teacher_certificates WHERE teacher_id = ?");
+$certs_stmt->bind_param("i", $teacher_id);
+$certs_stmt->execute();
+$certs_result = $certs_stmt->get_result();
+
+$certificates = [];
+while ($cert = $certs_result->fetch_assoc()) {
+    $certificates[] = [
+        'id' => (int)$cert['id'],
+        'filename' => $cert['certificate_filename']
+    ];
+}
+$certs_stmt->close();
+
 // Build response
 $response = [
     "status" => "success",
@@ -128,6 +143,7 @@ $response = [
         "total_revenue" => (float)$teacher_profile["total_revenue"],
         "created_at" => $formatted_created_at
     ],
+    "certificates" => $certificates,
     "classes" => $courses
 ];
 

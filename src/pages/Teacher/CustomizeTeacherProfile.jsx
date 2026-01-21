@@ -1,5 +1,8 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Upload, X, Check, ArrowLeft, Save } from "lucide-react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import API, { BASE_URL } from "../../Configs/ApiEndpoints";
 
 const InlineLabel = ({ children }) => (
   <label className="block text-sm font-semibold mb-2 text-gray-800">
@@ -80,7 +83,7 @@ const CropModal = ({ isOpen, imageToCrop, onSave, onCancel }) => {
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-2xl w-full p-6">
         <h3 className="text-xl font-bold mb-4 text-gray-800">Crop Profile Picture</h3>
-        
+
         <div className="mb-6 flex justify-center">
           <div
             ref={cropContainerRef}
@@ -143,16 +146,23 @@ const CropModal = ({ isOpen, imageToCrop, onSave, onCancel }) => {
 };
 
 function CustomizeTeacherProfile() {
-  // Simulating existing teacher data
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: "Nisha Shrestha Dance Academy",
-    bio: "Experienced classical dance instructor with over 15 years of teaching Kathak and traditional Nepali dances. Passionate about preserving and sharing our cultural heritage through dance education.",
-    phone: "9812345678",
-    category: "Classical Dance",
+    name: "",
+    bio: "",
+    phone: "",
+    category: "",
+  });
+  const [initialFormData, setInitialFormData] = useState({
+    name: "",
+    bio: "",
+    phone: "",
+    category: "",
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isValidating, setIsValidating] = useState(true);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Profile picture states
@@ -160,26 +170,55 @@ function CustomizeTeacherProfile() {
   const [imageToCrop, setImageToCrop] = useState(null);
   const [cropPosition, setCropPosition] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
 
   const cropImageRef = useRef(null);
   const cropContainerRef = useRef(null);
   const profileInputRef = useRef(null);
 
-  const [profilePreview, setProfilePreview] = useState("https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop");
+  const [profilePreview, setProfilePreview] = useState(null);
   const [profileFile, setProfileFile] = useState(null);
 
-  // Certificates states - simulating existing certificates
-  const [certificates, setCertificates] = useState([
-    { id: 1, name: "Kathak_Diploma.pdf", preview: "pdf" },
-    { id: 2, name: "Cultural_Training.jpg", preview: "https://images.unsplash.com/photo-1524594152303-9fd13543fe6e?w=400&h=400&fit=crop" },
-  ]);
-  const [certificatePreviews, setCertificatePreviews] = useState(["pdf", "https://images.unsplash.com/photo-1524594152303-9fd13543fe6e?w=400&h=400&fit=crop"]);
-  const certificateInputRef = useRef(null);
+  // Fetch Teacher Data
+  useEffect(() => {
+    const fetchTeacherProfile = async () => {
+      try {
+        const response = await fetch(API.GET_TEACHER_PROFILE_WITH_COURSES, {
+          method: "GET",
+          credentials: "include"
+        });
+        const data = await response.json();
 
-  // Validation helpers
+        if (data.status === "success") {
+          const profile = data.teacher_profile;
+          const loadedData = {
+            name: profile.name || "",
+            bio: profile.bio || "",
+            phone: profile.esewa_phone || "",
+            category: profile.category || "",
+          };
+          setFormData(loadedData);
+          setInitialFormData(loadedData);
+
+          if (profile.profile_picture) {
+            setProfilePreview(`${API.TEACHER_PROFILE_PICTURES}/${profile.profile_picture}`);
+          }
+        } else {
+          toast.error(data.message || "Failed to load profile");
+          navigate(-1);
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        toast.error("Error loading profile");
+      } finally {
+        setIsValidating(false);
+      }
+    };
+
+    fetchTeacherProfile();
+  }, [navigate]);
+
+  // Validation helpers (Same as Registration)
   const validateName = (name) => {
     if (!name || !name.trim()) return "Teacher / Studio Name is required";
     if (name.trim().length < 3) return "Name must be at least 3 characters";
@@ -202,10 +241,10 @@ function CustomizeTeacherProfile() {
   };
 
   const validateCategory = (cat) => (cat ? "" : "Please select a primary teaching category");
-  const validateProfile = () => (profileFile || profilePreview ? "" : "Profile Picture is required");
-  const validateCertificates = () => {
-    if (certificates.length === 0) return "At least one certificate is required";
-    return "";
+
+  const validateProfile = () => {
+    // Required if no preview exists (meaning no previous image and no new image)
+    return (profileFile || profilePreview) ? "" : "Profile Picture is required";
   };
 
   // Handlers
@@ -223,12 +262,12 @@ function CustomizeTeacherProfile() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 4 * 1024 * 1024) {
-      alert("Profile picture must be ≤ 4MB");
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Profile picture must be ≤ 5MB");
       return;
     }
     if (!["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
-      alert("Only JPG/PNG allowed");
+      toast.error("Only JPG/PNG allowed");
       return;
     }
 
@@ -298,49 +337,6 @@ function CustomizeTeacherProfile() {
     );
   };
 
-  // Certificates Upload Handler
-  const handleCertificateUpload = (e) => {
-    const files = Array.from(e.target.files);
-
-    if (certificates.length + files.length > 5) {
-      alert("Maximum 5 certificates allowed");
-      return;
-    }
-
-    files.forEach((file) => {
-      if (file.size > 5 * 1024 * 1024) {
-        alert(`${file.name} exceeds 5MB limit`);
-        return;
-      }
-
-      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "application/pdf"];
-      if (!allowedTypes.includes(file.type)) {
-        alert(`Invalid file type: ${file.name}`);
-        return;
-      }
-
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          setCertificatePreviews((prev) => [...prev, ev.target.result]);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        setCertificatePreviews((prev) => [...prev, "pdf"]);
-      }
-
-      setCertificates((prev) => [...prev, { id: Date.now() + Math.random(), name: file.name, file }]);
-      setErrors((prev) => ({ ...prev, certificates: "" }));
-    });
-
-    if (certificateInputRef.current) certificateInputRef.current.value = "";
-  };
-
-  const removeCertificate = (index) => {
-    setCertificates((prev) => prev.filter((_, i) => i !== index));
-    setCertificatePreviews((prev) => prev.filter((_, i) => i !== index));
-  };
-
   // Form validation
   const validateRequiredFields = useCallback(() => {
     const newErrors = {};
@@ -360,19 +356,24 @@ function CustomizeTeacherProfile() {
     const profileErr = validateProfile();
     if (profileErr) newErrors.profile = profileErr;
 
-    const certErr = validateCertificates();
-    if (certErr) newErrors.certificates = certErr;
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData, profileFile, profilePreview, certificates]);
+  }, [formData, profileFile, profilePreview]);
+
+  const hasChanges = useCallback(() => {
+    const isFormDataChanged = Object.keys(formData).some(
+      (key) => formData[key] !== initialFormData[key]
+    );
+    const isProfilePictureChanged = profileFile !== null;
+    return isFormDataChanged || isProfilePictureChanged;
+  }, [formData, initialFormData, profileFile]);
 
   // Submission
   const handleSubmit = async () => {
     if (!validateRequiredFields()) {
       const firstKey = Object.keys(errors)[0];
       if (firstKey) {
-        const el = document.querySelector(`[name="${firstKey}"]`) || document.querySelector("#certificates-section");
+        const el = document.querySelector(`[name="${firstKey}"]`);
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
       }
       return;
@@ -380,14 +381,33 @@ function CustomizeTeacherProfile() {
 
     setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setShowSuccessModal(true);
-      setErrors({});
+      const formBody = new FormData();
+      formBody.append("name", formData.name);
+      formBody.append("bio", formData.bio);
+      formBody.append("phone", formData.phone);
+      formBody.append("category", formData.category);
+
+      if (profileFile) {
+        formBody.append("profilePicture", profileFile);
+      }
+
+      const response = await fetch(API.UPDATE_TEACHER_PROFILE, {
+        method: "POST",
+        credentials: "include",
+        body: formBody
+      });
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        setShowSuccessModal(true);
+        setErrors({});
+      } else {
+        toast.error(result.message || "Failed to update profile");
+      }
     } catch (err) {
       console.error("Submit error", err);
-      alert("Error updating profile");
+      toast.error("Error updating profile");
     } finally {
       setIsSubmitting(false);
     }
@@ -395,7 +415,16 @@ function CustomizeTeacherProfile() {
 
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false);
+    navigate(0); // Reload to fetch fresh data
   };
+
+  if (isValidating) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 py-12 px-4">
@@ -403,7 +432,7 @@ function CustomizeTeacherProfile() {
         <div className="flex items-center justify-start mb-6">
           <button
             type="button"
-            onClick={() => window.history.back()}
+            onClick={() => navigate(-1)}
             className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 shadow-sm"
             aria-label="Go back"
           >
@@ -493,11 +522,10 @@ function CustomizeTeacherProfile() {
                   }`}
               >
                 <option value="">Select Category</option>
-                <option>Classical Dance</option>
-                <option>Folk Dance</option>
-                <option>Vocal Music</option>
-                <option>Instrumental Music</option>
-                <option>Cultural Arts</option>
+                <option>Cultural Dances</option>
+                <option>Cultural Singing</option>
+                <option>Musical Instruments</option>
+                <option>Cultural Art & Crafts</option>
               </select>
               {errors.category && <p className="text-red-500 text-sm mt-2">{errors.category}</p>}
             </div>
@@ -532,7 +560,7 @@ function CustomizeTeacherProfile() {
                   </div>
                   <div className="flex-1">
                     <p className="text-gray-600 text-sm mb-4">
-                      Recommended: at least 98×98 pixels, max 4MB. JPG or PNG only.
+                      Recommended: at least 98×98 pixels, max 5MB. JPG or PNG only.
                     </p>
                     <div className="flex gap-3">
                       {profilePreview ? (
@@ -578,117 +606,43 @@ function CustomizeTeacherProfile() {
               {errors.profile && <p className="text-red-500 text-sm mt-2">{errors.profile}</p>}
             </div>
 
-            {/* Certificates Upload */}
-            <div id="certificates-section">
-              <div className="mb-2">
-                <h3 className="text-lg font-bold text-gray-800">
-                  Certificates <span className="text-red-500">*</span>
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Upload your teaching qualifications, diplomas, or cultural training certificates
-                </p>
-              </div>
+            {errors.profile && <p className="text-red-500 text-sm mt-2">{errors.profile}</p>}
+          </div>
 
-              <div className="bg-gray-50 rounded-xl p-8 border border-gray-200">
-                {certificatePreviews.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
-                    {certificatePreviews.map((preview, index) => (
-                      <div key={index} className="relative group">
-                        <div className="aspect-square bg-white rounded-lg overflow-hidden border-2 border-gray-200 shadow-sm">
-                          {preview === "pdf" ? (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-red-50">
-                              <div className="text-4xl font-bold text-red-600">PDF</div>
-                              <p className="text-xs text-gray-600 mt-1">Certificate {index + 1}</p>
-                            </div>
-                          ) : (
-                            <img
-                              src={preview}
-                              alt={`Certificate ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeCertificate(index)}
-                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
-                  {certificates.length < 5 ? (
-                    <>
-                      <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600 font-medium mb-2">
-                        Upload certificates (JPG, PNG, PDF)
-                      </p>
-                      <p className="text-sm text-gray-500 mb-4">
-                        Max 5 files • 5MB each • At least 1 required
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => certificateInputRef.current?.click()}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-medium transition-colors shadow-sm"
-                      >
-                        Choose Files
-                      </button>
-                      <input
-                        ref={certificateInputRef}
-                        type="file"
-                        multiple
-                        accept="image/jpeg,image/jpg,image/png,application/pdf"
-                        className="hidden"
-                        onChange={handleCertificateUpload}
-                      />
-                    </>
-                  ) : (
-                    <p className="text-gray-600 font-medium">Maximum 5 certificates uploaded</p>
-                  )}
-                </div>
-
-                {errors.certificates && (
-                  <p className="text-red-500 text-sm mt-3">{errors.certificates}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <div>
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-gray-800 to-gray-900 text-white font-bold py-4 rounded-xl disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed shadow-lg"
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Updating...</span>
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    <Save className="w-5 h-5" />
-                    <span>Update Profile</span>
-                  </span>
-                )}
-              </button>
-            </div>
+          {/* Submit Button */}
+          <div>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting || !hasChanges()}
+              className={`w-full font-bold py-4 rounded-xl shadow-lg transition-all ${isSubmitting || !hasChanges()
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
+                : "bg-gray-800 text-white hover:bg-gray-900"
+                }`}
+            >
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Updating...</span>
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  <Save className="w-5 h-5" />
+                  <span>Update Profile</span>
+                </span>
+              )}
+            </button>
           </div>
         </div>
+      </div>
 
-        <div className="text-center mt-6">
-          <p className="text-gray-500 text-sm">
-            Need help? Contact{" "}
-            <a href="mailto:support@cultureconnect.com" className="text-gray-800 font-semibold">
-              support@cultureconnect.com
-            </a>
-          </p>
-        </div>
+      <div className="text-center mt-6">
+        <p className="text-gray-500 text-sm">
+          Need help? Contact{" "}
+          <a href="mailto:support@cultureconnect.com" className="text-gray-800 font-semibold">
+            support@cultureconnect.com
+          </a>
+        </p>
       </div>
 
       {/* Crop Modal */}

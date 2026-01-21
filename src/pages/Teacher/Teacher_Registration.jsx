@@ -395,7 +395,7 @@ function TeacherRegistration() {
 
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-Be an Expert
+            Be an Expert
           </h1>
           <p className="text-gray-600 text-lg">Register as a cultural instructor</p>
         </div>
@@ -474,11 +474,10 @@ Be an Expert
                   }`}
               >
                 <option value="">Select Category</option>
-                <option>Classical Dance</option>
-                <option>Folk Dance</option>
-                <option>Vocal Music</option>
-                <option>Instrumental Music</option>
-                <option>Cultural Arts</option>
+                <option>Cultural Dances</option>
+                <option>Cultural Singing</option>
+                <option>Musical Instruments</option>
+                <option>Cultural Art & Crafts</option>
               </select>
               {errors.category && <p className="text-red-500 text-sm mt-2">{errors.category}</p>}
             </div>
