@@ -126,12 +126,12 @@ if (!isset($_FILES['videos']) || empty($_FILES['videos']['name'][0])) {
     sendResponse("error", "At least one course video is required");
 }
 
-$uploadDir = __DIR__ . '/../../uploads/teacher_datas/course_videos/';
+$uploadDir = dirname(__DIR__) . '/uploads/teacher_datas/course_videos/';
 if (!is_dir($uploadDir)) {
     mkdir($uploadDir, 0755, true);
 }
 
-$thumbnailUploadDir = __DIR__ . '/../../uploads/teacher_datas/course_thumbnails/';
+$thumbnailUploadDir = dirname(__DIR__) . '/uploads/teacher_datas/course_thumbnails/';
 if (!is_dir($thumbnailUploadDir)) {
     mkdir($thumbnailUploadDir, 0755, true);
 }
