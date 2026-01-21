@@ -52,6 +52,7 @@ try {
         WHERE p.status = 'published'
           AND p.stock > 0
           AND p.category = ?
+          AND pi.image_url IS NOT NULL
     ";
 
     // Initialize params for base conditions

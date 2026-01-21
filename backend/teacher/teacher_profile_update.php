@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $profile_picture = $current_profile_pic;
     if (isset($_FILES['profilePicture']) && $_FILES['profilePicture']['error'] === 0) {
         $file = $_FILES['profilePicture'];
-        $uploadDir = __DIR__ . '/../../uploads/teacher_datas/profile_pictures/';
+        $uploadDir = dirname(__DIR__) . '/uploads/teacher_datas/profile_pictures/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }

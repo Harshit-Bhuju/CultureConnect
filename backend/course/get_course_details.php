@@ -22,11 +22,9 @@ try {
             t.teacher_name,
             t.profile_picture as teacher_profile_picture,
             t.bio as teacher_bio,
-            t.primary_category as teacher_category,
-            u.created_at as teacher_joined_date
+            t.primary_category as teacher_category
         FROM teacher_courses tc
         INNER JOIN teachers t ON tc.teacher_id = t.id
-        INNER JOIN users u ON t.user_id = u.id
         WHERE tc.id = ?
         LIMIT 1
     ";
@@ -46,10 +44,6 @@ try {
         exit;
     }
 
-    // Calculate teacher experience years
-    $teacher_joined = new DateTime($course['teacher_joined_date']);
-    $now = new DateTime();
-    $experience_years = $now->diff($teacher_joined)->y;
 
     // Fetch all videos for this course
     $videos_query = "
@@ -199,8 +193,7 @@ try {
             "name" => $course['teacher_name'],
             "profile_picture" => $course['teacher_profile_picture'],
             "bio" => $course['teacher_bio'],
-            "category" => $course['teacher_category'],
-            "experience_years" => $experience_years
+            "category" => $course['teacher_category']
         ],
         "videos" => $videos
     ];

@@ -319,13 +319,9 @@ try {
         $stmt->close();
     }
 
-    // Handle new image uploads
+    // Handle new image uploads first to get their filenames
+    $newUploadedFiles = [];
     if (isset($_FILES['newImages']) && is_array($_FILES['newImages']['name'])) {
-        $uploadDir = __DIR__ . '/../../uploads/product_images/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
         $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
         $maxFileSize = 5 * 1024 * 1024; // 5MB
         $fileCount = count($_FILES['newImages']['name']);
@@ -336,25 +332,15 @@ try {
                 $file_name = $_FILES['newImages']['name'][$i];
                 $file_size = $_FILES['newImages']['size'][$i];
 
-                // Validate image
-                if (!getimagesize($file_tmp)) {
-                    continue;
-                }
-
+                if (!getimagesize($file_tmp)) continue;
                 $fileExt = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
-
-                if (!in_array($fileExt, $allowedExts) || $file_size > $maxFileSize) {
-                    continue;
-                }
+                if (!in_array($fileExt, $allowedExts) || $file_size > $maxFileSize) continue;
 
                 $newFileName = 'product_' . $seller_id . '_' . time() . '_' . $i . '_' . bin2hex(random_bytes(8)) . '.' . $fileExt;
-                $destination = $uploadDir . $newFileName;
+                $uploadPath = dirname(__DIR__) . '/uploads/product_images/' . $newFileName;
 
-                if (move_uploaded_file($file_tmp, $destination)) {
-                    $stmt = $conn->prepare("INSERT INTO product_images (product_id, image_url) VALUES (?, ?)");
-                    $stmt->bind_param("is", $product_id, $newFileName);
-                    $stmt->execute();
-                    $stmt->close();
+                if (move_uploaded_file($file_tmp, $uploadPath)) {
+                    $newUploadedFiles[] = $newFileName;
                 }
             }
         }
@@ -363,59 +349,79 @@ try {
     // Handle image deletions
     $deleted_images = json_decode($_POST['deletedImages'] ?? '[]', true);
     if (!empty($deleted_images)) {
-        $uploadDir = __DIR__ . '/../../uploads/product_images/';
-
+        $uploadDir = dirname(__DIR__) . '/uploads/product_images/';
         foreach ($deleted_images as $img_url) {
-            // Get image by URL
             $stmt = $conn->prepare("SELECT id FROM product_images WHERE image_url = ? AND product_id = ?");
             $stmt->bind_param("si", $img_url, $product_id);
             $stmt->execute();
-            $result = $stmt->get_result();
-            $img = $result->fetch_assoc();
+            $img = $stmt->get_result()->fetch_assoc();
             $stmt->close();
 
             if ($img) {
-                // Delete from database
                 $stmt = $conn->prepare("DELETE FROM product_images WHERE id = ?");
                 $stmt->bind_param("i", $img['id']);
                 $stmt->execute();
                 $stmt->close();
-
-                // Delete file
                 $filePath = $uploadDir . $img_url;
-                if (file_exists($filePath)) {
-                    unlink($filePath);
-                }
+                if (file_exists($filePath)) unlink($filePath);
             }
         }
     }
 
-    // Handle image reordering - NEW CODE
+    // Handle image reordering and inserting new ones in correct positions
     $image_order = json_decode($_POST['imageOrder'] ?? '[]', true);
     if (!empty($image_order)) {
-        // Get all current images for this product
+        // Get all current images (after deletions)
         $stmt = $conn->prepare("SELECT id, image_url FROM product_images WHERE product_id = ?");
         $stmt->bind_param("i", $product_id);
         $stmt->execute();
         $result = $stmt->get_result();
-        $existing_images = [];
+        $current_db_images = [];
         while ($row = $result->fetch_assoc()) {
-            $existing_images[$row['image_url']] = $row['id'];
+            $current_db_images[$row['image_url']] = $row['id'];
         }
         $stmt->close();
 
-        // Update the order for each image
-        $stmt = $conn->prepare("UPDATE product_images SET `order` = ? WHERE id = ?");
-        foreach ($image_order as $index => $imageFileName) {
-            if (isset($existing_images[$imageFileName])) {
-                $image_id = $existing_images[$imageFileName];
-                $order_position = $index + 1; // Start from 1
-                $stmt->bind_param("ii", $order_position, $image_id);
+        $newFileIdx = 0;
+        foreach ($image_order as $index => $identifier) {
+            $order_position = $index + 1;
+
+            if (isset($current_db_images[$identifier])) {
+                // Existing image - update its order
+                $stmt = $conn->prepare("UPDATE product_images SET `order` = ? WHERE id = ?");
+                $stmt->bind_param("ii", $order_position, $current_db_images[$identifier]);
                 $stmt->execute();
+                $stmt->close();
+            } elseif (strpos($identifier, 'new_') === 0 && isset($newUploadedFiles[$newFileIdx])) {
+                // New image - insert it with correct order
+                $newImgName = $newUploadedFiles[$newFileIdx];
+                $stmt = $conn->prepare("INSERT INTO product_images (product_id, image_url, `order`) VALUES (?, ?, ?)");
+                $stmt->bind_param("isi", $product_id, $newImgName, $order_position);
+                $stmt->execute();
+                $stmt->close();
+                $newFileIdx++;
             }
         }
-        $stmt->close();
+
+        // Safety: If there are new images that weren't in imageOrder for some reason, append them
+        while ($newFileIdx < count($newUploadedFiles)) {
+            $newImgName = $newUploadedFiles[$newFileIdx];
+            $conn->query("INSERT INTO product_images (product_id, image_url, `order`) VALUES ($product_id, '$newImgName', 99)");
+            $newFileIdx++;
+        }
     }
+
+    // Normalize image orders (ensure 1, 2, 3... sequence exists)
+    $conn->query("SET @row_number = 0");
+    $normStmt = $conn->prepare("
+        UPDATE product_images 
+        SET `order` = (@row_number:=@row_number + 1) 
+        WHERE product_id = ? 
+        ORDER BY `order` ASC, id ASC
+    ");
+    $normStmt->bind_param("i", $product_id);
+    $normStmt->execute();
+    $normStmt->close();
 
     // Commit transaction
     $conn->commit();
