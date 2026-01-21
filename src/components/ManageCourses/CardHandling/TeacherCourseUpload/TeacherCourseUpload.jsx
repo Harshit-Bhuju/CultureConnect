@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Tag, Save, Eye, Info, Loader2 } from "lucide-react";
 import VideoDetailUpload from "./VideoDetailUpload";
 import CourseUploadHeader from "./CourseUploadHeader";
@@ -6,14 +7,8 @@ import MediaUploadSection from "./MediaUploadSection";
 import BasicInfoForm from "./BasicInfoForm";
 import AdditionalInfoForm from "./AdditionalInfoForm";
 import PublishCourseModal from "../../Modals/PublishCourseModal";
-
-// Mock API endpoints
-const API = {
-  COURSE_UPLOAD: "/api/courses/upload",
-};
-
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import API from "../../../../Configs/ApiEndpoints";
 
 // Helper function to get video duration
 function getVideoDuration(file) {
@@ -67,6 +62,8 @@ export default function TeacherCourseUpload() {
   const [courseThumbnailFile, setCourseThumbnailFile] = useState(null);
   const [courseThumbnailUrl, setCourseThumbnailUrl] = useState(null);
   const navigate = useNavigate();
+  const { teacherId } = useParams();
+  const [submissionType, setSubmissionType] = useState(null); // 'publish' or 'draft'
 
   const [formData, setFormData] = useState({
     courseTitle: "",
@@ -531,18 +528,16 @@ export default function TeacherCourseUpload() {
     setPublishModalOpen(false);
 
     setIsSubmitting(true);
+    setSubmissionType("publish");
     const toastId = toast.loading("Publishing course...");
 
     try {
       const fd = new FormData();
-      // ... (Rest of FormData construction is same, simplified here for brevity or reused)
-      // Since I am replacing the whole block, I need to include the FormData logic again.
-      // Copying logic from previous file content...
       fd.append("courseTitle", formData.courseTitle);
       fd.append("category", formData.category);
       fd.append("skillLevel", formData.skillLevel);
       fd.append("price", formData.price || 0);
-      fd.append("recommendedWeeks", formData.recommendedWeeks);
+      fd.append("durationWeeks", formData.recommendedWeeks);
       fd.append("hoursPerWeek", formData.hoursPerWeek);
       fd.append("accessDuration", formData.accessDuration);
       fd.append("description", formData.description);
@@ -568,19 +563,26 @@ export default function TeacherCourseUpload() {
         }
       });
 
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await fetch(API.COURSE_UPLOAD, {
+        method: "POST",
+        body: fd,
+        credentials: "include",
+      });
 
-      toast.success("Course published successfully!", { id: toastId });
-      console.log(
-        "Form data ready for submission:",
-        Object.fromEntries(fd.entries()),
-      );
+      const data = await response.json();
+
+      if (data.status === "success") {
+        toast.success("Course published successfully!", { id: toastId });
+        navigate(`/teacher/manageclasses/${teacherId}`);
+      } else {
+        throw new Error(data.message || "Failed to publish course");
+      }
     } catch (error) {
       console.error(error);
       toast.error(error.message || "Failed to publish course", { id: toastId });
     } finally {
       setIsSubmitting(false);
+      setSubmissionType(null);
     }
   }, [
     isSubmitting,
@@ -588,6 +590,7 @@ export default function TeacherCourseUpload() {
     formData,
     courseThumbnailFile,
     totalDurationSeconds,
+    navigate,
   ]);
 
   const handleSaveDraft = useCallback(async () => {
@@ -603,6 +606,7 @@ export default function TeacherCourseUpload() {
     }
 
     setIsSubmitting(true);
+    setSubmissionType("draft");
     const toastId = toast.loading("Saving draft...");
 
     try {
@@ -611,7 +615,7 @@ export default function TeacherCourseUpload() {
       fd.append("category", formData.category);
       fd.append("skillLevel", formData.skillLevel);
       fd.append("price", formData.price || 0);
-      fd.append("recommendedWeeks", formData.recommendedWeeks || "");
+      fd.append("durationWeeks", formData.recommendedWeeks || "");
       fd.append("hoursPerWeek", formData.hoursPerWeek || "");
       fd.append("accessDuration", formData.accessDuration);
       fd.append("description", formData.description);
@@ -637,15 +641,26 @@ export default function TeacherCourseUpload() {
         }
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch(API.COURSE_UPLOAD, {
+        method: "POST",
+        body: fd,
+        credentials: "include",
+      });
 
-      toast.success("Draft saved successfully!", { id: toastId });
-      console.log("Draft data ready:", Object.fromEntries(fd.entries()));
+      const data = await response.json();
+
+      if (data.status === "success") {
+        toast.success("Draft saved successfully!", { id: toastId });
+        navigate(`/teacher/manageclasses/${teacherId}`);
+      } else {
+        throw new Error(data.message || "Failed to save draft");
+      }
     } catch (error) {
       console.error(error);
       toast.error(error.message || "Failed to save draft", { id: toastId });
     } finally {
       setIsSubmitting(false);
+      setSubmissionType(null);
     }
   }, [
     isSubmitting,
@@ -655,6 +670,7 @@ export default function TeacherCourseUpload() {
     courseThumbnailFile,
     totalDurationSeconds,
     activeTab,
+    navigate,
   ]);
 
   return (
@@ -735,6 +751,7 @@ export default function TeacherCourseUpload() {
                     removeTag={removeTag}
                     totalHours={totalHours}
                     totalMinutes={totalMinutes}
+                    isSubmitting={isSubmitting}
                   />
                 )}
 
@@ -743,44 +760,49 @@ export default function TeacherCourseUpload() {
                     formData={formData}
                     handleInputChange={handleInputChange}
                     errors={errors}
+                    isSubmitting={isSubmitting}
                   />
                 )}
               </div>
 
               {/* Action Buttons */}
               <div className="border-t bg-gray-50 px-6 py-4 flex flex-col sm:flex-row gap-4">
-                <button
-                  onClick={handleSaveDraft}
-                  disabled={isSubmitting || isUploading}
-                  className="flex-1 py-3 border-2 border-gray-300 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-5 h-5" />
-                      Save as Draft
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={handlePublishClick}
-                  disabled={isSubmitting || isUploading}
-                  className="flex-1 py-3 bg-indigo-600 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-indigo-700 shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed">
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Publishing...
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="w-5 h-5" />
-                      Publish Course
-                    </>
-                  )}
-                </button>
+                {(!isSubmitting || submissionType === "draft") && (
+                  <button
+                    onClick={handleSaveDraft}
+                    disabled={isSubmitting || isUploading}
+                    className="flex-1 py-3 border-2 border-gray-300 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    {submissionType === "draft" ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-5 h-5" />
+                        Save as Draft
+                      </>
+                    )}
+                  </button>
+                )}
+                {(!isSubmitting || submissionType === "publish") && (
+                  <button
+                    onClick={handlePublishClick}
+                    disabled={isSubmitting || isUploading}
+                    className="flex-1 py-3 bg-indigo-600 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-indigo-700 shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    {submissionType === "publish" ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Publishing...
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-5 h-5" />
+                        Publish Course
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>

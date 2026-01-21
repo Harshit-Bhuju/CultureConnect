@@ -12,6 +12,7 @@ export default function BasicInfoForm({
   removeTag,
   totalHours,
   totalMinutes,
+  isSubmitting,
 }) {
   return (
     <>
@@ -25,6 +26,7 @@ export default function BasicInfoForm({
           name="courseTitle"
           value={formData.courseTitle}
           onChange={handleInputChange}
+          disabled={isSubmitting}
           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition ${
             errors.courseTitle ? "border-red-300 bg-red-50" : "border-gray-300"
           }`}
@@ -49,6 +51,7 @@ export default function BasicInfoForm({
             name="category"
             value={formData.category}
             onChange={handleInputChange}
+            disabled={isSubmitting}
             className={`w-full px-4 py-3 border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none ${
               errors.category ? "border-red-300 bg-red-50" : "border-gray-300"
             }`}>
@@ -75,6 +78,7 @@ export default function BasicInfoForm({
             name="skillLevel"
             value={formData.skillLevel}
             onChange={handleInputChange}
+            disabled={isSubmitting}
             className={`w-full px-4 py-3 border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none ${
               errors.skillLevel ? "border-red-300 bg-red-50" : "border-gray-300"
             }`}>
@@ -103,6 +107,7 @@ export default function BasicInfoForm({
           name="price"
           value={formData.price}
           onChange={handleInputChange}
+          disabled={isSubmitting}
           min="0"
           max="999999999"
           placeholder="0 (Free course)"
@@ -132,6 +137,7 @@ export default function BasicInfoForm({
               name="recommendedWeeks"
               value={formData.recommendedWeeks}
               onChange={handleInputChange}
+              disabled={isSubmitting}
               min="1"
               max="52"
               placeholder="Weeks"
@@ -156,6 +162,7 @@ export default function BasicInfoForm({
               name="hoursPerWeek"
               value={formData.hoursPerWeek}
               onChange={handleInputChange}
+              disabled={isSubmitting}
               min="1"
               max="40"
               placeholder="Hours/week"
@@ -206,6 +213,7 @@ export default function BasicInfoForm({
           name="description"
           value={formData.description}
           onChange={handleInputChange}
+          disabled={isSubmitting}
           rows="5"
           maxLength="5000"
           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none ${
@@ -241,7 +249,8 @@ export default function BasicInfoForm({
               <button
                 type="button"
                 onClick={() => removeTag(tag)}
-                className="text-indigo-600 hover:text-indigo-800 transition">
+                disabled={isSubmitting}
+                className="text-indigo-600 hover:text-indigo-800 transition disabled:opacity-50">
                 <X className="w-3 h-3" />
               </button>
             </span>
@@ -252,6 +261,7 @@ export default function BasicInfoForm({
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={handleTagKeyDown}
             onBlur={handleTagBlur}
+            disabled={isSubmitting}
             placeholder={
               formData.tags.length
                 ? "Add another tag"

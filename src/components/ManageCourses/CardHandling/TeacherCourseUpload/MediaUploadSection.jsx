@@ -142,13 +142,13 @@ export default function MediaUploadSection({
                   : "border-gray-200 hover:border-gray-300"
               }`}>
               <div
-                draggable
-                onDragStart={() => handleDragStart(idx)}
+                draggable={!isSubmitting}
+                onDragStart={() => !isSubmitting && handleDragStart(idx)}
                 onDragOver={handleDragOver}
-                onDrop={() => handleDrop(idx)}
+                onDrop={() => !isSubmitting && handleDrop(idx)}
                 onDragEnd={handleDragEnd}
                 onClick={() => setSelectedVideo(idx)}
-                className="p-3 cursor-move group">
+                className={`p-3 ${!isSubmitting ? "cursor-move group" : "cursor-default group"}`}>
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 bg-gray-900 rounded overflow-hidden flex-shrink-0 relative">
                     {vid.thumbnailUrl ? (
@@ -182,7 +182,8 @@ export default function MediaUploadSection({
                         e.stopPropagation();
                         onEditVideo(vid);
                       }}
-                      className="p-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                      disabled={isSubmitting}
+                      className="p-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 disabled:pointer-events-none">
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -193,7 +194,8 @@ export default function MediaUploadSection({
                         e.stopPropagation();
                         removeVideo(vid.id);
                       }}
-                      className="p-1 bg-red-500 text-white rounded-full hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                      disabled={isSubmitting}
+                      className="p-1 bg-red-500 text-white rounded-full hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 disabled:pointer-events-none">
                       <X className="w-4 h-4" />
                     </button>
                   </div>
@@ -201,22 +203,6 @@ export default function MediaUploadSection({
                 {idx === 0 && (
                   <span className="absolute top-2 left-2 bg-indigo-600 text-white text-xs px-2 py-0.5 rounded">
                     Intro
-                  </span>
-                )}
-                {(!vid.title?.trim() ||
-                  !vid.description?.trim() ||
-                  !(
-                    vid.thumbnailUrl ||
-                    vid.thumbnailFile ||
-                    vid.thumbnail
-                  )) && (
-                  <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs px-2 py-0.5 rounded flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    {!vid.title?.trim()
-                      ? "No title"
-                      : !vid.description?.trim()
-                        ? "No description"
-                        : "No thumbnail"}
                   </span>
                 )}
               </div>

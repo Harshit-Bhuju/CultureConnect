@@ -6,6 +6,7 @@ export default function AdditionalInfoForm({
   formData,
   handleInputChange,
   errors,
+  isSubmitting,
 }) {
   return (
     <>
@@ -18,6 +19,7 @@ export default function AdditionalInfoForm({
           name="whatYouWillLearn"
           value={formData.whatYouWillLearn}
           onChange={handleInputChange}
+          disabled={isSubmitting}
           rows="4"
           maxLength="5000"
           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition ${
@@ -45,6 +47,7 @@ export default function AdditionalInfoForm({
           name="requirements"
           value={formData.requirements}
           onChange={handleInputChange}
+          disabled={isSubmitting}
           rows="3"
           maxLength="5000"
           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition ${
@@ -74,6 +77,7 @@ export default function AdditionalInfoForm({
           name="learningSchedule"
           value={formData.learningSchedule}
           onChange={handleInputChange}
+          disabled={isSubmitting}
           rows="5"
           maxLength="2000"
           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition ${
@@ -104,6 +108,7 @@ export default function AdditionalInfoForm({
           name="language"
           value={formData.language}
           onChange={handleInputChange}
+          disabled={isSubmitting}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none">
           <option value="English">English</option>
           <option value="Hindi">Hindi</option>
