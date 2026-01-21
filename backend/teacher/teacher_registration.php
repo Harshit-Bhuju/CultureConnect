@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $profile_picture = null;
     if (isset($_FILES['profilePicture']) && $_FILES['profilePicture']['error'] === 0) {
         $file = $_FILES['profilePicture'];
-        $uploadDir = __DIR__ . '/../../uploads/teacher_datas/profile_pictures/';
+        $uploadDir = dirname(__DIR__) . '/uploads/teacher_datas/profile_pictures/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Upload certificates
     $certificates = [];
     if (isset($_FILES['certificates']) && is_array($_FILES['certificates']['name'])) {
-        $uploadDir = __DIR__ . '/../../uploads/teacher_datas/certificates/';
+        $uploadDir = dirname(__DIR__) . '/uploads/teacher_datas/certificates/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }

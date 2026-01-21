@@ -140,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
-    $uploadDir = __DIR__ . '/../../uploads/product_images/';
+    $uploadDir = dirname(__DIR__) . '/uploads/product_images/';
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0755, true);
     }
@@ -243,6 +243,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $imageOrder++;
         }
         $stmt->close();
+
+        // Normalize image orders (ensure 1, 2, 3... sequence exists)
+        $conn->query("SET @row_number = 0");
+        $normStmt = $conn->prepare("
+            UPDATE product_images 
+            SET `order` = (@row_number:=@row_number + 1) 
+            WHERE product_id = ? 
+            ORDER BY `order` ASC, id ASC
+        ");
+        $normStmt->bind_param("i", $product_id);
+        $normStmt->execute();
+        $normStmt->close();
         // Insert tags
         if (!empty($tags)) {
             $stmt = $conn->prepare("INSERT INTO product_tags (product_id, tag) VALUES (?, ?)");

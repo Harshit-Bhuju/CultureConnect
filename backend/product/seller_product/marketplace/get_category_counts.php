@@ -16,10 +16,12 @@ try {
     ];
 
     $query = "
-        SELECT category, COUNT(*) as product_count 
-        FROM products 
-        WHERE status = 'published' 
-        GROUP BY category
+        SELECT p.category, COUNT(DISTINCT p.id) as product_count 
+        FROM products p
+        INNER JOIN product_images pi ON p.id = pi.product_id AND pi.`order` = 1
+        WHERE p.status = 'published' 
+          AND p.stock > 0
+        GROUP BY p.category
     ";
 
     $result = $conn->query($query);

@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $store_logo = $current_seller['store_logo'];
     if (isset($_FILES['logo']) && $_FILES['logo']['error'] === 0) {
         $file = $_FILES['logo'];
-        $uploadDir = __DIR__ . '/../../uploads/seller_img_datas/seller_logos/';
+        $uploadDir = dirname(__DIR__) . '/uploads/seller_img_datas/seller_logos/';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
         $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -119,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $store_banner = $current_seller['store_banner'];
     if (isset($_FILES['banner']) && $_FILES['banner']['error'] === 0) {
         $file = $_FILES['banner'];
-        $uploadDir = __DIR__ . '/../../uploads/seller_img_datas/seller_banners/';
+        $uploadDir = dirname(__DIR__) . '/uploads/seller_img_datas/seller_banners/';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
         $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));

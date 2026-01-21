@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === 0) {
         $file = $_FILES['avatar'];
-        $uploadDir = __DIR__ . '/../../uploads/';
+        $uploadDir = dirname(__DIR__) . '/uploads/';
 
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
@@ -66,9 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit;
         }
 
-        if (!empty($existingUser['profile_pic']) && file_exists(__DIR__ . '/uploads/' . $existingUser['profile_pic'])) {
+        if (!empty($existingUser['profile_pic']) && file_exists(dirname(__DIR__) . '/uploads/' . $existingUser['profile_pic'])) {
             if ($existingUser['profile_pic'] !== 'default-image.jpg') {
-                unlink(__DIR__ . '/uploads/' . $existingUser['profile_pic']);
+                unlink(dirname(__DIR__) . '/uploads/' . $existingUser['profile_pic']);
             }
         }
 

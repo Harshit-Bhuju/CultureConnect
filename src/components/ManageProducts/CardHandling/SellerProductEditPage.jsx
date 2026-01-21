@@ -153,24 +153,27 @@ export default function SellerProductEdit() {
   }, [formData, images]);
 
   // Check if form is dirty (has changes)
-// Check if form is dirty (has changes)
+  // Check if form is dirty (has changes)
   const isDirty = React.useMemo(() => {
     if (!initialSnapshot) return false;
-    
+
     try {
       // Helper to compare arrays
-      const arraysEqual = (arr1, arr2) => {
+      const arraysEqual = (arr1, arr2, orderSensitive = false) => {
         if (arr1.length !== arr2.length) return false;
+        if (orderSensitive) {
+          return arr1.every((val, idx) => val === arr2[idx]);
+        }
         const sorted1 = [...arr1].sort();
         const sorted2 = [...arr2].sort();
         return sorted1.every((val, idx) => val === sorted2[idx]);
       };
-      
+
       // Compare each form field individually
       const initial = initialSnapshot.form;
       const current = formData;
-      
-      const formChanged = 
+
+      const formChanged =
         initial.productName !== current.productName ||
         initial.productType !== current.productType ||
         initial.culture !== current.culture ||
@@ -185,10 +188,10 @@ export default function SellerProductEdit() {
         !arraysEqual(initial.adultSizes, current.adultSizes) ||
         !arraysEqual(initial.childAgeGroups, current.childAgeGroups) ||
         !arraysEqual(initial.tags, current.tags);
-      
+
       // Compare images - handle both string array and object array formats
       const currentImageFileNames = images.map(img => img.fileName).filter(Boolean);
-      
+
       // Extract filenames from initial snapshot (handle both formats)
       let initialImageFileNames;
       if (initialSnapshot.images.length > 0 && typeof initialSnapshot.images[0] === 'object') {
@@ -198,12 +201,12 @@ export default function SellerProductEdit() {
         // New format: array of strings
         initialImageFileNames = initialSnapshot.images;
       }
-      
-      const imagesChanged = 
+
+      const imagesChanged =
         currentImageFileNames.length !== initialImageFileNames.length ||
-        !arraysEqual(currentImageFileNames, initialImageFileNames) ||
+        !arraysEqual(currentImageFileNames, initialImageFileNames, true) || // Order sensitive check
         images.some(img => !img.isExisting); // Has new images
-      
+
       return formChanged || imagesChanged;
     } catch (e) {
       console.error('Error checking dirty state:', e);
@@ -516,9 +519,9 @@ export default function SellerProductEdit() {
       } else if (formData.stock.length > 9) {
         newErrors.stock = "Stock must not exceed 9 digits.";
       }
-   else if(stockNum === 0){
+      else if (stockNum === 0) {
         newErrors.stock = "Stock cannot be zero.";
-   }
+      }
     }
 
     if (!formData.description.trim()) {
@@ -616,7 +619,7 @@ export default function SellerProductEdit() {
         .map(img => img.fileName) || [];
 
       formDataToSend.append('deletedImages', JSON.stringify(deletedImages));
-      
+
       // Add image order (send fileName for existing images, or placeholder for new ones)
       const imageOrder = images.map(img => img.fileName || `new_${img.id}`);
       formDataToSend.append('imageOrder', JSON.stringify(imageOrder));
@@ -646,7 +649,7 @@ export default function SellerProductEdit() {
 
   const handleSaveDraft = useCallback(async () => {
     // Validate if product is already a draft
-   if (!validateRequiredFields()) {
+    if (!validateRequiredFields()) {
       const firstErrorKey = Object.keys(errors)[0];
       if (firstErrorKey) {
         const element = document.querySelector(`[name="${firstErrorKey}"]`);
@@ -698,7 +701,7 @@ export default function SellerProductEdit() {
         .map(img => img.fileName) || [];
 
       formDataToSend.append('deletedImages', JSON.stringify(deletedImages));
-      
+
       // Add image order
       const imageOrder = images.map(img => img.fileName || `new_${img.id}`);
       formDataToSend.append('imageOrder', JSON.stringify(imageOrder));
@@ -713,9 +716,9 @@ export default function SellerProductEdit() {
 
       if (data.status === 'success') {
         toast.success(data.message);
-         navigate(`/seller/drafts/${user?.seller_id}`, { replace: true });
+        navigate(`/seller/drafts/${user?.seller_id}`, { replace: true });
         setErrors({});
-        
+
         if (productStatus === 'Active') {
           navigate(`/seller/drafts/${user?.seller_id}`, { replace: true });
         } else {
@@ -1283,8 +1286,8 @@ export default function SellerProductEdit() {
                           value={formData.dimensions}
                           onChange={handleInputChange}
                           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${errors.dimensions
-                              ? "border-red-300 bg-red-50"
-                              : "border-gray-300"
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
                             }`}
                           placeholder="L x W x H"
                         />
@@ -1336,22 +1339,22 @@ export default function SellerProductEdit() {
                 )}
 
                 {productStatus === 'Active' ? (
-                
-                <button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting || !isDirty}
-                  className={`flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 shadow-md hover:shadow-lg transition ${isSubmitting || !isDirty ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                  <Eye className="w-5 h-5" />
-                  {isSubmitting ? "Publishing..." : "Publish Changes"}
-                </button>
-                ):(
-                <button
-                       onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className={`flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 shadow-md hover:shadow-lg transition ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                  <Eye className="w-5 h-5" />
-                  {isSubmitting ? "Publishing..." : "Publish Changes"}
-                </button>
+
+                  <button
+                    onClick={handleSubmit}
+                    disabled={isSubmitting || !isDirty}
+                    className={`flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 shadow-md hover:shadow-lg transition ${isSubmitting || !isDirty ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <Eye className="w-5 h-5" />
+                    {isSubmitting ? "Publishing..." : "Publish Changes"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                    className={`flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 shadow-md hover:shadow-lg transition ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <Eye className="w-5 h-5" />
+                    {isSubmitting ? "Publishing..." : "Publish Changes"}
+                  </button>
                 )}
               </div>
             </div>
