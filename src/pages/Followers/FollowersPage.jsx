@@ -22,7 +22,7 @@ const FollowersPage = () => {
     ) {
       return filename;
     }
-    return `${BASE_URL}/uploads/profile_pics/${filename}`;
+    return `${BASE_URL}/uploads/${filename}`;
   };
 
   // Determine if this is a seller or teacher followers page
