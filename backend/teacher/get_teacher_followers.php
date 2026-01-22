@@ -46,28 +46,11 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $stmt->close();
-// Note: Do NOT close connection here, we need it for the next query
-
-// 3. Fetch Teacher's User Info (Profile Pic & Username)
-// Get the user_id associated with this teacher
-$teacher_user_stmt = $conn->prepare("
-    SELECT u.username, u.profile_pic 
-    FROM teachers t
-    JOIN users u ON t.user_id = u.id 
-    WHERE t.id = ?
-");
-$teacher_user_stmt->bind_param("i", $teacher_id);
-$teacher_user_stmt->execute();
-$teacher_user_result = $teacher_user_stmt->get_result();
-$teacher_info = $teacher_user_result->fetch_assoc();
-$teacher_user_stmt->close();
-$conn->close(); // Close connection here after all queries are done
+$conn->close();
 
 echo json_encode([
     "status" => "success",
     "followers" => $followers,
-    "count" => count($followers),
-    "name" => $teacher_info['username'] ?? "Teacher",
-    "profile_pic" => $teacher_info['profile_pic'] ?? null
+    "count" => count($followers)
 ]);
 exit;
