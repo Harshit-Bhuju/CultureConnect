@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/session_config.php';
-include("mail.php");
+include("../config/mail.php");
 include("../config/header.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -56,11 +56,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $store_logo = null;
     if (isset($_FILES['logo']) && $_FILES['logo']['error'] === 0) {
         $file = $_FILES['logo'];
-        $uploadDir = __DIR__ . '/seller_img_datas/seller_logos/';
+        $uploadDir = dirname(__DIR__) . '/uploads/seller_img_datas/seller_logos/';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
         $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        //very important to check if the file is an image
         if (!getimagesize($_FILES['logo']['tmp_name'])) {
             echo json_encode(["status" => "error", "message" => "Not a valid image."]);
             exit;
@@ -90,11 +89,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $store_banner = null;
     if (isset($_FILES['banner']) && $_FILES['banner']['error'] === 0) {
         $file = $_FILES['banner'];
-        $uploadDir = __DIR__ . '/seller_img_datas/seller_banners/';
+        $uploadDir = dirname(__DIR__) . '/uploads/seller_img_datas/seller_banners/';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
         $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        //very important to check if the file is an image
         if (!getimagesize($_FILES['banner']['tmp_name'])) {
             echo json_encode(["status" => "error", "message" => "Not a valid image."]);
             exit;
@@ -120,12 +118,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // Start database transaction
+    $conn->begin_transaction();
 
-    $insert_stmt = $conn->prepare("INSERT INTO sellers (user_id, store_name, store_description, primary_category, esewa_phone, province, district, municipality, ward, store_logo, store_banner) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $insert_stmt->bind_param("issssssssss", $user_id, $store_name, $store_description, $primary_category, $esewa_phone, $province, $district, $municipality, $ward, $store_logo, $store_banner);
-    if ($insert_stmt->execute()) {
+    try {
+        $insert_stmt = $conn->prepare("INSERT INTO sellers (user_id, store_name, store_description, primary_category, esewa_phone, province, district, municipality, ward, store_logo, store_banner) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $insert_stmt->bind_param("issssssssss", $user_id, $store_name, $store_description, $primary_category, $esewa_phone, $province, $district, $municipality, $ward, $store_logo, $store_banner);
+
+        if (!$insert_stmt->execute()) {
+            throw new Exception("Failed to create seller record");
+        }
+
         $seller_id = $insert_stmt->insert_id;
         $insert_stmt->close();
+
         $current_role_stmt = $conn->prepare("SELECT role FROM users WHERE email = ? LIMIT 1");
         $current_role_stmt->bind_param("s", $user_email);
         $current_role_stmt->execute();
@@ -137,15 +143,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $update_role_stmt = $conn->prepare("UPDATE users SET role = ? WHERE email = ?");
         $update_role_stmt->bind_param("ss", $new_role, $user_email);
-        $update_role_stmt->execute();
+
+        if (!$update_role_stmt->execute()) {
+            throw new Exception("Failed to update user role");
+        }
         $update_role_stmt->close();
+
+        // Commit transaction
+        $conn->commit();
 
         $response = ["status" => "success", "seller_id" => $seller_id];
         sendResponseAndContinue($response);
         sendSellerAccountCreatedEmail($user_email);
         exit;
-    } else {
-        echo json_encode(["status" => "error", "message" => "Failed to activate account. Please try again later."]);
+    } catch (Exception $e) {
+        // Rollback transaction on any error
+        $conn->rollback();
+
+        // Optionally delete uploaded files if they exist
+        if ($store_logo) {
+            @unlink(dirname(__DIR__) . '/uploads/seller_img_datas/seller_logos/' . $store_logo);
+        }
+        if ($store_banner) {
+            @unlink(dirname(__DIR__) . '/uploads/seller_img_datas/seller_banners/' . $store_banner);
+        }
+
+        echo json_encode(["status" => "error", "message" => $e->getMessage()]);
         exit;
     }
 }

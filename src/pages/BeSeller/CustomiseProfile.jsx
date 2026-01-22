@@ -99,12 +99,12 @@ function CustomiseProfile() {
 
         if (profile.store_logo) {
           setProfilePreview(
-            `${BASE_URL}/uploads/seller_img_datas/seller_logos/${profile.store_logo}`,
+            `${API.SELLER_LOGOS}/${profile.store_logo}`,
           );
         }
         if (profile.store_banner) {
           setBannerPreview(
-            `${BASE_URL}/uploads/seller_img_datas/seller_banners/${profile.store_banner}`,
+            `${API.SELLER_BANNERS}/${profile.store_banner}`,
           );
         }
       }
@@ -138,11 +138,11 @@ function CustomiseProfile() {
     municipals: [],
     wards: [],
     selectedProvince: "",
-    setSelectedProvince: () => {},
+    setSelectedProvince: () => { },
     selectedDistrict: "",
-    setSelectedDistrict: () => {},
+    setSelectedDistrict: () => { },
     selectedMunicipal: "",
-    setSelectedMunicipal: () => {},
+    setSelectedMunicipal: () => { },
   };
   const [selectedWard, setSelectedWard] = useState(userData.ward);
 
