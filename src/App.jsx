@@ -70,7 +70,7 @@ const Password_Settings = lazy(
 const AdminProtectedRoute = lazy(
   () => import("./components/Auth/Route/AdminProtectedRoute"),
 );
-const AdminPanel = lazy(() => import("./admin/AdminPanel"));
+const AdminPanel = lazy(() => import("./AdminPage/AdminDashboard"));
 const ProtectedSellerRoute = lazy(
   () => import("./components/Auth/Route/ProtectedSellerRoute"),
 );
@@ -134,6 +134,22 @@ const CartPage = lazy(() => import("./pages/Cart/CartPage"));
 const FollowingPage = lazy(() => import("./pages/Following/FollowingPage"));
 const FollowersPage = lazy(() => import("./pages/Followers/FollowersPage"));
 
+// Admin sub-pages
+const AdminOverview = lazy(
+  () => import("./AdminPage/components/AdminOverview"),
+);
+const AdminTeacherApprovals = lazy(
+  () => import("./AdminPage/components/AdminTeacherApprovals"),
+);
+const AdminUserManagement = lazy(
+  () => import("./AdminPage/components/AdminUserManagement"),
+);
+
+const AdminAnalytics = lazy(
+  () => import("./AdminPage/components/AdminAnalytics"),
+);
+
+
 // Home Route Wrapper
 function HomeRoute() {
   const { user, loading } = useAuth();
@@ -169,8 +185,13 @@ function App() {
               <AdminProtectedRoute>
                 <AdminPanel />
               </AdminProtectedRoute>
-            }
-          />
+            }>
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<AdminOverview />} />
+            <Route path="teachers" element={<AdminTeacherApprovals />} />
+            <Route path="users" element={<AdminUserManagement />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
+          </Route>
 
           {/* ==================== Marketplace Routes ==================== */}
           <Route

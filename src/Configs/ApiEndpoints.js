@@ -3,7 +3,9 @@ const getBaseUrl = () => {
 
   // Local development
   if (hostname === "localhost" || hostname === "127.0.0.1") {
-    return "http://localhost/CultureConnect/backend";
+    // return "http://localhost/CultureConnect/backend";
+  return "https://api.harmanbhuju.com.np/cultureconnect/backend";
+
   }
 
   // Production

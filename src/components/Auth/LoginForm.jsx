@@ -25,7 +25,7 @@ export default function LoginForm({ className, mode = "login", ...props }) {
   const location = useLocation();
 
   const [signState, setSignState] = useState(
-    mode === "login" ? "Login" : "Create Account"
+    mode === "login" ? "Login" : "Create Account",
   );
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -77,15 +77,12 @@ export default function LoginForm({ className, mode = "login", ...props }) {
         formData.append("email", form.email);
         formData.append("password", form.password);
 
-        const response = await fetch(
-          API.SIGNUP,
-          {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: formData.toString(),
-          }
-        );
+        const response = await fetch(API.SIGNUP, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData.toString(),
+        });
 
         const result = await response.json();
 
@@ -110,15 +107,12 @@ export default function LoginForm({ className, mode = "login", ...props }) {
         formData.append("email", form.email);
         formData.append("password", form.password);
 
-        const response = await fetch(
-          API.LOGIN,
-          {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: formData.toString(),
-          }
-        );
+        const response = await fetch(API.LOGIN, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData.toString(),
+        });
 
         const result = await response.json();
 
@@ -132,7 +126,7 @@ export default function LoginForm({ className, mode = "login", ...props }) {
             navigate("/", { replace: true }); // normal user
           }
         } else {
-          setFieldErrors({ password: result.message || "Login failed" });
+          setFieldErrors({ password: "Invalid credentials" });
         }
       }
     } catch (err) {
