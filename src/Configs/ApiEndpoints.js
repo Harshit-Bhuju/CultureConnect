@@ -23,7 +23,7 @@ const API = {
   SIGNUP: `${BASE_URL}/auth/signup.php`,
   LOGIN: `${BASE_URL}/auth/login.php`,
   SIGNUP_VERIFY: `${BASE_URL}/auth/signup_verify.php`,
-  FORGOT_PASSWORD_VERIFY: `${BASE_URL}/auth/forgotpassword_verify.php`,
+  FORGOT_PASSWORD_VERIFY: `${BASE_URL}/auth/forgotPassword_verify.php`,
   LOGOUT: `${BASE_URL}/auth/logout.php`,
 
   // User Profile
