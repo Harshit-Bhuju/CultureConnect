@@ -6,6 +6,9 @@ import {
   MapPin,
   Clock,
   Hash,
+  User,
+  BookOpen,
+  CreditCard,
 } from "lucide-react";
 import { BASE_URL } from "../../../../Configs/ApiEndpoints";
 
@@ -111,6 +114,12 @@ const TeacherTransactionHistory = ({
               <p className="text-xs text-gray-500 mt-1">Completed Courses</p>
             </div>
             <div className="text-center">
+              <p className="text-2xl font-bold text-green-600">
+                {completedEnrollments.length}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">Students Completed</p>
+            </div>
+            <div className="text-center">
               <p className="text-2xl font-bold text-gray-900">
                 Rs.{" "}
                 {completedEnrollments
@@ -130,7 +139,14 @@ const TeacherTransactionHistory = ({
               <Package className="w-8 h-8 text-gray-400" />
             </div>
             <p className="text-gray-500 font-medium">
-              No completed transactions
+              No completed transactions yet
+            </p>
+            <p className="text-sm text-gray-400 mt-1">
+              {selectedPeriod === "This month"
+                ? "No completed transactions this month"
+                : selectedPeriod === "This year"
+                  ? "No completed transactions this year"
+                  : "Completed transactions will appear here"}
             </p>
           </div>
         ) : (
@@ -151,36 +167,93 @@ const TeacherTransactionHistory = ({
                   <div
                     key={item.id}
                     className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow bg-white">
-                    <div className="flex items-start justify-between gap-4">
-                      {/* Placeholder Image or User Avatar */}
-                      <div className="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                        <span className="text-gray-500 font-semibold">
-                          {item.student_name?.[0]}
-                        </span>
-                      </div>
-
+                    <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="text-gray-900 font-semibold text-lg mb-1">
-                              {item.course_title}
-                            </h3>
-                            <p className="text-xs text-gray-500 font-mono">
-                              Student: {item.student_name}
-                            </p>
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <BookOpen className="w-6 h-6 text-green-600" />
                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-100">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                            <CheckCircle2 className="w-3 h-3 mr-1" />
-                            Completed
-                          </span>
-                          <div className="text-xs text-gray-500">
-                            Completed on {item.date}
-                          </div>
-                          <div className="text-sm font-bold text-gray-900 ml-auto">
-                            Rs. {item.amount}
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h3 className="text-gray-900 font-semibold text-lg">
+                                  {item.course_title}
+                                </h3>
+                                <p className="text-xs text-gray-500 font-mono mt-1">
+                                  Enrollment ID: {item.id}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-3 mt-3">
+                              <div>
+                                <p className="text-xs text-gray-500 font-medium">
+                                  Student Name
+                                </p>
+                                <p className="text-sm text-gray-900">
+                                  {item.student_name}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  Completed On
+                                </p>
+                                <p className="text-sm text-gray-900">
+                                  {item.date}
+                                </p>
+                              </div>
+                              {item.transaction_uuid && (
+                                <div className="col-span-2">
+                                  <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
+                                    <Hash className="w-3 h-3" />
+                                    Transaction UUID
+                                  </p>
+                                  <p className="text-sm text-gray-900 font-mono">
+                                    {item.transaction_uuid}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-100">
+                              <div>
+                                <p className="text-xs text-gray-500 font-medium">
+                                  Course Price
+                                </p>
+                                <p className="text-sm text-gray-900">
+                                  Rs. {item.amount?.toLocaleString()}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-500 font-medium">
+                                  Payment Method
+                                </p>
+                                <p className="text-sm text-gray-900 flex items-center gap-1">
+                                  <CreditCard className="w-3 h-3 text-green-600" />
+                                  eSewa
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-500 font-medium">
+                                  Total Amount
+                                </p>
+                                <p className="text-lg font-bold text-gray-900">
+                                  Rs. {item.amount?.toLocaleString()}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-100">
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                <CheckCircle2 className="w-3 h-3 mr-1" />
+                                Completed
+                              </span>
+                              <div className="text-xs text-gray-500">
+                                Enrolled on {item.date}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>

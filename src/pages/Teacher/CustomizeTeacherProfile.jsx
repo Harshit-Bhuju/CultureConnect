@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Upload, X, Check, ArrowLeft, Save } from "lucide-react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import API, { BASE_URL } from "../../Configs/ApiEndpoints";
 
 const InlineLabel = ({ children }) => (
@@ -148,6 +149,7 @@ const CropModal = ({ isOpen, imageToCrop, onSave, onCancel }) => {
 
 function CustomizeTeacherProfile() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     bio: "",
@@ -435,7 +437,12 @@ function CustomizeTeacherProfile() {
 
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false);
-    navigate(0); // Reload to fetch fresh data
+    const finalId = user?.teacher_id;
+    if (finalId) {
+      navigate(`/teacherprofile/${finalId}`);
+    } else {
+      navigate("/");
+    }
   };
 
   if (isValidating) {

@@ -4,7 +4,6 @@ import TeacherAnalyticsStatsCards from "./Stats/TeacherAnalyticsStatsCards";
 import TopPerformingCourses from "./Chart and Enrollments/TopPerformingCourses";
 import RecentEnrollments from "./Chart and Enrollments/RecentEnrollments";
 import TeacherTransactionHistory from "./Chart and Enrollments/TeacherTransactionHistory";
-import CancelledEnrollments from "./Chart and Enrollments/CancelledEnrollments";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import useTeacherAnalytics from "../../../hooks/useTeacherAnalytics";
@@ -26,7 +25,6 @@ const TeacherAnalyticsDashboard = () => {
   // or passing full list and letting components filter.
   // For 'Recent' we typically show active/in-progress.
   // For 'History' we show completed.
-  // For 'Cancelled' we show cancelled.
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -74,16 +72,7 @@ const TeacherAnalyticsDashboard = () => {
                     ? "bg-white text-gray-900 shadow-sm"
                     : "text-gray-600 hover:text-gray-900"
                 }`}>
-                Active Enrollments
-              </button>
-              <button
-                onClick={() => setActiveTab("cancelled")}
-                className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === "cancelled"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}>
-                Cancelled Enrollments
+                Enrollments
               </button>
               <button
                 onClick={() => setActiveTab("history")}
@@ -163,8 +152,7 @@ const TeacherAnalyticsDashboard = () => {
             <RecentEnrollments
               selectedPeriod={selectedPeriod}
               enrollments={recentEnrollments.filter(
-                (e) =>
-                  !["Completed", "Cancelled", "Refunded"].includes(e.status),
+                (e) => !["Completed", "Refunded"].includes(e.status),
               )} // Pass filtered or all
               loading={loading}
             />
@@ -178,18 +166,6 @@ const TeacherAnalyticsDashboard = () => {
               selectedPeriod={selectedPeriod}
               enrollments={recentEnrollments.filter((e) =>
                 ["Completed"].includes(e.status),
-              )}
-              loading={loading}
-            />
-          </div>
-        )}
-
-        {activeTab === "cancelled" && (
-          <div className="mt-2">
-            <CancelledEnrollments
-              selectedPeriod={selectedPeriod}
-              enrollments={recentEnrollments.filter((e) =>
-                ["Cancelled", "Refunded"].includes(e.status),
               )}
               loading={loading}
             />
