@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import API from "../Configs/ApiEndpoints";
 
-const useTeacherAnalytics = (period) => {
+const useTeacherAnalytics = (period, teacherId = null, courseId = null) => {
   const [stats, setStats] = useState({
     total_revenue: 0,
     total_students: 0,
@@ -11,7 +11,7 @@ const useTeacherAnalytics = (period) => {
   const [courseStats, setCourseStats] = useState({
     active_courses: 0,
     draft_courses: 0,
-    archived_courses: 0,
+    deleted_courses: 0,
     total_courses: 0,
   });
   const [topCourses, setTopCourses] = useState([]);
@@ -25,15 +25,19 @@ const useTeacherAnalytics = (period) => {
       setError(null);
 
       try {
+        const teacherParam = teacherId ? `&teacher_id=${teacherId}` : "";
+        const courseParam = courseId ? `&course_id=${courseId}` : "";
+        const commonParams = `period=${encodeURIComponent(period)}${teacherParam}${courseParam}`;
+
         // Fetch all analytics data in parallel
         const [statsRes, topCoursesRes, enrollmentsRes] = await Promise.all([
-          fetch(`${API.GET_TEACHER_ANALYTICS_STATS}?period=${encodeURIComponent(period)}`, {
+          fetch(`${API.GET_TEACHER_ANALYTICS_STATS}?${commonParams}`, {
             credentials: "include",
           }),
-          fetch(`${API.GET_TOP_PERFORMING_COURSES}?limit=5`, {
+          fetch(`${API.GET_TOP_PERFORMING_COURSES}?${commonParams}`, {
             credentials: "include",
           }),
-          fetch(`${API.GET_RECENT_ENROLLMENTS}?limit=10`, {
+          fetch(`${API.GET_RECENT_ENROLLMENTS}?${commonParams}`, {
             credentials: "include",
           }),
         ]);
@@ -71,7 +75,7 @@ const useTeacherAnalytics = (period) => {
     if (period) {
       fetchAnalytics();
     }
-  }, [period]);
+  }, [period, teacherId, courseId]);
 
   return { stats, courseStats, topCourses, recentEnrollments, loading, error };
 };

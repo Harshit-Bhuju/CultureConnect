@@ -42,7 +42,7 @@ try {
             tc.duration_weeks,
             tc.description,
             tc.thumbnail as image,
-            tc.total_enrollments as enrolled_students,
+            tc.total_sales as enrolled_students,
             tc.total_videos as video_count,
             tc.average_rating as rating,
             tc.status,

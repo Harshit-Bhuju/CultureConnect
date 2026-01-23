@@ -26,7 +26,7 @@ const CourseCard = ({ course, onEdit, onDelete, onView }) => {
   const courseTitle = course.courseTitle || course.title || "Unnamed Course";
   const teacherName = course.teacherName || course.teacher_name || "You"; // Default to 'You' for teacher dashboard
   const description = course.description || "";
-  const rating = course.averageRating || course.average_rating || 0;
+  const rating = course.averageRating || course.average_rating || course.rating || 0;
   const students = course.enrolled_students || course.totalStudents || 0;
   const stock = parseInt(course.stock || course.seats || 0);
 
@@ -67,13 +67,12 @@ const CourseCard = ({ course, onEdit, onDelete, onView }) => {
       <div className="absolute top-3 left-3 z-20 flex flex-col gap-1">
         {/* Status Badge */}
         <span
-          className={`px-2 py-1 text-xs font-semibold rounded shadow-sm backdrop-blur-md ${
-            course.status === "Active" || course.status === "published"
+          className={`px-2 py-1 text-xs font-semibold rounded shadow-sm backdrop-blur-md ${course.status === "Active" || course.status === "published"
               ? "bg-green-100/90 text-green-700"
               : course.status === "Draft" || course.status === "draft"
                 ? "bg-gray-100/90 text-gray-700"
                 : "bg-yellow-100/90 text-yellow-700"
-          }`}>
+            }`}>
           {course.status || "Draft"}
         </span>
         {isLowStock && (

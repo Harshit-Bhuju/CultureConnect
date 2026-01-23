@@ -31,7 +31,7 @@ const DraftCourseCard = ({ course, onEdit, onDelete, onView, onPublish }) => {
   const courseTitle = course.courseTitle || course.title || "Unnamed Course";
   const teacherName = course.teacherName || course.teacher_name || "You";
   const description = course.description || "";
-  const rating = course.averageRating || course.average_rating || 0;
+  const rating = course.averageRating || course.average_rating || course.rating || 0;
   const students = course.enrolled_students || course.totalStudents || 0;
   const stock = parseInt(course.stock || course.seats || 0);
 

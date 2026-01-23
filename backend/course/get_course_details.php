@@ -139,8 +139,8 @@ try {
     }
     $stmt->close();
 
-    // Calculate max_students (default to 20 if not set)
-    $max_students = 20;
+    // Set max_students to 0 (indicates unlimited)
+    $max_students = 0;
 
     $revenue_query = "
         SELECT COALESCE(SUM(amount), 0) as total_revenue

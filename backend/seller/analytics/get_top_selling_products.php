@@ -50,7 +50,7 @@ try {
             WHERE p.seller_id = ?
             AND pss.sales_count > 0
             ORDER BY units_sold DESC
-              LIMIT 50
+              LIMIT 20
         ";
         $stmt = $conn->prepare($query);
         $stmt->bind_param("i", $seller_id);
@@ -70,7 +70,7 @@ try {
             GROUP BY p.id, p.product_name, p.status
             HAVING units_sold > 0
             ORDER BY units_sold DESC
-              LIMIT 50
+              LIMIT 20
         ";
         $stmt = $conn->prepare($query);
         $stmt->bind_param("i", $seller_id);
@@ -87,7 +87,7 @@ try {
             WHERE p.seller_id = ?
             AND p.total_sales > 0
             ORDER BY units_sold DESC
-              LIMIT 50
+              LIMIT 20
         ";
         $stmt = $conn->prepare($query);
         $stmt->bind_param("i", $seller_id);

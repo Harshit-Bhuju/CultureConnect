@@ -110,28 +110,6 @@ try {
         $enrollment_id = $stmt->insert_id;
         $stmt->close();
 
-        // Update course total_enrollments
-        $update_stmt = $conn->prepare("
-            UPDATE teacher_courses 
-            SET total_enrollments = total_enrollments + 1 
-            WHERE id = ?
-        ");
-        $update_stmt->bind_param("i", $course_id);
-        $update_stmt->execute();
-        $update_stmt->close();
-
-        // Update teacher's total courses count if needed
-        $teacher_id = $course['teacher_id'];
-        $update_teacher = $conn->prepare("
-            UPDATE teachers 
-            SET enrollments_this_month = enrollments_this_month + 1,
-                enrollments_this_year = enrollments_this_year + 1
-            WHERE id = ?
-        ");
-        $update_teacher->bind_param("i", $teacher_id);
-        $update_teacher->execute();
-        $update_teacher->close();
-
         echo json_encode([
             "status" => "success",
             "message" => "Successfully enrolled in the course!",

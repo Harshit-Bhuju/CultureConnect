@@ -22,11 +22,10 @@ export default function AdditionalInfoForm({
           disabled={isSubmitting}
           rows="4"
           maxLength="5000"
-          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition ${
-            errors?.whatYouWillLearn
+          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition ${errors?.whatYouWillLearn
               ? "border-red-300 bg-red-50"
               : "border-gray-300"
-          }`}
+            }`}
           placeholder="• Master basic dance steps&#10;• Understand rhythm and expressions&#10;• Learn traditional poses&#10;• Develop performance confidence"
         />
         {errors?.whatYouWillLearn && (
@@ -50,11 +49,10 @@ export default function AdditionalInfoForm({
           disabled={isSubmitting}
           rows="3"
           maxLength="5000"
-          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition ${
-            errors?.requirements
+          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition ${errors?.requirements
               ? "border-red-300 bg-red-50"
               : "border-gray-300"
-          }`}
+            }`}
           placeholder="• Comfortable clothing&#10;• Space to move freely&#10;• No prior experience needed"
         />
         {errors?.requirements && (
@@ -80,11 +78,10 @@ export default function AdditionalInfoForm({
           disabled={isSubmitting}
           rows="5"
           maxLength="2000"
-          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition ${
-            errors?.learningSchedule
+          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition ${errors?.learningSchedule
               ? "border-red-300 bg-red-50"
               : "border-gray-300"
-          }`}
+            }`}
           placeholder="Week 1: Videos 1-3 - Basic footwork&#10;Week 2: Videos 4-6 - Rhythm exercises&#10;Week 3: Videos 7-10 - Combining steps&#10;Week 4: Videos 11-15 - Performance practice"
         />
         {errors?.learningSchedule && (
@@ -111,9 +108,13 @@ export default function AdditionalInfoForm({
           disabled={isSubmitting}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none">
           <option value="English">English</option>
-          <option value="Hindi">Hindi</option>
           <option value="Nepali">Nepali</option>
-          <option value="Both English & Hindi">Both English & Hindi</option>
+          <option value="Newari">Newari</option>
+          <option value="Tamang">Tamang</option>
+          <option value="Maithali">Maithali</option>
+          <option value="Tharu">Tharu</option>
+          <option value="Bhojpuri">Bhojpuri</option>
+          <option value="Both English & Nepali">Both English & Nepali</option>
         </select>
       </div>
     </>

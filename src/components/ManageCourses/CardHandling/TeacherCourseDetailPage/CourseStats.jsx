@@ -17,21 +17,12 @@ export default function CourseStats({ course }) {
           <div className="p-3 bg-blue-100 rounded-lg">
             <Users className="w-6 h-6 text-blue-600" />
           </div>
-          <span className="text-xs text-gray-500 font-medium">
-            {((course.enrolled_students / course.max_students) * 100).toFixed(
-              0,
-            )}
-            % Full
-          </span>
         </div>
         <p className="text-2xl font-bold text-gray-900">
           {course.enrolled_students}
         </p>
         <p className="text-sm text-gray-600 mt-1">
           Students Enrolled
-          <span className="text-xs text-gray-500 ml-1">
-            / {course.max_students} max
-          </span>
         </p>
       </div>
 
@@ -81,11 +72,10 @@ export default function CourseStats({ course }) {
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
                 key={star}
-                className={`w-3 h-3 ${
-                  star <= course.averageRating
-                    ? "fill-yellow-400 text-yellow-400"
-                    : "text-gray-300"
-                }`}
+                className={`w-3 h-3 ${star <= course.averageRating
+                  ? "fill-yellow-400 text-yellow-400"
+                  : "text-gray-300"
+                  }`}
               />
             ))}
           </div>

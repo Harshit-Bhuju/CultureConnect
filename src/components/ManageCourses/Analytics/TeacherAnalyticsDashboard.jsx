@@ -19,7 +19,7 @@ const TeacherAnalyticsDashboard = () => {
 
   // Fetch analytics data based on selected period
   const { stats, courseStats, topCourses, recentEnrollments, loading, error } =
-    useTeacherAnalytics(selectedPeriod);
+    useTeacherAnalytics(selectedPeriod, teacherId);
 
   // Helper to filter enrollments for different tabs if needed,
   // or passing full list and letting components filter.

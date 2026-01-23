@@ -147,18 +147,6 @@ try {
         $stmt = $conn->prepare("UPDATE teacher_course_payment SET payment_status = 'success', payment_date = NOW() WHERE id = ?");
         $stmt->bind_param("i", $payment_id);
         $stmt->execute();
-        $stmt->close();
-
-        // Update course total enrollments
-        $stmt = $conn->prepare("
-            UPDATE teacher_courses 
-            SET total_enrollments = total_enrollments + 1 
-            WHERE id = ?
-        ");
-        $stmt->bind_param("i", $enrollment['course_id']);
-        $stmt->execute();
-        $stmt->close();
-
         $conn->commit();
 
         echo json_encode([

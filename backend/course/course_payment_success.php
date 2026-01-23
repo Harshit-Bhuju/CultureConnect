@@ -107,34 +107,6 @@ try {
         $stmt->close();
     }
 
-    if ($affected_rows === 0) {
-        $conn->rollback();
-        header("Location: {$frontend_base}/courses/{$enrollment['teacher_id']}/{$enrollment['course_id_internal']}?error=" . urlencode("Enrollment already processed") . "&payment=failed");
-        exit;
-    }
-
-    $stmt = $conn->prepare("
-        UPDATE teacher_courses
-        SET total_enrollments = total_enrollments + 1
-        WHERE id = ?
-    ");
-    $stmt->bind_param("i", $enrollment['course_id_internal']);
-    $stmt->execute();
-    $stmt->close();
-
-    $stmt = $conn->prepare("
-        UPDATE teachers
-        SET enrollments_this_month = enrollments_this_month + 1,
-            enrollments_this_year = enrollments_this_year + 1,
-            total_revenue = total_revenue + ?,
-            revenue_this_month = revenue_this_month + ?,
-            revenue_this_year = revenue_this_year + ?
-        WHERE id = ?
-    ");
-    $stmt->bind_param("dddi", $paid_amount, $paid_amount, $paid_amount, $enrollment['teacher_id']);
-    $stmt->execute();
-    $stmt->close();
-
     $conn->commit();
 
     // Clear session variables

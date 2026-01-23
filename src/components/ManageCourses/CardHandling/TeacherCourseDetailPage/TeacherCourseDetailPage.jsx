@@ -12,6 +12,8 @@ import VideoPlayer from "./VideoPlayer";
 import CourseContent from "./CourseContent";
 import CourseSidebar from "./CourseSidebar";
 
+import useTeacherAnalytics from "../../../../hooks/useTeacherAnalytics";
+
 const TeacherCourseDetailPage = () => {
   const navigate = useNavigate();
   const { teacherId, id } = useParams();
@@ -21,6 +23,10 @@ const TeacherCourseDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
+
+  // Fetch analytics data specifically for this course
+  const { recentEnrollments, loading: analyticsLoading } =
+    useTeacherAnalytics("Until now", id);
 
   useEffect(() => {
     // Check authorization
@@ -268,6 +274,8 @@ const TeacherCourseDetailPage = () => {
               setActiveTab={setActiveTab}
               user={user}
               teacherId={teacherId}
+              enrollments={recentEnrollments}
+              enrollmentsLoading={analyticsLoading}
             />
           </div>
 

@@ -1,6 +1,7 @@
 import React from "react";
 import { Edit2, Trash2, AlertTriangle, Upload } from "lucide-react";
 import API, { BASE_URL } from "../../../Configs/ApiEndpoints";
+import Rating from "../../Rating/Rating";
 
 const CourseListRow = ({
   course,
@@ -31,13 +32,19 @@ const CourseListRow = ({
 
   // Average rating calculation
   const calculateAverageRating = () => {
-    if (!course.reviews || course.reviews.length === 0) return 0;
+    if (!course.reviews || course.reviews.length === 0) {
+      return course.rating || course.average_rating || 0;
+    }
     const total = course.reviews.reduce((sum, r) => sum + r.rating, 0);
     return Math.round((total / course.reviews.length) * 10) / 10;
   };
 
   const avgRating = calculateAverageRating();
-  const reviewCount = course.reviews?.length || 0;
+  const reviewCount =
+    course.reviews?.length ||
+    course.totalReviews ||
+    course.total_reviews ||
+    (course.rating || course.average_rating ? 1 : 0); // Fallback if we have a rating but no count
 
   // Stock/Seats status
   const isLowStock = course.stock <= 10 && course.stock > 0;
@@ -48,7 +55,7 @@ const CourseListRow = ({
   const imageUrl = courseImage
     ? courseImage.startsWith("http")
       ? courseImage
-      : `${API.COURSE_THUMBNAILS}/${courseImage}`
+      : `${BASE_URL}/uploads/teacher_datas/course_thumbnails/${courseImage}`
     : "/placeholder-image.png";
 
   const courseTitle = course.courseTitle || course.title || "Unnamed Course";
@@ -135,13 +142,12 @@ const CourseListRow = ({
       {/* Status */}
       <div className="col-span-1">
         <span
-          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${
-            course.status === "Active"
+          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${course.status === "Active"
               ? "bg-green-100 text-green-700"
               : course.status === "Draft"
                 ? "bg-gray-100 text-gray-700"
                 : "bg-yellow-100 text-yellow-700"
-          }`}>
+            }`}>
           {course.status}
         </span>
       </div>

@@ -8,52 +8,108 @@ try {
         exit;
     }
 
-    $user_email = $_SESSION['user_email'];
+    // Priority: teacher_id from GET, then from session
+    $requested_teacher_id = isset($_GET['teacher_id']) ? intval($_GET['teacher_id']) : null;
 
-    // Get user's teacher_id
+    // Get session's teacher_id for security
     $stmt = $conn->prepare("
-        SELECT u.id, t.id as teacher_id 
+        SELECT u.role, t.id as teacher_id 
         FROM users u 
         LEFT JOIN teachers t ON u.id = t.user_id 
         WHERE u.email = ? 
         LIMIT 1
     ");
-    $stmt->bind_param("s", $user_email);
+    $stmt->bind_param("s", $_SESSION['user_email']);
     $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
+    $session_user = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (!$user || !$user['teacher_id']) {
+    if (!$session_user) {
+        echo json_encode(["success" => false, "error" => "User record not found"]);
+        exit;
+    }
+
+    $teacher_id = null;
+    if ($session_user['role'] === 'admin' && $requested_teacher_id) {
+        $teacher_id = $requested_teacher_id;
+    } elseif ($requested_teacher_id) {
+        if ($session_user['teacher_id'] && $requested_teacher_id == $session_user['teacher_id']) {
+            $teacher_id = $requested_teacher_id;
+        } else {
+            echo json_encode(["success" => false, "error" => "Unauthorized access to these statistics"]);
+            exit;
+        }
+    } else {
+        $teacher_id = $session_user['teacher_id'];
+    }
+
+    if (!$teacher_id) {
         echo json_encode(["success" => false, "error" => "No teacher account found"]);
         exit;
     }
 
-    $teacher_id = $user['teacher_id'];
+    // Get period from request (default: "This month")
+    $period = isset($_GET['period']) ? $_GET['period'] : 'This month';
 
-    // Get limit from request (default: 5)
-    $limit = isset($_GET['limit']) ? min(intval($_GET['limit']), 20) : 5;
+    // Build query based on period
+    if ($period === "This month") {
+        $query = "
+            SELECT 
+                tc.id,
+                tc.course_title as title,
+                tc.thumbnail as image,
+                COALESCE(tcss.sales_count, 0) as students,
+                tc.average_rating as rating,
+                tc.price,
+                COALESCE(tcss.revenue, 0) as revenue
+            FROM teacher_courses tc
+            LEFT JOIN teacher_course_sales_stats tcss ON tc.id = tcss.course_id 
+                AND DATE_FORMAT(tcss.month, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+            WHERE tc.teacher_id = ? AND tc.status = 'published'
+            AND COALESCE(tcss.sales_count, 0) > 0
+            ORDER BY revenue DESC, students DESC
+            LIMIT 20
+        ";
+    } elseif ($period === "This year") {
+        $query = "
+            SELECT 
+                tc.id,
+                tc.course_title as title,
+                tc.thumbnail as image,
+                COALESCE(SUM(tcss.sales_count), 0) as students,
+                tc.average_rating as rating,
+                tc.price,
+                COALESCE(SUM(tcss.revenue), 0) as revenue
+            FROM teacher_courses tc
+            LEFT JOIN teacher_course_sales_stats tcss ON tc.id = tcss.course_id 
+                AND YEAR(tcss.month) = YEAR(NOW())
+            WHERE tc.teacher_id = ? AND tc.status = 'published'
+            GROUP BY tc.id
+            HAVING students > 0
+            ORDER BY revenue DESC, students DESC
+            LIMIT 20
+        ";
+    } else {
+        // "Until now" - use cached columns
+        $query = "
+            SELECT 
+                id,
+                course_title as title,
+                thumbnail as image,
+                total_sales as students,
+                average_rating as rating,
+                price,
+                revenue
+            FROM teacher_courses
+            WHERE teacher_id = ? AND status = 'published'
+            AND total_sales > 0
+            ORDER BY revenue DESC, students DESC
+            LIMIT 20
+        ";
+    }
 
-    // Get top performing courses by total enrollments and revenue
-    $stmt = $conn->prepare("
-        SELECT 
-            tc.id,
-            tc.course_title as title,
-            tc.thumbnail as image,
-            tc.total_enrollments as students,
-            tc.average_rating as rating,
-            tc.price,
-            COALESCE(SUM(tcp.amount), 0) as revenue
-        FROM teacher_courses tc
-        LEFT JOIN teacher_course_enroll tce ON tc.id = tce.course_id AND (tce.payment_status = 'paid' OR tce.payment_status = 'free')
-        LEFT JOIN teacher_course_payment tcp ON tce.id = tcp.enrollment_id AND tcp.payment_status = 'success'
-        WHERE tc.teacher_id = ? AND tc.status = 'published'
-        GROUP BY tc.id
-        ORDER BY revenue DESC, students DESC
-        LIMIT ?
-    ");
-
-    $stmt->bind_param("ii", $teacher_id, $limit);
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $teacher_id);
     $stmt->execute();
     $result = $stmt->get_result();
 

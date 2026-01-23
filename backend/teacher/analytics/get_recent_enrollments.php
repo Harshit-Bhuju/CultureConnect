@@ -8,34 +8,63 @@ try {
         exit;
     }
 
-    $user_email = $_SESSION['user_email'];
+    // Priority: teacher_id from GET, then from session
+    $requested_teacher_id = isset($_GET['teacher_id']) ? intval($_GET['teacher_id']) : null;
 
-    // Get user's teacher_id
+    // Get session's teacher_id for security
     $stmt = $conn->prepare("
-        SELECT u.id, t.id as teacher_id 
+        SELECT u.role, t.id as teacher_id 
         FROM users u 
         LEFT JOIN teachers t ON u.id = t.user_id 
         WHERE u.email = ? 
         LIMIT 1
     ");
-    $stmt->bind_param("s", $user_email);
+    $stmt->bind_param("s", $_SESSION['user_email']);
     $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
+    $session_user = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (!$user || !$user['teacher_id']) {
+    if (!$session_user) {
+        echo json_encode(["success" => false, "error" => "User record not found"]);
+        exit;
+    }
+
+    $teacher_id = null;
+    if ($session_user['role'] === 'admin' && $requested_teacher_id) {
+        $teacher_id = $requested_teacher_id;
+    } elseif ($requested_teacher_id) {
+        if ($session_user['teacher_id'] && $requested_teacher_id == $session_user['teacher_id']) {
+            $teacher_id = $requested_teacher_id;
+        } else {
+            echo json_encode(["success" => false, "error" => "Unauthorized access to these statistics"]);
+            exit;
+        }
+    } else {
+        $teacher_id = $session_user['teacher_id'];
+    }
+
+    if (!$teacher_id) {
         echo json_encode(["success" => false, "error" => "No teacher account found"]);
         exit;
     }
 
-    $teacher_id = $user['teacher_id'];
+    // Get period from request (default: "This month")
+    $period = isset($_GET['period']) ? $_GET['period'] : 'This month';
 
-    // Get limit from request (default: 10)
-    $limit = isset($_GET['limit']) ? min(intval($_GET['limit']), 50) : 10;
+    // Date filter
+    $date_filter = "";
+    if ($period === 'This month') {
+        $date_filter = "AND ts.enrollment_date >= DATE_FORMAT(NOW() ,'%Y-%m-01')";
+    } elseif ($period === 'This year') {
+        $date_filter = "AND ts.enrollment_date >= DATE_FORMAT(NOW() ,'%Y-01-01')";
+    }
 
-    // Get recent enrollments for teacher's courses
-    $stmt = $conn->prepare("
+    // Course Filter
+    $course_id = isset($_GET['course_id']) ? intval($_GET['course_id']) : null;
+    $course_filter = $course_id ? "AND tc.id = ?" : "";
+
+    // Get enrollments for teacher's courses
+    $query = "
         SELECT
             ts.id,
             u.username as student_name,
@@ -52,11 +81,19 @@ try {
         JOIN users u ON ts.student_id = u.id
         LEFT JOIN teacher_course_payment tcp ON ts.id = tcp.enrollment_id AND tcp.payment_status = 'success'
         WHERE tc.teacher_id = ?
+        $date_filter
+        $course_filter
         ORDER BY ts.enrollment_date DESC
-        LIMIT ?
-    ");
+    ";
 
-    $stmt->bind_param("ii", $teacher_id, $limit);
+    $stmt = $conn->prepare($query);
+
+    if ($course_id) {
+        $stmt->bind_param("ii", $teacher_id, $course_id);
+    } else {
+        $stmt->bind_param("i", $teacher_id);
+    }
+
     $stmt->execute();
     $result = $stmt->get_result();
 
