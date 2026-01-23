@@ -96,7 +96,7 @@ const CourseCard = ({ course, teacherId, teacherName }) => {
         <img
           src={imageUrl}
           alt={courseTitle}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
         />
       </div>
 

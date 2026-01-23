@@ -118,13 +118,28 @@ const CourseCategoryPageLayout = ({ category, title, description }) => {
     const minVal = priceInput.min ? parseFloat(priceInput.min) : null;
     const maxVal = priceInput.max ? parseFloat(priceInput.max) : null;
 
-    if (minVal !== null && maxVal !== null && maxVal < minVal) {
-      setPriceError("Max cannot be less than Min");
+    // Validation: only min provided without max
+    if (minVal !== null && maxVal === null) {
+      setPriceError("Please enter a maximum price");
       return;
     }
 
+    // Validation: max < min
+    if (minVal !== null && maxVal !== null && maxVal < minVal) {
+      setPriceError("Maximum price cannot be less than minimum");
+      return;
+    }
+
+    // Clear error
     setPriceError("");
-    setPriceRange({ ...priceInput });
+
+    // If only max provided, auto-set min to 0
+    if (minVal === null && maxVal !== null) {
+      setPriceInput({ min: "0", max: priceInput.max });
+      setPriceRange({ min: "0", max: priceInput.max });
+    } else {
+      setPriceRange({ ...priceInput });
+    }
   };
 
   const handlePriceKeyDown = (e) => {
@@ -176,10 +191,11 @@ const CourseCategoryPageLayout = ({ category, title, description }) => {
                   <button
                     key={option.value}
                     onClick={() => setSelectedLevel(option.value)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedLevel === option.value
-                      ? "bg-teal-600 text-white shadow-md"
-                      : "bg-white text-gray-700 hover:bg-teal-50 hover:text-teal-600 border border-gray-200"
-                      }`}>
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                      selectedLevel === option.value
+                        ? "bg-teal-600 text-white shadow-md"
+                        : "bg-white text-gray-700 hover:bg-teal-50 hover:text-teal-600 border border-gray-200"
+                    }`}>
                     {option.label}
                   </button>
                 ))}
@@ -195,26 +211,44 @@ const CourseCategoryPageLayout = ({ category, title, description }) => {
                 <input
                   type="number"
                   placeholder="Min"
+                  step="100"
+                  min="0"
                   className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 outline-none transition-all"
                   value={priceInput.min}
-                  onChange={(e) => setPriceInput({ ...priceInput, min: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "" || parseFloat(val) >= 0) {
+                      setPriceInput({ ...priceInput, min: val });
+                      setPriceError("");
+                    }
+                  }}
                   onKeyDown={handlePriceKeyDown}
                 />
                 <span className="text-gray-400 font-light">to</span>
                 <input
                   type="number"
                   placeholder="Max"
+                  step="100"
+                  min="0"
                   className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 outline-none transition-all"
                   value={priceInput.max}
-                  onChange={(e) => setPriceInput({ ...priceInput, max: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "" || parseFloat(val) >= 0) {
+                      setPriceInput({ ...priceInput, max: val });
+                      setPriceError("");
+                    }
+                  }}
                   onKeyDown={handlePriceKeyDown}
                 />
               </div>
-              {priceError && <p className="text-xs text-red-500 mt-2">{priceError}</p>}
+              {priceError && (
+                <p className="text-xs text-red-500 mt-2">{priceError}</p>
+              )}
               <button
                 onClick={applyPriceFilter}
                 className="mt-3 w-full py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors">
-                Apply Filter
+                Apply Price
               </button>
             </div>
 
@@ -246,7 +280,9 @@ const CourseCategoryPageLayout = ({ category, title, description }) => {
                           key={i}
                           size={16}
                           fill={i < rating ? "currentColor" : "none"}
-                          className={i < rating ? "text-yellow-400" : "text-gray-200"}
+                          className={
+                            i < rating ? "text-yellow-400" : "text-gray-200"
+                          }
                         />
                       ))}
                     </div>
@@ -282,7 +318,9 @@ const CourseCategoryPageLayout = ({ category, title, description }) => {
               </span>
 
               <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-400 font-medium">Sort by:</span>
+                <span className="text-sm text-gray-400 font-medium">
+                  Sort by:
+                </span>
                 <div className="relative group">
                   <select
                     value={sortBy}
@@ -361,10 +399,11 @@ const CourseCategoryPageLayout = ({ category, title, description }) => {
                   <button
                     key={page}
                     onClick={() => handlePageChange(page)}
-                    className={`w-11 h-11 flex items-center justify-center rounded-full text-sm font-bold transition-all ${currentPage === page
-                      ? "bg-teal-600 text-white shadow-lg shadow-teal-100 scale-110"
-                      : "bg-white text-gray-600 hover:bg-gray-50 border border-transparent hover:border-gray-200"
-                      }`}>
+                    className={`w-11 h-11 flex items-center justify-center rounded-full text-sm font-bold transition-all ${
+                      currentPage === page
+                        ? "bg-teal-600 text-white shadow-lg shadow-teal-100 scale-110"
+                        : "bg-white text-gray-600 hover:bg-gray-50 border border-transparent hover:border-gray-200"
+                    }`}>
                     {page}
                   </button>
                 ))}

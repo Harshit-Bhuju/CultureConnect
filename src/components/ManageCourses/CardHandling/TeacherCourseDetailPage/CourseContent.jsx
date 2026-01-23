@@ -23,6 +23,7 @@ export default function CourseContent({
   openDeleteModal,
   enrollments = [],
   enrollmentsLoading = false,
+  onRefresh,
 }) {
   const tabs = [
     { id: "overview", label: "Overview", icon: BookOpen },

@@ -25,8 +25,11 @@ const TeacherCourseDetailPage = () => {
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
 
   // Fetch analytics data specifically for this course
-  const { recentEnrollments, loading: analyticsLoading } =
-    useTeacherAnalytics("Until now", id);
+  const { recentEnrollments, loading: analyticsLoading } = useTeacherAnalytics(
+    "Until now",
+    teacherId,
+    id,
+  );
 
   useEffect(() => {
     // Check authorization
@@ -129,8 +132,8 @@ const TeacherCourseDetailPage = () => {
             .sort((a, b) => a.order - b.order),
           learningOutcomes: data.course.what_you_will_learn
             ? data.course.what_you_will_learn
-              .split("\n")
-              .filter((item) => item.trim())
+                .split("\n")
+                .filter((item) => item.trim())
             : [],
           requirements: data.course.requirements
             ? data.course.requirements.split("\n").filter((item) => item.trim())
@@ -276,6 +279,7 @@ const TeacherCourseDetailPage = () => {
               teacherId={teacherId}
               enrollments={recentEnrollments}
               enrollmentsLoading={analyticsLoading}
+              onRefresh={fetchCourseDetails}
             />
           </div>
 
