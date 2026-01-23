@@ -21,7 +21,8 @@ try {
     $stmt->execute();
     $user_id = $stmt->get_result()->fetch_assoc()['id'];
 
-    $stmt = $conn->prepare("SELECT video_id FROM student_course_progress WHERE user_id = ? AND course_id = ?");
+    // Get completed videos only
+    $stmt = $conn->prepare("SELECT video_id FROM student_course_progress WHERE user_id = ? AND course_id = ? AND completed_at IS NOT NULL");
     $stmt->bind_param("ii", $user_id, $course_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -30,8 +31,28 @@ try {
     while ($row = $result->fetch_assoc()) {
         $completed_videos[] = (int)$row['video_id'];
     }
+    $stmt->close();
 
-    echo json_encode(["status" => "success", "completed_videos" => $completed_videos]);
+    // Get all progress data (including timestamps for resumption)
+    $stmt = $conn->prepare("SELECT video_id, last_watched_timestamp FROM student_course_progress WHERE user_id = ? AND course_id = ?");
+    $stmt->bind_param("ii", $user_id, $course_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $progress_data = [];
+    while ($row = $result->fetch_assoc()) {
+        $progress_data[] = [
+            'video_id' => (int)$row['video_id'],
+            'timestamp' => (float)$row['last_watched_timestamp']
+        ];
+    }
+    $stmt->close();
+
+    echo json_encode([
+        "status" => "success",
+        "completed_videos" => $completed_videos,
+        "progress_data" => $progress_data
+    ]);
 } catch (Exception $e) {
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);
 }

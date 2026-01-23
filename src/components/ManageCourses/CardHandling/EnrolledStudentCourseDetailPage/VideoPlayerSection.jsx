@@ -16,20 +16,14 @@ export default function VideoPlayerSection({
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
 
-  // Resume video from saved timestamp
+  // Reset player when active video changes
   useEffect(() => {
     if (videoRef.current && activeVideo) {
-      // Reset first to avoid conflict
       videoRef.current.currentTime = 0;
       setIsPlaying(false);
-      setHasStarted(false); // Reset for new video
-
-      if (savedTimestamp > 0 && !completedVideos.includes(activeVideo.id)) {
-        // Only resume if not fully completed (user preference: completed -> from 0)
-        videoRef.current.currentTime = savedTimestamp;
-      }
+      setHasStarted(false);
     }
-  }, [activeVideo?.id, savedTimestamp]);
+  }, [activeVideo?.id]);
 
   const handleTimeUpdate = async () => {
     if (!videoRef.current || !activeVideo) return;
@@ -87,6 +81,11 @@ export default function VideoPlayerSection({
               className="w-full h-full object-contain"
               controls={hasStarted}
               onTimeUpdate={handleTimeUpdate}
+              onLoadedMetadata={() => {
+                if (savedTimestamp > 0 && !completedVideos.includes(activeVideo.id)) {
+                  videoRef.current.currentTime = savedTimestamp;
+                }
+              }}
               onPlay={() => {
                 setIsPlaying(true);
                 setHasStarted(true);
@@ -155,17 +154,15 @@ export default function VideoPlayerSection({
           {/* Complete Button */}
           <button
             onClick={() => toggleVideoCompletion(activeVideo?.id)}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all shadow-sm whitespace-nowrap ${
-              completedVideos.includes(activeVideo?.id)
-                ? "bg-green-50 border-2 border-green-200 text-green-700 hover:bg-green-100"
-                : "bg-white border-2 border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-            }`}>
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all shadow-sm whitespace-nowrap ${completedVideos.includes(activeVideo?.id)
+              ? "bg-green-50 border-2 border-green-200 text-green-700 hover:bg-green-100"
+              : "bg-white border-2 border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+              }`}>
             <CheckCircle
-              className={`w-5 h-5 ${
-                completedVideos.includes(activeVideo?.id)
-                  ? "fill-green-600 text-white"
-                  : ""
-              }`}
+              className={`w-5 h-5 ${completedVideos.includes(activeVideo?.id)
+                ? "fill-green-600 text-white"
+                : ""
+                }`}
             />
             <span className="hidden sm:inline">
               {completedVideos.includes(activeVideo?.id)
