@@ -10,7 +10,8 @@ import API from "../../Configs/ApiEndpoints";
 // Reuse your existing components
 import EditModal from "../../profileSettings_Components/EditModal";
 import LocationForm from "../../profileSettings_Components/LocationForm";
-import CropModal from "../../profileSettings_Components/CropModal";
+import CropModal from "./CropModal";
+
 const InlineLabel = ({ children }) => (
   <label className="block text-sm font-semibold mb-2 text-gray-800">
     {children}
@@ -66,8 +67,6 @@ function SellerForm() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // (OTP/email verification removed)
-
   // crop modal + image upload
   const [showCropModal, setShowCropModal] = useState(false);
   const [imageToCrop, setImageToCrop] = useState(null);
@@ -105,10 +104,7 @@ function SellerForm() {
       municipality: selectedMunicipal || prev.municipality,
       ward: selectedWard || prev.ward,
     }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProvince, selectedDistrict, selectedMunicipal, selectedWard]);
-
-  // (resend timer removed)
 
   // ---------- Validation helpers ----------
   const validateStoreName = (name) => {
@@ -130,8 +126,6 @@ function SellerForm() {
       return "Description must not exceed 2000 characters";
     return "";
   };
-
-  // (email validation removed)
 
   const validateEsewaPhone = (phone) => {
     if (!phone || !phone.trim()) return "eSewa phone number is required";
@@ -166,6 +160,9 @@ function SellerForm() {
   const handleImageSelect = (e, type) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Clear the input value to allow re-selecting the same file
+    e.target.value = "";
     const maxSizeMB = type === "banner" ? 6 : 4;
     if (file.size > maxSizeMB * 1024 * 1024) {
       toast.error(
@@ -244,8 +241,8 @@ function SellerForm() {
       );
     } else {
       // banner rectangular crop
-      canvas.width = 2048;
-      canvas.height = 1152;
+      canvas.width = 1280;
+      canvas.height = 400;
 
       const containerRect = cropContainerRef.current.getBoundingClientRect();
       const imgRect = img.getBoundingClientRect();
@@ -471,8 +468,6 @@ function SellerForm() {
       return;
     }
 
-    // (Email OTP verification removed)
-
     setIsSubmitting(true);
     try {
       const body = new FormData();
@@ -593,8 +588,6 @@ function SellerForm() {
               )}
             </div>
 
-            {/* Business email / OTP removed */}
-
             {/* Location (inline selectors) */}
             <div
               role="button"
@@ -699,35 +692,35 @@ function SellerForm() {
                 </p>
               </div>
               <div className="bg-gray-50 rounded-xl p-8 border border-gray-200">
-                <div className="flex flex-col md:flex-row gap-6 items-start">
-                  {/* Preview Area */}
-                  <div className="flex-shrink-0">
-                    {bannerPreview ? (
-                      <div className="w-full md:w-[28rem] h-64 bg-white rounded-lg overflow-hidden border-4 border-gray-200 shadow-sm">
+                <div className="flex flex-col gap-6">
+                  {/* Preview Area - Full Width */}
+                  <div className="w-full">
+                    <div className="w-full h-64 bg-white rounded-lg overflow-hidden border-4 border-gray-200 shadow-sm">
+                      {bannerPreview ? (
                         <img
                           src={bannerPreview}
                           alt="banner"
                           className="w-full h-full object-cover"
                         />
-                      </div>
-                    ) : (
-                      <div className="w-full md:w-[28rem] h-64 bg-white rounded-lg border-4 border-gray-200 flex items-center justify-center shadow-sm">
-                        <div className="text-center">
-                          <div className="w-16 h-16 bg-red-600 rounded-lg mx-auto mb-2"></div>
-                          <div className="w-12 h-8 bg-gray-300 rounded mx-auto"></div>
+                      ) : (
+                        <div className="w-full h-full bg-white rounded-lg flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="w-16 h-16 bg-red-600 rounded-lg mx-auto mb-2"></div>
+                            <div className="w-12 h-8 bg-gray-300 rounded mx-auto"></div>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
 
                   {/* Upload Info */}
                   <div className="flex-1">
                     <p className="text-gray-600 text-sm mb-4">
                       For the best results on all devices, use an image that's
-                      at least 2048 x 1152 pixels and 6MB or less.
+                      at least 1280 x 400 pixels and 6MB or less.
                     </p>
                     {bannerPreview ? (
-                      <>
+                      <div className="flex gap-3">
                         <button
                           type="button"
                           onClick={() =>
@@ -740,13 +733,13 @@ function SellerForm() {
                         <button
                           type="button"
                           onClick={() => {
-                            setLogoPreview(null);
-                            setLogoFile(null);
+                            setBannerPreview(null);
+                            setBannerFile(null);
                           }}
                           className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2.5 rounded-full font-medium transition-colors">
                           Remove
                         </button>
-                      </>
+                      </div>
                     ) : (
                       <button
                         type="button"
