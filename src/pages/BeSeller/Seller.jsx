@@ -10,7 +10,7 @@ import API from "../../Configs/ApiEndpoints";
 // Reuse your existing components
 import EditModal from "../../profileSettings_Components/EditModal";
 import LocationForm from "../../profileSettings_Components/LocationForm";
-import CropModal from "../../profileSettings_Components/CropModal";
+import CropModal from "./CropModal";
 
 const InlineLabel = ({ children }) => (
   <label className="block text-sm font-semibold mb-2 text-gray-800">
@@ -160,6 +160,9 @@ function SellerForm() {
   const handleImageSelect = (e, type) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Clear the input value to allow re-selecting the same file
+    e.target.value = "";
     const maxSizeMB = type === "banner" ? 6 : 4;
     if (file.size > maxSizeMB * 1024 * 1024) {
       toast.error(

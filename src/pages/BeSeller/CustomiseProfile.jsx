@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import EditModal from "../../profileSettings_Components/EditModal";
 import LocationForm from "../../profileSettings_Components/LocationForm";
-import CropModal from "../../profileSettings_Components/CropModal";
+import CropModal from "./CropModal";
 import useNepalAddress from "../../hooks/NepalAddress";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -145,6 +145,9 @@ function CustomiseProfile() {
   const handleImageSelect = (e, type = "profile") => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Clear the input value to allow re-selecting the same file
+    e.target.value = "";
 
     const maxSize = type === "banner" ? 6 * 1024 * 1024 : 4 * 1024 * 1024;
     if (file.size > maxSize) {
@@ -636,7 +639,7 @@ function CustomiseProfile() {
               <div className="flex flex-col gap-6">
                 {/* Banner Image Preview - Full Width */}
                 <div className="w-full">
-                  <div className="w-full h-64 rounded-lg overflow-hidden bg-white border-4 border-gray-200 flex items-center justify-center shadow-sm relative group">
+                  <div className="w-full aspect-[1280/400] max-h-64 mx-auto rounded-lg overflow-hidden bg-white border-4 border-gray-200 shadow-sm relative group">
                     {bannerPreview ? (
                       <>
                         <img
