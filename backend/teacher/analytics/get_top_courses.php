@@ -67,7 +67,7 @@ try {
                 AND DATE_FORMAT(tcss.month, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
             WHERE tc.teacher_id = ? AND tc.status = 'published'
             AND COALESCE(tcss.sales_count, 0) > 0
-            ORDER BY revenue DESC, students DESC
+            ORDER BY students DESC, revenue DESC
             LIMIT 20
         ";
     } elseif ($period === "This year") {
@@ -86,7 +86,7 @@ try {
             WHERE tc.teacher_id = ? AND tc.status = 'published'
             GROUP BY tc.id
             HAVING students > 0
-            ORDER BY revenue DESC, students DESC
+            ORDER BY students DESC, revenue DESC
             LIMIT 20
         ";
     } else {
@@ -103,7 +103,7 @@ try {
             FROM teacher_courses
             WHERE teacher_id = ? AND status = 'published'
             AND total_sales > 0
-            ORDER BY revenue DESC, students DESC
+            ORDER BY students DESC, revenue DESC
             LIMIT 20
         ";
     }

@@ -67,8 +67,9 @@ const CourseCard = ({ course, teacherId, teacherName }) => {
   })();
 
   // Rating normalization
-  const rating = courseData.average_rating;
-  const students = courseData.enrolled_students;
+  const rating = courseData.average_rating || courseData.rating || 0;
+  const reviews = courseData.reviews || courseData.total_reviews || 0;
+  const students = courseData.enrolled_students || 0;
 
   const handleCardClick = () => {
     // Validate required IDs before navigation
@@ -129,7 +130,7 @@ const CourseCard = ({ course, teacherId, teacherName }) => {
               />
             ))}
           </div>
-          <span className="text-gray-400 text-sm">({students})</span>
+          <span className="text-gray-400 text-sm">({reviews} reviews)</span>
         </div>
 
         {/* Price */}

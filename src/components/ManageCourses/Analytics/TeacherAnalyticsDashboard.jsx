@@ -123,6 +123,7 @@ const TeacherAnalyticsDashboard = () => {
                     Performance Overview
                   </h2>
                   <TeacherAnalyticsStatsCards
+                    selectedPeriod={selectedPeriod}
                     totalRevenue={stats.total_revenue.toLocaleString()}
                     totalStudents={stats.total_students.toLocaleString()}
                     totalCourses={stats.total_courses.toLocaleString()}

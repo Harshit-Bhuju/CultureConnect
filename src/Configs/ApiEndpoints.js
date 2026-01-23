@@ -97,6 +97,14 @@ const API = {
   GET_CATEGORY_COUNTS: `${BASE_URL}/product/seller_product/marketplace/get_category_counts.php`,
   GET_CATEGORY_PRODUCTS: `${BASE_URL}/product/seller_product/category/get_category_products.php`,
 
+  // Teacher Course Filtering & Marketplace
+  GET_POPULAR_COURSES: `${BASE_URL}/product/teacher_courses/learn_culture/get_popular_courses.php`,
+  GET_TRENDING_COURSES: `${BASE_URL}/product/teacher_courses/learn_culture/get_trending_courses.php`,
+  GET_MAY_LIKE_COURSES: `${BASE_URL}/product/teacher_courses/learn_culture/get_may_like_courses.php`,
+  GET_COURSE_CATEGORY_COUNTS: `${BASE_URL}/product/teacher_courses/learn_culture/get_category_counts.php`,
+  GET_CATEGORY_COURSES: `${BASE_URL}/product/teacher_courses/category/get_category_courses.php`,
+  GET_SUGGESTED_TEACHERS: `${BASE_URL}/product/teacher_courses/learn_culture/get_suggested_teachers.php`,
+
   // Teacher
   TEACHER_REGISTRATION: `${BASE_URL}/teacher/teacher_registration.php`,
   TEACHER_PROFILE_PICTURES: `${BASE_URL}/uploads/teacher_datas/profile_pictures`,

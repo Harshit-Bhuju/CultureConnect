@@ -1,108 +1,105 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   Star,
   Check,
+  Loader2,
 } from "lucide-react";
 import CourseCard from "../../../components/cardlayout/CourseCard";
+import API from "../../../Configs/ApiEndpoints";
 
-const CourseCategoryPageLayout = ({ title, description, courses }) => {
+const CourseCategoryPageLayout = ({ category, title, description }) => {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(12);
-  const [loading, setLoading] = useState(false); // Prepared for future async fetching
 
   // Filters State
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
-  const [priceInput, setPriceInput] = useState({ min: "", max: "" }); // Local state for typing
-  const [priceError, setPriceError] = useState(""); // Validation error
-  const [selectedRating, setSelectedRating] = useState(null);
+  const [priceInput, setPriceInput] = useState({ min: "", max: "" });
+  const [priceError, setPriceError] = useState("");
+  const [selectedRatings, setSelectedRatings] = useState([]);
+  const [selectedLevel, setSelectedLevel] = useState("all");
 
-  // 1. Filter Logic
-  const filteredCourses = useMemo(() => {
-    return courses.filter((course) => {
-      // Price Filter
-      const price =
-        typeof course.price === "string"
-          ? parseFloat(course.price.replace(/[^0-9.]/g, ""))
-          : course.price;
+  // Pagination from API
+  const [pagination, setPagination] = useState({
+    total_items: 0,
+    total_pages: 1,
+    has_next: false,
+    has_prev: false,
+  });
 
-      const min = priceRange.min ? parseFloat(priceRange.min) : 0;
-      const max = priceRange.max ? parseFloat(priceRange.max) : Infinity;
-      if (price < min || price > max) return false;
+  const levelOptions = [
+    { value: "all", label: "All Levels" },
+    { value: "beginner", label: "Beginner" },
+    { value: "intermediate", label: "Intermediate" },
+    { value: "advanced", label: "Advanced" },
+  ];
 
-      // Rating Filter
-      const rating = course.average_rating || course.rating || 0;
-      if (selectedRating && rating < selectedRating) return false;
+  // Fetch courses from API
+  useEffect(() => {
+    const fetchCourses = async () => {
+      setLoading(true);
+      setError(null);
 
-      return true;
-    });
-  }, [courses, priceRange, selectedRating]);
+      try {
+        const params = new URLSearchParams({
+          category: category,
+          sort: sortBy,
+          page: currentPage,
+          per_page: itemsPerPage,
+        });
 
-  // 2. Sort Logic
-  const sortedCourses = useMemo(() => {
-    const list = [...filteredCourses];
-    if (sortBy === "price-low") {
-      return list.sort((a, b) => {
-        const priceA =
-          typeof a.price === "string"
-            ? parseFloat(a.price.replace(/[^0-9.]/g, ""))
-            : a.price;
-        const priceB =
-          typeof b.price === "string"
-            ? parseFloat(b.price.replace(/[^0-9.]/g, ""))
-            : b.price;
-        return priceA - priceB;
-      });
-    }
-    if (sortBy === "price-high") {
-      return list.sort((a, b) => {
-        const priceA =
-          typeof a.price === "string"
-            ? parseFloat(a.price.replace(/[^0-9.]/g, ""))
-            : a.price;
-        const priceB =
-          typeof b.price === "string"
-            ? parseFloat(b.price.replace(/[^0-9.]/g, ""))
-            : b.price;
-        return priceB - priceA;
-      });
-    }
-    if (sortBy === "rating") {
-      return list.sort(
-        (a, b) =>
-          (b.average_rating || b.rating || 0) -
-          (a.average_rating || a.rating || 0),
-      );
-    }
-    if (sortBy === "popular") {
-      return list.sort((a, b) => {
-        const studentsA =
-          typeof a.enrolled_students === "string"
-            ? parseInt(a.enrolled_students.replace(/[^0-9]/g, ""))
-            : a.enrolled_students;
-        const studentsB =
-          typeof b.enrolled_students === "string"
-            ? parseInt(b.enrolled_students.replace(/[^0-9]/g, ""))
-            : b.enrolled_students;
-        return (studentsB || 0) - (studentsA || 0);
-      });
-    }
-    return list;
-  }, [filteredCourses, sortBy]);
+        if (priceRange.min) params.append("min_price", priceRange.min);
+        if (priceRange.max) params.append("max_price", priceRange.max);
+        if (selectedRatings.length > 0)
+          params.append("ratings", selectedRatings.join(","));
+        if (selectedLevel !== "all") params.append("level", selectedLevel);
 
-  // 3. Pagination Logic
-  const totalPages = Math.ceil(sortedCourses.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentCourses = sortedCourses.slice(
-    startIndex,
-    startIndex + itemsPerPage,
-  );
+        const response = await fetch(
+          `${API.GET_CATEGORY_COURSES}?${params.toString()}`,
+          { credentials: "include" },
+        );
+        const data = await response.json();
+
+        if (data.success) {
+          setCourses(data.courses);
+          setPagination(data.pagination);
+        } else {
+          setError(data.error || "Failed to load courses");
+        }
+      } catch (err) {
+        setError("Failed to connect to server");
+      } finally {
+        setLoading(false);
+        setInitialLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, [
+    category,
+    sortBy,
+    currentPage,
+    priceRange,
+    selectedRatings,
+    selectedLevel,
+    itemsPerPage,
+  ]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [priceRange, selectedRatings, selectedLevel, sortBy]);
 
   const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
+    if (page >= 1 && page <= pagination.total_pages) {
       setCurrentPage(page);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -112,30 +109,22 @@ const CourseCategoryPageLayout = ({ title, description, courses }) => {
     setPriceRange({ min: "", max: "" });
     setPriceInput({ min: "", max: "" });
     setPriceError("");
-    setSelectedRating(null);
+    setSelectedRatings([]);
+    setSelectedLevel("all");
     setCurrentPage(1);
   };
 
-  // Apply price filter with validation and artificial loading
   const applyPriceFilter = () => {
     const minVal = priceInput.min ? parseFloat(priceInput.min) : null;
     const maxVal = priceInput.max ? parseFloat(priceInput.max) : null;
 
-    // Validation: max < min
     if (minVal !== null && maxVal !== null && maxVal < minVal) {
       setPriceError("Max cannot be less than Min");
       return;
     }
 
     setPriceError("");
-    setLoading(true);
-
-    // Artificial delay for smooth transition (matches Marketplace feel)
-    setTimeout(() => {
-      setPriceRange({ ...priceInput });
-      setCurrentPage(1);
-      setLoading(false);
-    }, 400);
+    setPriceRange({ ...priceInput });
   };
 
   const handlePriceKeyDown = (e) => {
@@ -144,13 +133,59 @@ const CourseCategoryPageLayout = ({ title, description, courses }) => {
     }
   };
 
+  const toggleRating = (rating) => {
+    setSelectedRatings((prev) => {
+      const isSelected = prev.includes(rating);
+      let newRatings;
+      if (isSelected) {
+        newRatings = prev.filter((r) => r !== rating);
+      } else {
+        newRatings = [...prev, rating];
+      }
+
+      // If any ratings are selected, automatically sort by rating
+      if (newRatings.length > 0) {
+        setSortBy("rating");
+      }
+
+      return newRatings;
+    });
+  };
+
+  if (initialLoading) {
+    return (
+      <div className="bg-white min-h-[60vh] flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-teal-600" />
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white min-h-screen">
-      <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-[1440px] mx-auto py-10 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Sidebar */}
-          {/* Sidebar */}
           <aside className="hidden lg:block w-72 flex-shrink-0 space-y-8 self-start sticky top-24 pr-4">
+            {/* Level Filter */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-5 text-sm uppercase tracking-wider border-l-4 border-teal-600 pl-3">
+                Experience Level
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {levelOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setSelectedLevel(option.value)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedLevel === option.value
+                      ? "bg-teal-600 text-white shadow-md"
+                      : "bg-white text-gray-700 hover:bg-teal-50 hover:text-teal-600 border border-gray-200"
+                      }`}>
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Price Filter */}
             <div>
               <h3 className="font-bold text-gray-900 mb-5 text-sm uppercase tracking-wider border-l-4 border-teal-600 pl-3">
@@ -160,72 +195,50 @@ const CourseCategoryPageLayout = ({ title, description, courses }) => {
                 <input
                   type="number"
                   placeholder="Min"
-                  step="100"
-                  min="0"
-                  className="w-full p-3 bg-gray-50 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all placeholder-gray-400"
+                  className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 outline-none transition-all"
                   value={priceInput.min}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === "" || parseFloat(val) >= 0) {
-                      setPriceInput({ ...priceInput, min: val });
-                      setPriceError("");
-                    }
-                  }}
+                  onChange={(e) => setPriceInput({ ...priceInput, min: e.target.value })}
                   onKeyDown={handlePriceKeyDown}
                 />
-                <span className="text-gray-300 font-light">to</span>
+                <span className="text-gray-400 font-light">to</span>
                 <input
                   type="number"
                   placeholder="Max"
-                  step="100"
-                  min="0"
-                  className="w-full p-3 bg-gray-50 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all placeholder-gray-400"
+                  className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 outline-none transition-all"
                   value={priceInput.max}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === "" || parseFloat(val) >= 0) {
-                      setPriceInput({ ...priceInput, max: val });
-                      setPriceError("");
-                    }
-                  }}
+                  onChange={(e) => setPriceInput({ ...priceInput, max: e.target.value })}
                   onKeyDown={handlePriceKeyDown}
                 />
               </div>
-              {priceError && (
-                <p className="text-xs text-red-500 mt-2">{priceError}</p>
-              )}
+              {priceError && <p className="text-xs text-red-500 mt-2">{priceError}</p>}
               <button
                 onClick={applyPriceFilter}
-                className="mt-3 w-full py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors shadow-sm shadow-teal-100">
-                Apply Price
+                className="mt-3 w-full py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors">
+                Apply Filter
               </button>
             </div>
 
             {/* Rating Filter */}
             <div>
               <h3 className="font-bold text-gray-900 mb-5 text-sm uppercase tracking-wider border-l-4 border-teal-600 pl-3">
-                Minimum Rating
+                Course Rating
               </h3>
               <div className="space-y-3">
-                {[4, 3, 2, 1].map((rating) => (
-                  <button
+                {[5, 4, 3, 2, 1].map((rating) => (
+                  <label
                     key={rating}
-                    onClick={() => {
-                      setSelectedRating(
-                        selectedRating === rating ? null : rating,
-                      );
-                      setCurrentPage(1);
-                    }}
-                    className="flex items-center gap-3 w-full group hover:bg-teal-50 p-2 rounded-xl transition-all -ml-2">
-                    <div
-                      className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                        selectedRating === rating
-                          ? "bg-teal-600 border-teal-600"
-                          : "border-gray-300 group-hover:border-teal-400"
-                      }`}>
-                      {selectedRating === rating && (
-                        <Check size={12} className="text-white" />
-                      )}
+                    className="flex items-center gap-3 w-full group hover:bg-teal-50 p-2 rounded-xl transition-all -ml-2 cursor-pointer">
+                    <div className="relative flex items-center justify-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedRatings.includes(rating)}
+                        onChange={() => toggleRating(rating)}
+                        className="peer appearance-none w-5 h-5 border-2 border-gray-300 rounded checked:bg-teal-600 checked:border-teal-600 transition-all cursor-pointer"
+                      />
+                      <Check
+                        size={12}
+                        className="absolute text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity"
+                      />
                     </div>
                     <div className="flex items-center gap-1">
                       {Array.from({ length: 5 }).map((_, i) => (
@@ -233,16 +246,14 @@ const CourseCategoryPageLayout = ({ title, description, courses }) => {
                           key={i}
                           size={16}
                           fill={i < rating ? "currentColor" : "none"}
-                          className={
-                            i < rating ? "text-yellow-400" : "text-gray-200"
-                          }
+                          className={i < rating ? "text-yellow-400" : "text-gray-200"}
                         />
                       ))}
                     </div>
-                    <span className="text-sm text-gray-600 group-hover:text-teal-700 font-medium">
-                      & Up
+                    <span className="text-sm text-gray-600 group-hover:text-teal-700 font-medium ml-auto">
+                      {rating} Star{rating > 1 ? "s" : ""}
                     </span>
-                  </button>
+                  </label>
                 ))}
               </div>
             </div>
@@ -250,38 +261,33 @@ const CourseCategoryPageLayout = ({ title, description, courses }) => {
 
           {/* Main Content */}
           <main className="flex-1">
-            {/* Header */}
-            <div className="mb-10 pl-4 lg:pl-0">
+            <div className="mb-8">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-xs font-bold mb-4">
-                EXPLORE MASTERCLASSES
+                EXPLORE TRADITIONS
               </div>
-              <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight leading-tight">
+              <h1 className="text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
                 {title}
               </h1>
-              <p className="text-gray-500 text-lg max-w-2xl font-medium">
-                {description}
-              </p>
+              <p className="text-gray-500 text-lg max-w-2xl">{description}</p>
             </div>
 
             {/* Top Bar */}
-            <div className="flex flex-col sm:flex-row justify-between items-center mb-10 pb-6 border-b border-gray-100 pl-4 lg:pl-0 pr-4 lg:pr-0">
-              <span className="text-gray-500 font-medium">
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-10 pb-6 border-b border-gray-100">
+              <span className="text-gray-500 font-medium tracking-wide">
                 Showing{" "}
                 <span className="text-black font-bold">
-                  {sortedCourses.length}
+                  {pagination.total_items}
                 </span>{" "}
-                master-led courses
+                {pagination.total_items === 1 ? "course" : "courses"}
               </span>
 
-              <div className="flex items-center gap-4 mt-4 sm:mt-0">
-                <span className="text-sm text-gray-400 font-medium">
-                  Sort by:
-                </span>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-400 font-medium">Sort by:</span>
                 <div className="relative group">
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="appearance-none bg-gray-50 pl-4 pr-10 py-2.5 rounded-full text-sm font-semibold text-gray-900 border-none focus:ring-2 focus:ring-teal-500 cursor-pointer hover:bg-gray-100 transition-colors">
+                    className="appearance-none bg-white border border-gray-100 pl-4 pr-10 py-2.5 rounded-full text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-teal-500 cursor-pointer hover:bg-gray-50 transition-colors shadow-sm">
                     <option value="newest">Newest Arrivals</option>
                     <option value="popular">Most Popular</option>
                     <option value="price-low">Price: Low to High</option>
@@ -295,72 +301,78 @@ const CourseCategoryPageLayout = ({ title, description, courses }) => {
 
             {/* Courses Grid */}
             <div className="relative min-h-[400px]">
-              {loading && (
+              {loading && !initialLoading && (
                 <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] z-10 flex items-center justify-center rounded-xl">
-                  <div className="w-10 h-10 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
+                  <Loader2 className="w-10 h-10 animate-spin text-teal-600" />
                 </div>
               )}
 
-              {currentCourses.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-20">
-                  {currentCourses.map((course) => (
+              {error ? (
+                <div className="text-center py-20">
+                  <p className="text-red-600 mb-4 font-medium">{error}</p>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="px-8 py-2 bg-teal-600 text-white rounded-full hover:bg-teal-700 transition-all">
+                    Retry
+                  </button>
+                </div>
+              ) : courses.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {courses.map((course) => (
                     <CourseCard
                       key={course.id}
                       course={course}
-                      teacherId={course.teacherId || 1}
-                      teacherName={course.teacher_name || "Verified Guru"}
+                      teacherId={course.teacherId}
+                      teacherName={course.teacher_name}
                     />
                   ))}
                 </div>
               ) : (
-                <div className="col-span-full flex flex-col items-center justify-center py-24">
-                  <div className="text-center py-24">
-                    <h3 className="text-gray-900 font-bold text-xl mb-2">
-                      No courses match your filters
-                    </h3>
-                    <p className="text-gray-500 mb-8">
-                      Try clearing your filters to discover more cultural
-                      masterclasses.
-                    </p>
-                    <button
-                      onClick={clearAllFilters}
-                      className="px-8 py-3 bg-teal-600 text-white rounded-full hover:bg-teal-700 transition-all font-semibold shadow-md">
-                      Clear All Filters
-                    </button>
-                  </div>
+                <div className="text-center py-32">
+                  <h3 className="text-gray-900 font-bold text-xl mb-2">
+                    No matching courses
+                  </h3>
+                  <p className="text-gray-500 mb-8">
+                    Try adjusting your filters to find your perfect masterclass.
+                  </p>
+                  <button
+                    onClick={clearAllFilters}
+                    className="px-8 py-3 bg-teal-600 text-white rounded-full hover:bg-teal-700 transition-shadow shadow-lg shadow-teal-100 font-semibold">
+                    Clear All Filters
+                  </button>
                 </div>
               )}
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-3">
+            {pagination.total_pages > 1 && (
+              <div className="mt-20 flex justify-center items-center gap-3">
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="w-12 h-12 flex items-center justify-center border border-gray-200 rounded-full hover:border-teal-600 hover:text-teal-600 transition-all disabled:opacity-30">
+                  disabled={!pagination.has_prev}
+                  className="w-11 h-11 flex items-center justify-center border border-gray-200 rounded-full hover:border-teal-600 hover:text-teal-600 transition-all disabled:opacity-30">
                   <ChevronLeft size={20} />
                 </button>
 
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`w-12 h-12 flex items-center justify-center rounded-full text-sm font-bold transition-all ${
-                        currentPage === page
-                          ? "bg-teal-600 text-white shadow-lg shadow-teal-100 scale-110"
-                          : "bg-white text-gray-600 hover:bg-teal-50 border border-transparent"
+                {Array.from(
+                  { length: pagination.total_pages },
+                  (_, i) => i + 1,
+                ).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`w-11 h-11 flex items-center justify-center rounded-full text-sm font-bold transition-all ${currentPage === page
+                      ? "bg-teal-600 text-white shadow-lg shadow-teal-100 scale-110"
+                      : "bg-white text-gray-600 hover:bg-gray-50 border border-transparent hover:border-gray-200"
                       }`}>
-                      {page}
-                    </button>
-                  ),
-                )}
+                    {page}
+                  </button>
+                ))}
 
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="w-12 h-12 flex items-center justify-center border border-gray-200 rounded-full hover:border-teal-600 hover:text-teal-600 transition-all disabled:opacity-30">
+                  disabled={!pagination.has_next}
+                  className="w-11 h-11 flex items-center justify-center border border-gray-200 rounded-full hover:border-teal-600 hover:text-teal-600 transition-all disabled:opacity-30">
                   <ChevronRight size={20} />
                 </button>
               </div>

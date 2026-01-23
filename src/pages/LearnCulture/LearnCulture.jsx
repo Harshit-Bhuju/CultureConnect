@@ -5,18 +5,11 @@ import { SidebarProvider, SidebarInset } from "../../components/ui/sidebar";
 import Navbar from "../../components/Layout/NavBar";
 import Footer from "../../components/Layout/Footer";
 
-import CardsArranged from "../../components/Home/CardsArranged";
-import CourseCard from "../../components/cardlayout/CourseCard";
 import { Search, Sparkles } from "lucide-react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
-
-// Import Swiper styles
-import "swiper/css";
-import "swiper/css/navigation";
 import "swiper/css/pagination";
 import CourseSwiper from "../../components/LearnCulture/CourseSwiper";
 import MayLikeCourse from "../../components/LearnCulture/MaylikeCourse";
+import TeacherSpotlight from "../../components/LearnCulture/TeacherSpotlight";
 
 const LearnCulture = () => {
   const location = useLocation();
@@ -32,9 +25,9 @@ const LearnCulture = () => {
 
         <div className="md:p-0 max-w-7xl mx-auto w-full">
           {isLandingPage ? (
-            <div className="pb-20 space-y-16">
+            <div>
               {/* Hero Section */}
-              <div className="relative overflow-hidden text-center pt-20 pb-12 px-4">
+              <div className="relative overflow-hidden text-center pt-20 pb-12 px-4 mb-8">
                 {/* Decorative Background Glow */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-teal-50/50 blur-[120px] rounded-full -z-10" />
 
@@ -66,6 +59,7 @@ const LearnCulture = () => {
                 </div>
               </div>
 
+
               {/* Category Navigation */}
               <div className="px-4 md:px-8">
                 <div className="mb-8 text-center">
@@ -82,21 +76,15 @@ const LearnCulture = () => {
                 <CourseSwiper />
               </div>
 
-              {/* Cards Arranged Section */}
-              <div className="px-4 md:px-8">
-                <div className="bg-gray-50/50 rounded-[3rem] overflow-hidden border border-gray-100 shadow-sm p-8">
-                  <div className="mb-10 sm:text-left text-center">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                      Curated Collections
-                    </h2>
-                    <p className="text-gray-500">
-                      Handpicked masterpieces to inspire your journey
-                    </p>
-                  </div>
-                  <CardsArranged />
-                </div>
+
+
+              <div className="space-y-8 pb-20">
+                {/* Teacher Spotlight */}
+                <TeacherSpotlight />
+
+                {/* May Like Courses */}
+                <MayLikeCourse />
               </div>
-              <MayLikeCourse />
             </div>
           ) : (
             <div className="p-4">
