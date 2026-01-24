@@ -6,7 +6,6 @@ import Navbar from "../../components/Layout/NavBar";
 import Footer from "../../components/Layout/Footer";
 import CategoryNav from "../../components/Marketplace/CategoryNav";
 import TrendingCarousel from "../../components/Carousel/TrendingCarousel";
-import CardsArranged from "../../components/Home/CardsArranged";
 import MayLike from "../../components/Carousel/MayLike";
 import SellerSpotlight from "../../components/Marketplace/SellerSpotlight";
 import { Search } from "lucide-react";
