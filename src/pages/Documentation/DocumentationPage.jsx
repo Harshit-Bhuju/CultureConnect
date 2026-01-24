@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import DocNavbar from "./components/DocNavbar";
 import DocFooter from "./components/DocFooter";
 import DocSidebar from "./components/DocSidebar";
-import DocContent from "./components/DocContent";
 import { Menu, X } from "lucide-react";
+import { Outlet } from "react-router-dom";
 
 const DocumentationPage = () => {
   const [activeSection, setActiveSection] = useState("overview");
@@ -15,12 +15,23 @@ const DocumentationPage = () => {
     const handleScroll = () => {
       const sections = document.querySelectorAll("section[id]");
       let current = "";
-      sections.forEach((section) => {
-        const sectionTop = section.offsetTop;
-        if (window.scrollY >= sectionTop - 150) {
-          current = section.getAttribute("id");
-        }
-      });
+
+      // Check if we are near the bottom of the page
+      const isAtBottom =
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 100;
+
+      if (isAtBottom && sections.length > 0) {
+        current = sections[sections.length - 1].getAttribute("id");
+      } else {
+        sections.forEach((section) => {
+          const sectionTop = section.offsetTop;
+          if (window.scrollY >= sectionTop - 150) {
+            current = section.getAttribute("id");
+          }
+        });
+      }
+
       if (current) setActiveSection(current);
     };
 
@@ -32,7 +43,7 @@ const DocumentationPage = () => {
     <div className="min-h-screen bg-white flex flex-col font-body">
       <DocNavbar />
 
-      <div className="flex-1 flex flex-col relative">
+      <div className="flex-1 flex flex-col lg:flex-row relative">
         {/* Mobile Sidebar Toggle */}
         <div className="lg:hidden fixed top-24 left-4 z-40">
           <button
@@ -45,14 +56,15 @@ const DocumentationPage = () => {
         {/* Sidebar Container */}
         <div
           className={`
-            fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:shadow-none lg:static lg:block pt-20 lg:pt-0 
+            fixed inset-y-0 left-0 z-30 w-72 bg-white shadow-xl transform transition-transform duration-300 ease-in-out 
+            lg:translate-x-0 lg:shadow-none lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:block pt-20 lg:pt-0 
             ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
         `}>
           <DocSidebar activeSection={activeSection} />
         </div>
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-64 px-6 lg:px-12 py-8 max-w-5xl">
+        <main className="flex-1 px-6 lg:px-12 py-8 w-full">
           <div className="mb-8">
             <h1 className="text-4xl md:text-5xl font-heading font-bold text-gray-900 mb-4">
               Documentation
@@ -61,7 +73,10 @@ const DocumentationPage = () => {
               The definitive guide to the CultureConnect platform.
             </p>
           </div>
-          <DocContent />
+          <Outlet />
+          <div className="mt-12 border-t border-gray-200 pt-8">
+            <DocFooter />
+          </div>
         </main>
       </div>
 
@@ -73,7 +88,6 @@ const DocumentationPage = () => {
       )}
 
       {/* Footer is now inside the flex layout properly */}
-      <DocFooter />
     </div>
   );
 };

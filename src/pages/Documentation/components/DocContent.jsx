@@ -76,14 +76,12 @@ const DocContent = () => {
             2. User Roles & Permissions
           </h2>
         </div>
-
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-100 text-gray-900 border-b-2 border-gray-300">
                 <th className="p-4 font-bold">Role</th>
                 <th className="p-4 font-bold">Key Capabilities</th>
-                <th className="p-4 font-bold">Limitations</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -92,37 +90,30 @@ const DocContent = () => {
                 <td className="p-4">
                   Browse products, view courses, read reviews.
                 </td>
-                <td className="p-4 text-gray-500">
-                  Cannot buy, book, or chat.
-                </td>
               </tr>
               <tr>
                 <td className="p-4 font-semibold text-royal-blue">Customer</td>
                 <td className="p-4">
                   Purchase items, book classes, rate/review, manage profile.
                 </td>
-                <td className="p-4 text-gray-500">Cannot sell or teach.</td>
               </tr>
               <tr>
                 <td className="p-4 font-semibold text-royal-blue">Seller</td>
                 <td className="p-4">
                   List products, manage inventory, view orders, request payouts.
                 </td>
-                <td className="p-4 text-gray-500">Requires verification.</td>
               </tr>
               <tr>
                 <td className="p-4 font-semibold text-royal-blue">Guru</td>
                 <td className="p-4">
                   Create courses, manage schedule, host sessions.
                 </td>
-                <td className="p-4 text-gray-500">Requires expert approval.</td>
               </tr>
               <tr>
                 <td className="p-4 font-semibold text-royal-blue">Admin</td>
                 <td className="p-4">
                   Full system access, dispute resolution, content moderation.
                 </td>
-                <td className="p-4 text-gray-500">None.</td>
               </tr>
             </tbody>
           </table>
@@ -233,18 +224,22 @@ const DocContent = () => {
         <div className="prose max-w-none text-gray-600">
           <p>
             The platform is built using a modern <strong>React</strong> frontend
-            structure with <strong>Okta/JWT</strong> for authentication and a
-            RESTful backend API.
+            structure with a custom <strong>PHP/MySQL</strong> backend API using
+            session-based authentication.
           </p>
 
           <h4 className="text-gray-900 font-bold mt-4">Core Tech Stack</h4>
           <ul className="grid grid-cols-2 gap-2 mt-2">
-            <li className="bg-gray-100 px-3 py-1 rounded">React 18</li>
-            <li className="bg-gray-100 px-3 py-1 rounded">Tailwind CSS</li>
+            <li className="bg-gray-100 px-3 py-1 rounded">
+              React 18 & Tailwind
+            </li>
+            <li className="bg-gray-100 px-3 py-1 rounded">
+              PHP (Custom Backend)
+            </li>
+            <li className="bg-gray-100 px-3 py-1 rounded">MySQL (Database)</li>
             <li className="bg-gray-100 px-3 py-1 rounded">
               Context API (State)
             </li>
-            <li className="bg-gray-100 px-3 py-1 rounded">Vite (Build Tool)</li>
           </ul>
         </div>
       </section>

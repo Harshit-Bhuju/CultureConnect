@@ -24,10 +24,13 @@ const ChangePassword = lazy(
 const SetPassword = lazy(() => import("./pages/SetPassword/SetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
 const Notification = lazy(() => import("./pages/Notification/Notification"));
-const OurTeam = lazy(() => import("./pages/OurTeam/OurTeam"));
 const DocumentationPage = lazy(
   () => import("./pages/Documentation/DocumentationPage"),
 );
+const DocContent = lazy(
+  () => import("./pages/Documentation/components/DocContent"),
+);
+const DocTeam = lazy(() => import("./pages/Documentation/components/DocTeam"));
 
 // Learn Culture pages
 const LearnCulture = lazy(() => import("./pages/LearnCulture/LearnCulture"));
@@ -528,8 +531,10 @@ function App() {
           </Route>
 
           {/* ==================== Public Routes ==================== */}
-          <Route path="/our-team" element={<OurTeam />} />
-          <Route path="/documentation" element={<DocumentationPage />} />
+          <Route path="/documentation" element={<DocumentationPage />}>
+            <Route index element={<DocContent />} />
+            <Route path="team" element={<DocTeam />} />
+          </Route>
 
           <Route
             path="/login"

@@ -3,14 +3,17 @@ import "./Footer.css";
 import Facebook from "../../assets/brands-logo/facebook.svg";
 import Instagram from "../../assets/brands-logo/instagram.svg";
 import Twitter from "../../assets/brands-logo/twitter.svg";
-import Youtube from "../../assets/brands-logo/youtube.svg";
+import Github from "../../assets/brands-logo/github.svg";
 import { Link, NavLink } from "react-router-dom";
 
 const socialLinks = [
   { icon: Facebook },
   { icon: Instagram },
   { icon: Twitter },
-  { icon: Youtube },
+  {
+    icon: Github,
+    href: "https://github.com/Harman-Bhuju/CultureConnect",
+  },
 ];
 
 const navLinks = [
@@ -21,7 +24,7 @@ const navLinks = [
     name: "Contact Us",
     href: "https://mail.google.com/mail/?view=cm&fs=1&to=cultureconnect0701@gmail.com",
   },
-  { name: "Our Team", href: "/our-team" },
+  { name: "Our Team", href: "/documentation/team" },
 ];
 
 export default function Footer() {
@@ -72,22 +75,37 @@ export default function Footer() {
 
           {/* Social Media Icons */}
           <div className="flex justify-center gap-4 mb-6">
-            {socialLinks.map((social, index) => (
-              <div
-                key={index} // Add key here
-                className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-                <img
-                  src={social.icon}
-                  alt={social.label || `social-${index}`}
-                  className="w-5 h-5"
-                />
-              </div>
-            ))}
+            {socialLinks.map((social, index) =>
+              social.href ? (
+                <a
+                  key={index}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+                  <img
+                    src={social.icon}
+                    alt={social.label || `social-${index}`}
+                    className="w-5 h-5"
+                  />
+                </a>
+              ) : (
+                <div
+                  key={index}
+                  className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+                  <img
+                    src={social.icon}
+                    alt={social.label || `social-${index}`}
+                    className="w-5 h-5"
+                  />
+                </div>
+              ),
+            )}
           </div>
 
           {/* Copyright */}
           <div className="text-center text-gray-400 text-sm">
-            Copyright ©2026; Designed by{" "}
+            Copyright ©2026; Designed and Developed by{" "}
             <span className="text-white">Harshit and Harman</span>
           </div>
         </div>
