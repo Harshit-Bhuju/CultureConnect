@@ -1,6 +1,7 @@
 import React from "react";
 import CultureConnectLogo from "../../../assets/logo/cultureconnect__fav.png";
 import { Link } from "react-router-dom";
+import { Github } from "lucide-react";
 
 const DocNavbar = () => {
   return (
@@ -27,10 +28,11 @@ const DocNavbar = () => {
             Back to App
           </Link>
           <a
-            href="https://github.com/Start-Up-Project-Pu/CultureConnect"
+            href="https://github.com/Harman-Bhuju/CultureConnect"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors hidden sm:block">
+            className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+            <Github size={18} />
             GitHub
           </a>
         </div>
