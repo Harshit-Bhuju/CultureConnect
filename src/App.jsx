@@ -166,20 +166,12 @@ const AdminUserManagement = lazy(
 const AdminAnalytics = lazy(
   () => import("./AdminPage/components/AdminAnalytics"),
 );
-const AdminHomepageContent = lazy(
-  () => import("./AdminPage/components/AdminHomepageContent"),
-);
-
 // Home Route Wrapper
 function HomeRoute() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return <Loading message="Loading..." />;
-  }
-
-  if (user?.role === "admin") {
-    return <Navigate to="/admin" replace />;
   }
 
   return (
@@ -212,7 +204,6 @@ function App() {
             <Route path="teachers" element={<AdminTeacherApprovals />} />
             <Route path="users" element={<AdminUserManagement />} />
             <Route path="analytics" element={<AdminAnalytics />} />
-            <Route path="homepage" element={<AdminHomepageContent />} />
           </Route>
 
           {/* ==================== Marketplace Routes ==================== */}

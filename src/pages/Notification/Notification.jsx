@@ -10,7 +10,11 @@ import {
   Trash2,
   MoreVertical,
   TrendingUp,
+  ArrowLeft,
+  User,
+  Users,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Notification = () => {
   const [notifications, setNotifications] = useState([
@@ -113,7 +117,9 @@ const Notification = () => {
   ]);
 
   const [filter, setFilter] = useState("all");
+  const [followerSubFilter, setFollowerSubFilter] = useState("all"); // 'all', 'seller', 'teacher'
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const navigate = useNavigate();
 
   // Mark all as read when component mounts or when user leaves
   useEffect(() => {
@@ -168,6 +174,13 @@ const Notification = () => {
       filtered = filtered.filter((n) => !n.read);
     } else if (filter !== "all") {
       filtered = filtered.filter((n) => n.type === filter);
+
+      // Apply follower sub-filter if active
+      if (filter === "follower" && followerSubFilter !== "all") {
+        // Mock sub-filtering logic (currently mock data doesn't have roles,
+        // but this prepares the logic for real data)
+        filtered = filtered.filter((n) => n.follow_role === followerSubFilter);
+      }
     }
 
     filtered.sort((a, b) => b.date - a.date);
@@ -239,14 +252,22 @@ const Notification = () => {
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-8 py-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Notifications
-              </h1>
-              <p className="text-sm text-gray-500">
-                Stay updated with your latest activities
-              </p>
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors border border-gray-200 group"
+                title="Go back">
+                <ArrowLeft className="w-6 h-6 text-gray-600 group-hover:text-gray-900" />
+              </button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-1">
+                  Notifications
+                </h1>
+                <p className="text-sm text-gray-500">
+                  Stay updated with your latest activities
+                </p>
+              </div>
             </div>
           </div>
 
@@ -301,27 +322,62 @@ const Notification = () => {
             </div>
           </div>
 
-          {/* Filter Tabs */}
-          <div className="flex gap-2 overflow-x-auto">
-            {[
-              { value: "all", label: "All" },
-              { value: "unread", label: "Unread" },
-              { value: "follower", label: "Followers" },
-              { value: "product_purchased", label: "Sales" },
-              { value: "course_enrollment", label: "Enrollments" },
-              { value: "purchase_confirmed", label: "Purchases" },
-            ].map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setFilter(tab.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                  filter === tab.value
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}>
-                {tab.label}
-              </button>
-            ))}
+          <div className="space-y-4">
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              {[
+                { value: "all", label: "All" },
+                { value: "unread", label: "Unread" },
+                { value: "follower", label: "Followers" },
+                { value: "product_purchased", label: "Sales" },
+                { value: "course_enrollment", label: "Enrollments" },
+                { value: "purchase_confirmed", label: "Purchases" },
+              ].map((tab) => (
+                <button
+                  key={tab.value}
+                  onClick={() => {
+                    setFilter(tab.value);
+                    if (tab.value !== "follower") setFollowerSubFilter("all");
+                  }}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap border ${
+                    filter === tab.value
+                      ? "bg-gray-900 text-white border-gray-900 shadow-md"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                  }`}>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Follower Sub-categories */}
+            {filter === "follower" && (
+              <div className="flex items-center gap-3 p-1 animate-in fade-in slide-in-from-top-2 duration-300">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">
+                  Show:
+                </span>
+                <div className="flex gap-1 bg-gray-100 p-0.5 rounded-lg border border-gray-200">
+                  {[
+                    { value: "all", label: "All", icon: Users },
+                    { value: "seller", label: "Sellers", icon: ShoppingBag },
+                    { value: "teacher", label: "Teachers", icon: User },
+                  ].map((sub) => {
+                    const SubIcon = sub.icon;
+                    return (
+                      <button
+                        key={sub.value}
+                        onClick={() => setFollowerSubFilter(sub.value)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                          followerSubFilter === sub.value
+                            ? "bg-white text-gray-900 shadow-sm"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}>
+                        <SubIcon size={14} />
+                        {sub.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
