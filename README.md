@@ -34,9 +34,9 @@ Everyone connects through a shared appreciation of culture.
 
 🤝 Collaborators
 
-Harshit – Frontend development, authentication, UI/UX
+Harshit Bhuju – Frontend development, authentication, UI/UX
 
-[Teammate Name] – Backend development, database, API integration
+Harman Bhuju – Backend development, database, API integration
 
 📬 Contributing
 
