@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Users, Star, ArrowRight, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const BecomeExpertSection = () => {
   return (
@@ -147,9 +148,9 @@ const BecomeExpertSection = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.5 }}>
-                <Link to="/teacher-registration">
+                <Link to={isExpert ? `/teacher-analytics/${user.teacher_id}` : "/teacher-registration"}>
                   <button className="group px-8 py-4 bg-white text-royal-blue font-bold rounded-xl hover:bg-indigo-50 transition-all shadow-xl shadow-indigo-900/20 flex items-center gap-2">
-                    Become a Verified Expert
+                    {isExpert ? "Go to Expert Dashboard" : "Become a Verified Expert"}
                     <ArrowRight className="group-hover:translate-x-1 transition-transform" />
                   </button>
                 </Link>

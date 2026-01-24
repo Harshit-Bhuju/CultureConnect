@@ -7,6 +7,7 @@ import {
 } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import API from "../../Configs/ApiEndpoints";
 
 const heroSlides = [
   {
@@ -47,17 +48,32 @@ const heroSlides = [
 const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loadedImages, setLoadedImages] = useState(new Set([0]));
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
+  const [stats, setStats] = useState({
+    total_sellers: 0,
+    total_products: 0,
+    total_teachers: 0,
+    total_courses: 0,
   });
 
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.05]);
+  const ref = useRef(null);
+  // ...
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch(API.GET_HOME_STATS);
+        const result = await response.json();
+        if (result.status === "success") {
+          setStats(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching home stats:", error);
+      }
+    };
+    fetchStats();
+  }, []);
 
   useEffect(() => {
+    // ...
     const nextSlide = (currentSlide + 1) % heroSlides.length;
     if (!loadedImages.has(nextSlide)) {
       const img = new Image();
@@ -237,7 +253,9 @@ const HeroSection = () => {
                     <span
                       className="text-5xl font-bold"
                       style={{ color: heroSlides[currentSlide].accent }}>
-                      500+
+                      {stats.total_sellers >= 1000
+                        ? `${(stats.total_sellers / 1000).toFixed(1)}k+`
+                        : `${stats.total_sellers}+`}
                     </span>
                     <span className="text-gray-400 text-xs uppercase tracking-wider">
                       Sellers
@@ -257,7 +275,9 @@ const HeroSection = () => {
                     <span
                       className="text-5xl font-bold"
                       style={{ color: heroSlides[currentSlide].accent }}>
-                      15k+
+                      {stats.total_products >= 1000
+                        ? `${(stats.total_products / 1000).toFixed(1)}k+`
+                        : `${stats.total_products}+`}
                     </span>
                     <span className="text-gray-400 text-xs uppercase tracking-wider">
                       Products
@@ -281,9 +301,8 @@ const HeroSection = () => {
             onClick={() => setCurrentSlide(index)}
             className="group relative">
             <div
-              className={`h-0.5 rounded-full transition-all duration-500 ${
-                index === currentSlide ? "w-12" : "w-6"
-              }`}
+              className={`h-0.5 rounded-full transition-all duration-500 ${index === currentSlide ? "w-12" : "w-6"
+                }`}
               style={{
                 backgroundColor:
                   index === currentSlide

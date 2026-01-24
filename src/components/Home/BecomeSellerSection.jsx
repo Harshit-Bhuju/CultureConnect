@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ShoppingBag, Globe, ShieldCheck, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const BecomeSellerSection = () => {
   return (
@@ -92,9 +93,9 @@ const BecomeSellerSection = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.5 }}>
-                <Link to="/seller-registration">
+                <Link to={isSeller ? `/seller/analytics/${user.seller_id}` : "/seller-registration"}>
                   <button className="group px-8 py-4 bg-heritage-red text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-xl shadow-red-900/20 flex items-center gap-2">
-                    Start Your Seller Journey
+                    {isSeller ? "Go to Seller Dashboard" : "Start Your Seller Journey"}
                     <ArrowRight className="group-hover:translate-x-1 transition-transform" />
                   </button>
                 </Link>
