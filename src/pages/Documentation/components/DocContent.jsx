@@ -17,9 +17,9 @@ const DocContent = () => {
           </h3>
           <p className="text-gray-700 leading-relaxed">
             <strong>CultureConnect</strong> is a cultural e-commerce and
-            learning platform tailored to bridge the gap between traditional
-            artisans, experts, and a global audience. It solves the problem of
-            fading cultural heritage by providing a marketplace for authentic
+            learning platform designed to bridge the gap between traditional
+            artisans, experts, and a global audience. It addresses the challenge
+            of fading cultural heritage by providing a marketplace for authentic
             goods and a learning platform for cultural skills.
           </p>
           <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-royal-blue">
@@ -27,19 +27,19 @@ const DocContent = () => {
             <ul className="list-disc list-inside text-gray-700 space-y-1">
               <li>
                 <strong>Artisans/Sellers:</strong> Creators of traditional
-                crafts.
+                crafts and culturally significant items.
               </li>
               <li>
                 <strong>Gurus/Experts:</strong> Teachers of cultural arts
-                (dance, music).
+                (dance, music, crafts, and related skills).
               </li>
               <li>
-                <strong>Learners:</strong> Students interested in cultural
-                skills.
+                <strong>Learners:</strong> Students and enthusiasts interested
+                in acquiring cultural skills.
               </li>
               <li>
                 <strong>Buyers:</strong> Customers seeking authentic cultural
-                products.
+                products with verified origins.
               </li>
             </ul>
           </div>
@@ -53,7 +53,8 @@ const DocContent = () => {
                 Guru
               </span>
               <p className="text-sm text-gray-600">
-                An expert teacher or instructor offering classes/workshops.
+                An expert teacher or instructor offering classes or workshops in
+                cultural arts and practices.
               </p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
@@ -61,8 +62,8 @@ const DocContent = () => {
                 Artisan
               </span>
               <p className="text-sm text-gray-600">
-                A seller specializing in hand-crafted, culturally significant
-                items.
+                A seller specializing in handcrafted, culturally significant
+                items and traditional products.
               </p>
             </div>
           </div>
@@ -88,31 +89,35 @@ const DocContent = () => {
               <tr>
                 <td className="p-4 font-semibold text-royal-blue">Visitor</td>
                 <td className="p-4">
-                  Browse products, view courses, read reviews.
+                  Browse products, view courses, and read reviews.
                 </td>
               </tr>
               <tr>
                 <td className="p-4 font-semibold text-royal-blue">Customer</td>
                 <td className="p-4">
-                  Purchase items, book classes, rate/review, manage profile.
+                  Purchase items, book classes, leave ratings and reviews, and
+                  manage their profile.
                 </td>
               </tr>
               <tr>
                 <td className="p-4 font-semibold text-royal-blue">Seller</td>
                 <td className="p-4">
-                  List products, manage inventory, view orders, request payouts.
+                  List products, manage inventory, track orders, and request
+                  payouts.
                 </td>
               </tr>
               <tr>
                 <td className="p-4 font-semibold text-royal-blue">Guru</td>
                 <td className="p-4">
-                  Create courses, manage schedule, host sessions.
+                  Create courses, manage their schedule, host sessions, and
+                  handle learner bookings.
                 </td>
               </tr>
               <tr>
                 <td className="p-4 font-semibold text-royal-blue">Admin</td>
                 <td className="p-4">
-                  Full system access, dispute resolution, content moderation.
+                  Full system access, user and content management, dispute
+                  resolution, and platform configuration.
                 </td>
               </tr>
             </tbody>
@@ -130,35 +135,40 @@ const DocContent = () => {
 
         <div className="grid gap-6 md:grid-cols-2">
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-            <h3 className="tex-lg font-bold text-gray-900 mb-3">Marketplace</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-3">
+              Marketplace
+            </h3>
             <ul className="list-disc list-inside space-y-2 text-gray-600">
               <li>
-                <strong>Categories:</strong> Traditional Clothing, Instruments,
-                Arts.
+                <strong>Categories:</strong> Traditional clothing, musical
+                instruments, arts, crafts, and other cultural products.
               </li>
               <li>
-                <strong>Filters:</strong> Price, Region, Material, Artisan.
+                <strong>Filters:</strong> Price, region, material, artisan, and
+                cultural style.
               </li>
               <li>
-                <strong>Product Page:</strong> Deep cultural context, artisan
-                bio integration.
+                <strong>Product Page:</strong> Detailed cultural context,
+                artisan biography, origin information, and customer reviews.
               </li>
             </ul>
           </div>
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-            <h3 className="tex-lg font-bold text-gray-900 mb-3">
+            <h3 className="text-lg font-bold text-gray-900 mb-3">
               Learn Culture
             </h3>
             <ul className="list-disc list-inside space-y-2 text-gray-600">
               <li>
-                <strong>Content:</strong> Dance, Singing, Crafts.
+                <strong>Content:</strong> Dance, singing, crafts, and other
+                cultural skill-based sessions.
               </li>
               <li>
-                <strong>Booking:</strong> Slot selection, seamless payment.
+                <strong>Booking:</strong> Time-slot selection with integrated,
+                seamless payment flow.
               </li>
               <li>
-                <strong>Session Types:</strong> 1-on-1, Group Workshops
-                (Online/Offline).
+                <strong>Session Types:</strong> 1-on-1 and group workshops,
+                available online or in person.
               </li>
             </ul>
           </div>
@@ -204,12 +214,6 @@ const DocContent = () => {
               <span className="font-medium">Delivered</span>
             </div>
           </div>
-
-          <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg text-sm text-yellow-800">
-            <strong>Note on Returns:</strong> Returns are accepted within 7 days
-            of delivery only if the product is damaged or incorrect. Admin
-            approval is required for disputes.
-          </div>
         </div>
       </section>
 
@@ -224,21 +228,21 @@ const DocContent = () => {
         <div className="prose max-w-none text-gray-600">
           <p>
             The platform is built using a modern <strong>React</strong> frontend
-            structure with a custom <strong>PHP/MySQL</strong> backend API using
+            with a custom <strong>PHP/MySQL</strong> backend API that uses
             session-based authentication.
           </p>
 
           <h4 className="text-gray-900 font-bold mt-4">Core Tech Stack</h4>
           <ul className="grid grid-cols-2 gap-2 mt-2">
             <li className="bg-gray-100 px-3 py-1 rounded">
-              React 18 & Tailwind
+              React 18 & Tailwind CSS
             </li>
             <li className="bg-gray-100 px-3 py-1 rounded">
-              PHP (Custom Backend)
+              PHP (Custom backend)
             </li>
             <li className="bg-gray-100 px-3 py-1 rounded">MySQL (Database)</li>
             <li className="bg-gray-100 px-3 py-1 rounded">
-              Context API (State)
+              Context API (State management)
             </li>
           </ul>
         </div>
@@ -252,10 +256,11 @@ const DocContent = () => {
           </h2>
         </div>
         <p className="text-gray-700">
-          <strong>Performance Goal:</strong> All pages load under 2 seconds.
-          Images are lazy-loaded and optimized. <br />
-          <strong>SEO:</strong> Semantic HTML5, proper meta tags, and structured
-          data for products and courses.
+          <strong>Performance goal:</strong> All pages should load in under 2
+          seconds. Images are lazy-loaded and optimized for faster delivery.
+          <br />
+          <strong>SEO:</strong> Uses semantic HTML5, descriptive meta tags, and
+          structured data for products and courses.
         </p>
       </section>
 
@@ -271,15 +276,16 @@ const DocContent = () => {
             Cultural Sensitivity
           </h3>
           <p className="text-gray-600 mb-4">
-            All content must respectful. Avoid stereotyping. Use authentic
-            terminology where possible (e.g., "Mithila Art" instead of just
-            "Folk Art").
+            All content must be respectful. Avoid stereotyping and
+            misrepresenting communities. Use authentic terminology where
+            possible (for example, "Mithila Art" instead of just "Folk Art").
           </p>
 
           <h3 className="font-bold text-royal-blue mb-2">Image Quality</h3>
           <p className="text-gray-600">
-            High-resolution images only. White or neutral backgrounds for
-            products. Action shots for courses.
+            Use high-resolution images only. Prefer white or neutral backgrounds
+            for products, and use action or contextual shots for courses and
+            workshops.
           </p>
         </div>
       </section>
@@ -290,9 +296,8 @@ const DocContent = () => {
           <h2 className="text-3xl font-bold text-gray-900">8. Operations</h2>
         </div>
         <p className="text-gray-700">
-          Admins are responsible for verifying new sellers and gurus within 48
-          hours of registration. Support tickets should be responded to within
-          24 hours.
+          Admins are responsible for verifying new gurus within 48
+          hours of registration.
         </p>
       </section>
     </div>

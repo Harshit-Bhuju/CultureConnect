@@ -10,6 +10,7 @@ import {
   Settings,
   Flag,
   Users,
+  Scale,
 } from "lucide-react";
 
 const DocSidebar = ({ activeSection, setIsMobileMenuOpen }) => {
@@ -71,6 +72,20 @@ const DocSidebar = ({ activeSection, setIsMobileMenuOpen }) => {
       icon: Users,
       path: "/documentation/team",
       color: "blue",
+    },
+    {
+      id: "privacy",
+      title: "Privacy Policy",
+      icon: Shield,
+      path: "/documentation/privacy",
+      color: "blue",
+    },
+    {
+      id: "terms",
+      title: "Terms of Service",
+      icon: Scale,
+      path: "/documentation/terms",
+      color: "red",
     },
   ];
 

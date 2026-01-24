@@ -25,6 +25,8 @@ const navLinks = [
     href: "https://mail.google.com/mail/?view=cm&fs=1&to=cultureconnect0701@gmail.com",
   },
   { name: "Our Team", href: "/documentation/team" },
+  { name: "Privacy Policy", href: "/documentation/privacy" },
+  { name: "Terms of Service", href: "/documentation/terms" },
 ];
 
 export default function Footer() {

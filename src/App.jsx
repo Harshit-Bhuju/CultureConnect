@@ -31,6 +31,12 @@ const DocContent = lazy(
   () => import("./pages/Documentation/components/DocContent"),
 );
 const DocTeam = lazy(() => import("./pages/Documentation/components/DocTeam"));
+const PrivacyPolicy = lazy(
+  () => import("./pages/Documentation/components/PrivacyPolicy"),
+);
+const TermsOfService = lazy(
+  () => import("./pages/Documentation/components/TermsOfService"),
+);
 
 // Learn Culture pages
 const LearnCulture = lazy(() => import("./pages/LearnCulture/LearnCulture"));
@@ -534,6 +540,8 @@ function App() {
           <Route path="/documentation" element={<DocumentationPage />}>
             <Route index element={<DocContent />} />
             <Route path="team" element={<DocTeam />} />
+            <Route path="privacy" element={<PrivacyPolicy />} />
+            <Route path="terms" element={<TermsOfService />} />
           </Route>
 
           <Route

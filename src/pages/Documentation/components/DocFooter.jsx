@@ -9,7 +9,7 @@ const DocFooter = () => {
             © 2026 CultureConnect. All rights reserved.
           </p>
           <p className="text-gray-400 text-xs mt-1">
-            Designed by Harshit and Harman.
+            Designed and Developed by Harshit and Harman.
           </p>
         </div>
 
@@ -21,7 +21,7 @@ const DocFooter = () => {
             Terms of Service
           </a>
           <a
-            href="mailto:cultureconnect0701@gmail.com"
+            href="https://mail.google.com/mail/?view=cm&fs=1&to=cultureconnect0701@gmail.com"
             className="hover:text-royal-blue hover:underline">
             Contact Support
           </a>

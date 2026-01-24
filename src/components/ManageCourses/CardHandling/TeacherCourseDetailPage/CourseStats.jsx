@@ -10,7 +10,7 @@ import {
 
 export default function CourseStats({ course }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
       {/* Students Enrolled */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
         <div className="flex items-center justify-between mb-3">
@@ -21,9 +21,7 @@ export default function CourseStats({ course }) {
         <p className="text-2xl font-bold text-gray-900">
           {course.enrolled_students}
         </p>
-        <p className="text-sm text-gray-600 mt-1">
-          Students Enrolled
-        </p>
+        <p className="text-sm text-gray-600 mt-1">Students Enrolled</p>
       </div>
 
       {/* Revenue */}
@@ -44,24 +42,6 @@ export default function CourseStats({ course }) {
         <p className="text-sm text-gray-600 mt-1">Total Revenue</p>
       </div>
 
-      {/* Completion Rate */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
-        <div className="flex items-center justify-between mb-3">
-          <div className="p-3 bg-purple-100 rounded-lg">
-            <CheckCircle className="w-6 h-6 text-purple-600" />
-          </div>
-          {course.completionRate >= 70 && (
-            <span className="text-xs text-green-600 font-medium">
-              Excellent
-            </span>
-          )}
-        </div>
-        <p className="text-2xl font-bold text-gray-900">
-          {course.completionRate}%
-        </p>
-        <p className="text-sm text-gray-600 mt-1">Completion Rate</p>
-      </div>
-
       {/* Rating */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
         <div className="flex items-center justify-between mb-3">
@@ -72,10 +52,11 @@ export default function CourseStats({ course }) {
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
                 key={star}
-                className={`w-3 h-3 ${star <= course.averageRating
-                  ? "fill-yellow-400 text-yellow-400"
-                  : "text-gray-300"
-                  }`}
+                className={`w-3 h-3 ${
+                  star <= course.averageRating
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "text-gray-300"
+                }`}
               />
             ))}
           </div>
