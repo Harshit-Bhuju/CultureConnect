@@ -20,7 +20,7 @@ const ProtectedSellerRoute = ({ children }) => {
 
   const { sellerId } = useParams();
 
-  if (String(sellerId) !== String(user.seller_id)) {
+  if (sellerId && String(sellerId) !== String(user.seller_id)) {
     return <Navigate to="/" replace />;
   }
 
