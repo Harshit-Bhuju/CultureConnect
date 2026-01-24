@@ -123,7 +123,7 @@ export default function CourseConfirmationPage({
 
         <div className="flex gap-4">
           <button
-            onClick={() => navigate(`/courses/learn/${teacherId}/${courseId}`)}
+            onClick={() => navigate(`/courses/${teacherId}/${courseId}`)}
             className="flex-1 bg-black hover:bg-gray-800 transition-colors text-white font-semibold py-4 rounded-lg flex items-center justify-center gap-2">
             <Play className="w-5 h-5" />
             Start Learning

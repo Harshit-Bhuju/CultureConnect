@@ -11,7 +11,9 @@ import {
   LogOut,
   FileText,
   Globe,
+  Truck,
 } from "lucide-react";
+
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import CultureConnectLogo from "../../assets/logo/cultureconnect__fav.png";
 import { useAuth } from "../../context/AuthContext";
@@ -64,7 +66,14 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
       path: "/admin/analytics",
     },
     {
+      id: "delivery",
+      label: "Delivery Management",
+      icon: Truck,
+      path: "/admin/delivery",
+    },
+    {
       id: "website",
+
       label: "View Website",
       icon: Globe,
       path: "/",

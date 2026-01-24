@@ -1,5 +1,4 @@
 import {
-  Bell,
   ChevronsUpDown,
   CreditCard,
   LogOut,
@@ -125,12 +124,6 @@ export function NavUser({ user }) {
                 className="cursor-pointer">
                 <GraduationCap className="w-4 h-4 mr-2" />
                 My Courses
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => navigate("/notifications")}>
-                <Bell className="w-4 h-4 mr-2" />
-                Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

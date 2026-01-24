@@ -1,0 +1,76 @@
+@reference "../../index.css";
+
+.not-found-container {
+    @apply relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-cream/30;
+    background: radial-gradient(circle at center, #F8F1E7 0%, #F3E5D5 100%);
+}
+
+.bg-decoration {
+    @apply absolute inset-0 pointer-events-none;
+}
+
+.bg-circle {
+    @apply absolute rounded-full blur-[100px] opacity-20;
+}
+
+.circle-1 {
+    @apply w-[500px] h-[500px] -top-20 -left-20 bg-heritage-red;
+}
+
+.circle-2 {
+    @apply w-[600px] h-[600px] -bottom-40 -right-20 bg-gold;
+}
+
+.cultural-overlay {
+    @apply absolute inset-0 pointer-events-none opacity-[0.03];
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4145A' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.not-found-content {
+    @apply relative z-10 flex flex-col items-center max-w-2xl px-6 text-center;
+}
+
+.icon-wrapper {
+    @apply relative mb-4;
+}
+
+.floating-icons {
+    @apply absolute -top-12 -left-8 w-full flex justify-between pointer-events-none;
+}
+
+.error-code {
+    @apply text-[12rem] md:text-[16rem] leading-none font-bold text-charcoal/5 select-none;
+    text-shadow:
+        2px 2px 0px rgba(212, 20, 90, 0.1),
+        -2px -2px 0px rgba(193, 120, 23, 0.1);
+}
+
+.error-title {
+    @apply text-4xl md:text-5xl font-bold text-charcoal mb-4;
+}
+
+.error-description {
+    @apply text-lg text-charcoal/70 mb-10 max-w-md mx-auto leading-relaxed;
+}
+
+.action-buttons {
+    @apply flex flex-col sm:flex-row items-center gap-4;
+}
+
+.btn {
+    @apply flex items-center justify-center gap-2 px-8 py-3 rounded-full font-semibold transition-all duration-300;
+}
+
+.btn-primary {
+    @apply bg-heritage-red text-white hover:bg-heritage-red/90 hover:shadow-lg hover:scale-105 active:scale-95;
+}
+
+.btn-secondary {
+    @apply bg-white/80 text-charcoal border border-charcoal/10 backdrop-blur-sm hover:bg-white hover:shadow-md hover:scale-105 active:scale-95;
+}
+
+@media (max-width: 640px) {
+    .error-code {
+        @apply text-[8rem];
+    }
+}

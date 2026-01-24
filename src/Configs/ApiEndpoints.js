@@ -171,6 +171,7 @@ const API = {
   GET_ADMIN_ANALYTICS: `${BASE_URL}/admin/get_analytics_data.php`,
   GET_OVERVIEW_STATS: `${BASE_URL}/admin/get_overview_stats.php`,
   GET_RECENT_ACTIVITY: `${BASE_URL}/admin/get_recent_activity.php`,
+  CREATE_DELIVERY_BOY: `${BASE_URL}/admin/create_delivery_boy.php`,
 
   // Home Stats
   GET_HOME_STATS: `${BASE_URL}/home/get_home_stats.php`,

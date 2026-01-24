@@ -24,7 +24,6 @@ const ChangePassword = lazy(
 );
 const SetPassword = lazy(() => import("./pages/SetPassword/SetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
-const Notification = lazy(() => import("./pages/Notification/Notification"));
 const DocumentationPage = lazy(
   () => import("./pages/Documentation/DocumentationPage"),
 );
@@ -166,6 +165,19 @@ const AdminUserManagement = lazy(
 const AdminAnalytics = lazy(
   () => import("./AdminPage/components/AdminAnalytics"),
 );
+const AdminDeliveryManagement = lazy(
+  () => import("./AdminPage/components/AdminDeliveryManagement"),
+);
+
+// Delivery pages
+const DeliveryProtectedRoute = lazy(
+  () => import("./components/Auth/Route/DeliveryProtectedRoute"),
+);
+const DeliveryDashboard = lazy(
+  () => import("./pages/Delivery/DeliveryDashboard"),
+);
+const ProductInfo = lazy(() => import("./pages/Delivery/ProductInfo"));
+
 // Home Route Wrapper
 function HomeRoute() {
   const { loading } = useAuth();
@@ -204,6 +216,7 @@ function App() {
             <Route path="teachers" element={<AdminTeacherApprovals />} />
             <Route path="users" element={<AdminUserManagement />} />
             <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="delivery" element={<AdminDeliveryManagement />} />
           </Route>
 
           {/* ==================== Marketplace Routes ==================== */}
@@ -477,15 +490,6 @@ function App() {
             }
           />
 
-          <Route
-            path="/notifications"
-            element={
-              <ProtectedRoute>
-                <Notification />
-              </ProtectedRoute>
-            }
-          />
-
           {/* Followers Pages */}
           <Route
             path="/sellerprofile/:sellerId/followers"
@@ -530,6 +534,16 @@ function App() {
             <Route index element={<Navigate to="personal" />} />
             <Route path="personal" element={<Personal_Settings />} />
             <Route path="security" element={<Password_Settings />} />
+          </Route>
+          <Route
+            path="/delivery"
+            element={
+              <DeliveryProtectedRoute>
+                <DeliveryDashboard />
+              </DeliveryProtectedRoute>
+            }>
+            <Route index element={<Navigate to="orders" replace />} />
+            <Route path="orders" element={<ProductInfo />} />
           </Route>
 
           {/* ==================== Public Routes ==================== */}

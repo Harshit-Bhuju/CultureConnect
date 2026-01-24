@@ -248,7 +248,9 @@ export default function ConfirmationPage({
                   </span>
                   <span className="text-gray-500 ml-2">x{order.quantity}</span>
                   {order.size && (
-                    <span className="text-gray-500 ml-2">• Size: {order.size}</span>
+                    <span className="text-gray-500 ml-2">
+                      • Size: {order.size}
+                    </span>
                   )}
                   {order.store_name && (
                     <div className="flex items-center gap-2 mt-1">
@@ -295,7 +297,7 @@ export default function ConfirmationPage({
             Continue Shopping
           </button>
           <button
-            onClick={() => toast.info("Order tracking coming soon!")}
+            onClick={() => navigate(`/cart`)}
             className="flex-1 bg-white hover:bg-gray-100 border-2 border-black transition-colors text-black font-semibold py-4 rounded-lg">
             Track Order
           </button>

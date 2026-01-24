@@ -122,6 +122,8 @@ export default function LoginForm({ className, mode = "login", ...props }) {
           toast.success("Logged in successfully!");
           if (result.user.role === "admin") {
             navigate("/admin", { replace: true }); // admin panel
+          } else if (result.user.role === "delivery") {
+            navigate("/delivery", { replace: true }); // delivery dashboard
           } else {
             navigate("/", { replace: true }); // normal user
           }

@@ -1,14 +1,22 @@
-.side-border {
-  position: relative; /* <-- Add this */
+/* Footer.css */
+footer a,
+footer button {
+  cursor: pointer;
 }
 
-.side-border::before {
-  position: absolute;
-  content: "";
-  width: 1px;
-  height: 95%;
-  background: #edeff2;
-  top: 1%;
-  right: -2%;
-  bottom: 0;
+footer input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
 }

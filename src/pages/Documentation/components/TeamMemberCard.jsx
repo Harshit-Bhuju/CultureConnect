@@ -1,5 +1,5 @@
 import React from "react";
-import { Zap, Mail } from "lucide-react";
+import { Mail, Code2, Briefcase } from "lucide-react";
 
 const TeamMemberCard = ({
   name,
@@ -10,63 +10,90 @@ const TeamMemberCard = ({
   image,
   email,
   isReverse,
-}) => (
-  <div
-    className={`flex flex-col ${isReverse ? "lg:flex-row-reverse" : "lg:flex-row"} items-center gap-8 lg:gap-12`}>
-    {/* Image Container */}
-    <div className="w-full lg:w-1/2 group relative">
-      <div className="relative aspect-square rounded-2xl overflow-hidden border-2 border-gray-100 bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <img
-          src={image}
-          alt={name}
-          className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
-        />
-        {/* Solid color accent bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-heritage-red"></div>
-      </div>
-    </div>
-
-    {/* Content Container */}
-    <div className="w-full lg:w-1/2 space-y-5">
-      <div className="space-y-1">
-        <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">{name}</h3>
-        <p className="text-lg font-semibold text-royal-blue">{role}</p>
-      </div>
-
-      <p className="text-gray-600 leading-relaxed">{description}</p>
-
-      <div className="space-y-3">
-        <h4 className="font-bold text-gray-900 flex items-center gap-2">
-          <Zap className="w-5 h-5 text-heritage-red" />
-          Tech Stack
-        </h4>
-        <div className="flex flex-wrap gap-2">
-          {techStack.map((tech, idx) => (
-            <span
-              key={idx}
-              className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:border-royal-blue hover:bg-royal-blue/5 transition-all duration-200">
-              {tech}
-            </span>
-          ))}
+}) => {
+  return (
+    <div
+      className={`flex flex-col ${
+        isReverse ? "lg:flex-row-reverse" : "lg:flex-row"
+      } gap-12 items-start`}>
+      {/* Image Section */}
+      <div className="w-full lg:w-2/5">
+        <div className="bg-white rounded-lg overflow-hidden shadow-md border border-gray-200">
+          <div className="aspect-square">
+            <img
+              src={image}
+              alt={name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="p-6 border-t border-gray-100">
+            <a
+              href={`https://mail.google.com/mail/?view=cm&fs=1&to=${email}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full bg-gray-900 text-white font-medium py-3 rounded-md hover:bg-gray-800 transition-colors">
+              <Mail className="w-4 h-4" />
+              Contact via Email
+            </a>
+          </div>
         </div>
       </div>
 
-      <div className="p-5 bg-white border-2 border-gray-100 rounded-xl shadow-sm">
-        <h4 className="font-bold text-gray-900 mb-2">Project Role</h4>
-        <p className="text-gray-600 italic text-sm">"{projectRole}"</p>
-        <div className="mt-4 pt-4 border-t border-gray-100 flex items-center">
-          <a
-            href={`https://mail.google.com/mail/?view=cm&fs=1&to=${email}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-royal-blue hover:text-heritage-red transition-colors font-medium text-sm">
-            <Mail className="w-4 h-4" />
-            {email}
-          </a>
+      {/* Content Section */}
+      <div className="w-full lg:w-3/5 space-y-6">
+        {/* Header */}
+        <div className="border-b border-gray-200 pb-4">
+          <h3 className="text-3xl font-bold text-gray-900 mb-2">{name}</h3>
+          <p className="text-lg text-gray-600 font-medium">{role}</p>
+        </div>
+
+        {/* Description */}
+        <div>
+          <p className="text-gray-700 leading-relaxed">{description}</p>
+        </div>
+
+        {/* Project Role */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-5">
+          <div className="flex items-start gap-3">
+            <div className="bg-white rounded-md p-2 border border-gray-200">
+              <Briefcase className="w-5 h-5 text-gray-700" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold text-gray-900 mb-2">
+                Project Contribution
+              </h4>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                {projectRole}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Tech Stack */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Code2 className="w-5 h-5 text-gray-700" />
+            <h4 className="font-semibold text-gray-900">Technical Skills</h4>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {techStack.map((tech, idx) => (
+              <span
+                key={idx}
+                className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:border-gray-400 hover:shadow-sm transition-all">
+                {tech}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Email Display */}
+        <div className="pt-4 border-t border-gray-200">
+          <p className="text-sm text-gray-500 mb-1">Email Address</p>
+          <p className="text-gray-900 font-medium">{email}</p>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default TeamMemberCard;

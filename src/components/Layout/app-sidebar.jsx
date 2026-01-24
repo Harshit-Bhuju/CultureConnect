@@ -28,12 +28,11 @@ import {
 import CultureConnectLogo from "../../assets/logo/cultureconnect__fav.png";
 import { useAuth } from "../../context/AuthContext";
 import default_logo from "../../assets/default-image.jpg";
-import Navbar from "./NavBar";
 
 export default function AppSidebar({ children, ...props }) {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   // User data is already normalized in AuthContext
   const userData = user || {
