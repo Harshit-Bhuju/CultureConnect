@@ -113,7 +113,7 @@ const API = {
   GET_TEACHER_FOLLOWERS: `${BASE_URL}/teacher/get_teacher_followers.php`,
   UPDATE_TEACHER_PROFILE: `${BASE_URL}/teacher/teacher_profile_update.php`,
   GET_PENDING_TEACHERS: `${BASE_URL}/teacher/get_pending_teachers.php`,
-  APPROVE_TEACHER: `${BASE_URL}/teacher/approve_teacher.php`,
+  APPROVE_TEACHER: `${BASE_URL}/admin/approve_teacher.php`,
   FOLLOW_TEACHER: `${BASE_URL}/teacher/follow_teacher.php`,
   CHECK_TEACHER_FOLLOW_STATUS: `${BASE_URL}/user/check_teacher_follow_status.php`,
   GET_USER_FOLLOWING_TEACHERS: `${BASE_URL}/user/get_user_following_teacher.php`,
@@ -163,6 +163,14 @@ const API = {
 
   // Global Search Suggestions
   GET_SEARCH_SUGGESTIONS: `${BASE_URL}/search/get_suggestions.php`,
+
+  // Admin
+  GET_DASHBOARD_STATS: `${BASE_URL}/admin/get_dashboard_stats.php`,
+  GET_ADMIN_USERS: `${BASE_URL}/admin/get_users.php`,
+  GET_ADMIN_USER_DETAILS: `${BASE_URL}/admin/get_user_details.php`,
+  GET_ADMIN_ANALYTICS: `${BASE_URL}/admin/get_analytics_data.php`,
+  GET_OVERVIEW_STATS: `${BASE_URL}/admin/get_overview_stats.php`,
+  GET_RECENT_ACTIVITY: `${BASE_URL}/admin/get_recent_activity.php`,
 };
 
 export default API;

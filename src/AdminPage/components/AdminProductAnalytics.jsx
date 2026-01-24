@@ -3,46 +3,48 @@ import {
   DollarSign,
   ShoppingCart,
   Users2,
-  TrendingUp,
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
 
 export const AdminProductAnalytics = ({ data, timeframe }) => {
-  const maxSales = Math.max(...data.salesData.map((d) => d.sales));
+  const {
+    salesData = [],
+    topProducts = [],
+    metrics = {}
+  } = data || {};
+
+  const totalRevenue = metrics?.totalRevenue || 0;
+  const totalSales = metrics?.totalSales || 0;
+  const activeSellers = metrics?.activeSellers || 0;
+
+  const maxSales = salesData.length > 0 ? Math.max(...salesData.map((d) => parseFloat(d.sales) || 0)) : 0;
 
   return (
     <div className="space-y-6">
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           {
             title: "Total Product Revenue",
-            value: "Rs. 4,56,789",
-            change: "+23%",
-            positive: true,
+            value: `Rs. ${parseFloat(totalRevenue).toLocaleString()}`,
+            change: metrics?.growthChange || "+0%",
+            positive: metrics?.growthPositive !== false,
             icon: DollarSign,
           },
           {
             title: "Product Sales",
-            value: "1,234",
-            change: "+18%",
-            positive: true,
+            value: totalSales.toString(),
+            change: metrics?.growthChange || "+0%",
+            positive: metrics?.growthPositive !== false,
             icon: ShoppingCart,
           },
           {
             title: "Active Sellers",
-            value: "45",
-            change: "+4%",
-            positive: true,
+            value: activeSellers.toString(),
+            change: metrics?.sellerGrowthChange || "+0%",
+            positive: metrics?.sellerGrowthPositive !== false,
             icon: Users2,
-          },
-          {
-            title: "Market Growth",
-            value: "14.5%",
-            change: "+2.1%",
-            positive: true,
-            icon: TrendingUp,
           },
         ].map((metric, i) => {
           const Icon = metric.icon;
@@ -65,9 +67,8 @@ export const AdminProductAnalytics = ({ data, timeframe }) => {
               </div>
               <div className="flex items-center gap-2">
                 <span
-                  className={`flex items-center gap-1 text-sm font-bold ${
-                    metric.positive ? "text-green-600" : "text-red-600"
-                  }`}>
+                  className={`flex items-center gap-1 text-sm font-bold ${metric.positive ? "text-green-600" : "text-red-600"
+                    }`}>
                   {metric.positive ? (
                     <ArrowUpRight size={16} />
                   ) : (
@@ -76,7 +77,7 @@ export const AdminProductAnalytics = ({ data, timeframe }) => {
                   {metric.change}
                 </span>
                 <span className="text-xs text-gray-400 font-medium">
-                  vs last month
+                  vs last period
                 </span>
               </div>
             </div>
@@ -88,25 +89,27 @@ export const AdminProductAnalytics = ({ data, timeframe }) => {
         {/* Sales Chart */}
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
           <h3 className="text-lg font-bold text-gray-900 mb-8 border-b border-gray-100 pb-4">
-            Daily Sales Performance
+            Sales Performance
           </h3>
           <div className="space-y-6">
-            {data.salesData.map((item, i) => (
+            {salesData.length > 0 ? salesData.map((item, i) => (
               <div key={i} className="group">
                 <div className="flex items-center justify-between text-sm mb-2">
                   <span className="font-bold text-gray-500">{item.day}</span>
                   <span className="font-extrabold text-gray-900">
-                    Rs. {item.sales.toLocaleString()}
+                    Rs. {parseFloat(item.sales).toLocaleString()}
                   </span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-4 overflow-hidden">
                   <div
                     className="h-full bg-gray-900 rounded-full transition-all duration-1000 ease-out"
-                    style={{ width: `${(item.sales / maxSales) * 100}%` }}
+                    style={{ width: `${maxSales > 0 ? (parseFloat(item.sales) / maxSales) * 100 : 0}%` }}
                   />
                 </div>
               </div>
-            ))}
+            )) : (
+              <p className="text-center text-gray-400 py-10">No sales data for this period</p>
+            )}
           </div>
         </div>
 
@@ -116,18 +119,17 @@ export const AdminProductAnalytics = ({ data, timeframe }) => {
             Top Selling Products
           </h3>
           <div className="space-y-4">
-            {data.topProducts.map((item, i) => (
+            {topProducts.length > 0 ? topProducts.map((item, i) => (
               <div
                 key={i}
                 className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-white hover:shadow-md border border-transparent hover:border-gray-200 transition-all cursor-default">
                 <div
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg ${
-                    i === 0
-                      ? "bg-yellow-100 text-yellow-700"
-                      : i === 1
-                        ? "bg-gray-200 text-gray-700"
-                        : "bg-orange-100 text-orange-700"
-                  }`}>
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg ${i === 0
+                    ? "bg-yellow-100 text-yellow-700"
+                    : i === 1
+                      ? "bg-gray-200 text-gray-700"
+                      : "bg-orange-100 text-orange-700"
+                    }`}>
                   #{i + 1}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -140,14 +142,16 @@ export const AdminProductAnalytics = ({ data, timeframe }) => {
                 </div>
                 <div className="text-right">
                   <p className="font-black text-gray-900 text-lg">
-                    {item.revenue}
+                    Rs. {parseFloat(item.revenue).toLocaleString()}
                   </p>
                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
                     Gross revenue
                   </p>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p className="text-center text-gray-400 py-10">No products found</p>
+            )}
           </div>
         </div>
       </div>
@@ -158,25 +162,27 @@ export const AdminProductAnalytics = ({ data, timeframe }) => {
           <h3 className="text-xl font-bold text-white">
             Marketplace Active Users
           </h3>
-          <TrendingUp className="text-gray-500" />
+          <Users2 className="text-gray-500" />
         </div>
-        <div className="grid grid-cols-7 gap-4">
-          {data.salesData.map((item, i) => (
+        <div className="grid grid-cols-4 md:grid-cols-7 gap-4">
+          {salesData.length > 0 ? salesData.slice(-7).map((item, i) => (
             <div key={i} className="flex flex-col items-center gap-4">
               <div className="w-full relative h-48 bg-white/10 rounded-xl flex items-end justify-center group p-1">
                 <div
-                  className="w-full bg-royal-blue rounded-lg transition-all duration-700 group-hover:opacity-100 opacity-60"
-                  style={{ height: `${(item.users / 82) * 100}%` }}>
+                  className="w-full bg-blue-600 rounded-lg transition-all duration-700 group-hover:opacity-100 opacity-60"
+                  style={{ height: `${(parseInt(item.users) / (Math.max(...salesData.map(d => parseInt(d.users))) || 1)) * 100}%` }}>
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-10 bg-white text-gray-900 px-2 py-1 rounded text-xs font-black opacity-0 group-hover:opacity-100 transition-opacity">
                     {item.users}
                   </div>
                 </div>
               </div>
-              <span className="text-xs font-black text-gray-500 uppercase tracking-widest">
+              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest truncate w-full text-center">
                 {item.day}
               </span>
             </div>
-          ))}
+          )) : (
+            <div className="col-span-full py-10 text-center text-gray-500">No user activity recorded</div>
+          )}
         </div>
       </div>
     </div>
