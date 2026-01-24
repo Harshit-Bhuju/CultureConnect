@@ -28,9 +28,11 @@ const CourseManagement = () => {
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
   const [sortOption, setSortOption] = useState("Latest");
   const [stockFilter, setStockFilter] = useState("Published"); // Hardcoded to Published for this view
+  const [priceFilter, setPriceFilter] = useState("All pricing");
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  const priceOptions = ["All pricing", "Paid", "Free"];
 
 
   const filteredCourses = courses
@@ -46,7 +48,14 @@ const CourseManagement = () => {
           ? true
           : course.status.toLowerCase() === stockFilter.toLowerCase();
 
-      return matchesSearch && matchesCategory && matchesStatus;
+      const matchesPrice =
+        priceFilter === "All pricing"
+          ? true
+          : priceFilter === "Paid"
+            ? course.price > 0
+            : course.price === 0;
+
+      return matchesSearch && matchesCategory && matchesStatus && matchesPrice;
     })
     .sort((a, b) => {
       if (sortOption === "Latest") {
@@ -145,9 +154,12 @@ const CourseManagement = () => {
           setSortOption={setSortOption}
           stockFilter={null}
           setStockFilter={null}
+          priceFilter={priceFilter}
+          setPriceFilter={setPriceFilter}
           categories={categories}
           sortOptions={sortOptions}
           stockOptions={null} // Remove options to hide dropdown
+          priceOptions={priceOptions}
           filteredCount={filteredCourses.length}
           viewMode={viewMode}
           setViewMode={setViewMode}

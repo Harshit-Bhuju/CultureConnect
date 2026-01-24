@@ -141,6 +141,11 @@ $response = [
         "followers_count" => (int)$teacher_profile["followers"],
         "total_courses" => (int)$teacher_profile["total_courses"],
         "total_revenue" => (float)$teacher_profile["total_revenue"],
+        "rating" => round((float)$conn->query("
+            SELECT COALESCE(AVG(average_rating), 0) 
+            FROM teacher_courses 
+            WHERE teacher_id = $teacher_id AND status = 'published' AND total_reviews > 0
+        ")->fetch_row()[0], 1),
         "created_at" => $formatted_created_at
     ],
     "certificates" => $certificates,

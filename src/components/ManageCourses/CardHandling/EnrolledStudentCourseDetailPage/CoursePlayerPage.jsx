@@ -103,13 +103,13 @@ export default function CoursePlayerPage() {
           // Add extra fields needed for tabs
           learningOutcomes: courseData.course.what_you_will_learn
             ? courseData.course.what_you_will_learn
-                .split("\n")
-                .filter((item) => item.trim())
+              .split("\n")
+              .filter((item) => item.trim())
             : [],
           requirements: courseData.course.requirements
             ? courseData.course.requirements
-                .split("\n")
-                .filter((item) => item.trim())
+              .split("\n")
+              .filter((item) => item.trim())
             : [],
           learningSchedule: courseData.course.learning_schedule || "",
           hoursPerWeek: parseInt(courseData.course.hours_per_week) || 0,
@@ -117,6 +117,8 @@ export default function CoursePlayerPage() {
           numVideos: parseInt(courseData.course.total_videos) || 0,
           level: courseData.course.skill_level || "Beginner",
           language: courseData.course.language || "English",
+          averageRating: parseFloat(courseData.course.average_rating) || 0,
+          totalReviews: parseInt(courseData.course.total_reviews) || 0,
           reviews: courseData.reviews || [],
         };
 
