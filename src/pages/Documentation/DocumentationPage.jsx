@@ -3,11 +3,12 @@ import DocNavbar from "./components/DocNavbar";
 import DocFooter from "./components/DocFooter";
 import DocSidebar from "./components/DocSidebar";
 import { Menu, X } from "lucide-react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 const DocumentationPage = () => {
   const [activeSection, setActiveSection] = useState("overview");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     window.scrollTo(0, 0);

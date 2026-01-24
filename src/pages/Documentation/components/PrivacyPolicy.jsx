@@ -334,7 +334,7 @@ const PrivacyPolicy = () => {
               <p className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-1">
                 Address
               </p>
-              <p className="text-gray-600 font-medium">Kathmandu, Nepal</p>
+              <p className="text-gray-600 font-medium">Banepa, Nepal</p>
             </div>
           </div>
         </div>

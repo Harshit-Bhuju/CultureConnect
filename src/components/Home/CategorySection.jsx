@@ -1,6 +1,5 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { categories } from "../../data/homeData";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -80,6 +79,56 @@ const CategoryCard = ({ category, index }) => {
     </motion.div>
   );
 };
+const categories = [
+  {
+    id: "traditional-clothing",
+    name: "Traditional Clothing",
+    tagline: "Wear Your Heritage",
+    description:
+      "Handcrafted sarees, daura suruwal, and ethnic wear from master sellers",
+    icon: "🥻",
+    themeColor: "#D4145A",
+    gradient: "linear-gradient(135deg, #D4145A 0%, #FBB03B 100%)",
+    imagePath: "/Home-Images/categories/clothing/thumbnail.jpg",
+    stats: [
+      { label: "Seller Partners", value: "500+" },
+      { label: "Traditional Styles", value: "50+" },
+      { label: "Handcrafted", value: "100%" },
+    ],
+  },
+  {
+    id: "arts-decor",
+    name: "Arts & Decor",
+    tagline: "Artistry for Your Space",
+    description:
+      "Thangka paintings, wood carvings, and pottery from heritage craftsmen",
+    icon: "🎨",
+    themeColor: "#C17817",
+    gradient: "linear-gradient(135deg, #C17817 0%, #8B4513 100%)",
+    imagePath: "/Home-Images/categories/arts/thumbnail.png",
+    stats: [
+      { label: "Art Forms", value: "30+" },
+      { label: "Master Artists", value: "200+" },
+      { label: "Authentic", value: "100%" },
+    ],
+  },
+  {
+    id: "musical-instruments",
+    name: "Musical Instruments",
+    tagline: "Sound of Tradition",
+    description:
+      "Classical madal, sarangi, and flute handcrafted by experienced makers",
+    icon: "🎵",
+    themeColor: "#8B4513",
+    gradient: "linear-gradient(135deg, #8B4513 0%, #654321 100%)",
+    imagePath: "/Home-Images/categories/instruments/thumbnail.jpg",
+    stats: [
+      { label: "Instruments", value: "40+" },
+      { label: "Craftsmen", value: "100+" },
+      { label: "Quality", value: "Premium" },
+    ],
+  },
+];
 
 const CategorySection = () => {
   return (

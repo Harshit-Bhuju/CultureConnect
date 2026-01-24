@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const DocFooter = () => {
   return (
@@ -14,12 +15,16 @@ const DocFooter = () => {
         </div>
 
         <div className="flex gap-6 text-sm font-medium text-gray-600">
-          <a href="#" className="hover:text-royal-blue hover:underline">
+          <Link
+            to="/documentation/privacy"
+            className="hover:text-royal-blue hover:underline">
             Privacy Policy
-          </a>
-          <a href="#" className="hover:text-royal-blue hover:underline">
+          </Link>
+          <Link
+            to="/documentation/terms"
+            className="hover:text-royal-blue hover:underline">
             Terms of Service
-          </a>
+          </Link>
           <a
             href="https://mail.google.com/mail/?view=cm&fs=1&to=cultureconnect0701@gmail.com"
             className="hover:text-royal-blue hover:underline">

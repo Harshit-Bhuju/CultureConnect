@@ -48,7 +48,7 @@ export default function AppSidebar({ children, ...props }) {
     roleBasedProjects = [
       {
         name: "Seller Profile",
-        url: `/sellerprofile/${userData.seller_id}`, // ✅ FIXED: Use seller_id
+        url: `/sellerprofile/${userData.seller_id}`,
         icon: TrendingUp,
       },
       {

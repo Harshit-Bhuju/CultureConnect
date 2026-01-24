@@ -18,7 +18,7 @@ const DocContent = () => {
           <p className="text-gray-700 leading-relaxed">
             <strong>CultureConnect</strong> is a cultural e-commerce and
             learning platform designed to bridge the gap between traditional
-            artisans, experts, and a global audience. It addresses the challenge
+            sellers, experts, and a global audience. It addresses the challenge
             of fading cultural heritage by providing a marketplace for authentic
             goods and a learning platform for cultural skills.
           </p>
@@ -26,12 +26,12 @@ const DocContent = () => {
             <h4 className="font-bold text-royal-blue mb-2">Target Audience</h4>
             <ul className="list-disc list-inside text-gray-700 space-y-1">
               <li>
-                <strong>Artisans/Sellers:</strong> Creators of traditional
-                crafts and culturally significant items.
+                <strong>Sellers:</strong> Creators of traditional crafts and
+                culturally significant items.
               </li>
               <li>
-                <strong>Gurus/Experts:</strong> Teachers of cultural arts
-                (dance, music, crafts, and related skills).
+                <strong>Experts:</strong> Teachers of cultural arts (dance,
+                music, crafts, and related skills).
               </li>
               <li>
                 <strong>Learners:</strong> Students and enthusiasts interested
@@ -50,7 +50,7 @@ const DocContent = () => {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="p-4 bg-gray-50 rounded-lg">
               <span className="font-bold text-heritage-red block mb-1">
-                Guru
+                Expert
               </span>
               <p className="text-sm text-gray-600">
                 An expert teacher or instructor offering classes or workshops in
@@ -59,7 +59,7 @@ const DocContent = () => {
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
               <span className="font-bold text-heritage-red block mb-1">
-                Artisan
+                Seller
               </span>
               <p className="text-sm text-gray-600">
                 A seller specializing in handcrafted, culturally significant
@@ -107,7 +107,7 @@ const DocContent = () => {
                 </td>
               </tr>
               <tr>
-                <td className="p-4 font-semibold text-royal-blue">Guru</td>
+                <td className="p-4 font-semibold text-royal-blue">Expert</td>
                 <td className="p-4">
                   Create courses, manage their schedule, host sessions, and
                   handle learner bookings.
@@ -144,12 +144,12 @@ const DocContent = () => {
                 instruments, arts, crafts, and other cultural products.
               </li>
               <li>
-                <strong>Filters:</strong> Price, region, material, artisan, and
+                <strong>Filters:</strong> Price, region, material, seller, and
                 cultural style.
               </li>
               <li>
-                <strong>Product Page:</strong> Detailed cultural context,
-                artisan biography, origin information, and customer reviews.
+                <strong>Product Page:</strong> Detailed cultural context, seller
+                biography, origin information, and customer reviews.
               </li>
             </ul>
           </div>
@@ -296,8 +296,8 @@ const DocContent = () => {
           <h2 className="text-3xl font-bold text-gray-900">8. Operations</h2>
         </div>
         <p className="text-gray-700">
-          Admins are responsible for verifying new gurus within 48
-          hours of registration.
+          Admins are responsible for verifying new experts within 48 hours of
+          registration.
         </p>
       </section>
     </div>

@@ -162,8 +162,10 @@ const DocSidebar = ({ activeSection, setIsMobileMenuOpen }) => {
           </h3>
           <ul className="space-y-1">
             {sections.map((section) => {
-              const isOnPath = location.pathname === section.path;
-              const isActive = isOnPath || activeSection === section.id;
+              const isActive = section.path
+                ? location.pathname === section.path
+                : location.pathname === "/documentation" &&
+                  activeSection === section.id;
               return (
                 <li key={section.id}>
                   <button

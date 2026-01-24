@@ -10,7 +10,6 @@ export const useAuth = () => {
   return context;
 };
 
-
 const normalizeUserData = (userData) => {
   if (!userData) return null;
 
@@ -44,8 +43,6 @@ const normalizeUserData = (userData) => {
         parts.push(`${userData.location.ward}`);
       }
 
-
-
       location = parts.filter(Boolean).join(", ");
     } else if (typeof userData.location === "string") {
       location = userData.location.trim();
@@ -65,7 +62,6 @@ const normalizeUserData = (userData) => {
     teacher_id: userData.teacher_id || null,
   };
 
-  console.log("Normalized user data:", normalized);
   return normalized;
 };
 
@@ -80,7 +76,6 @@ export const AuthProvider = ({ children }) => {
   // Persist user to localStorage
   useEffect(() => {
     if (user) {
-      console.log("Saving user to localStorage:", user);
       localStorage.setItem("authUser", JSON.stringify(user));
     } else {
       localStorage.removeItem("authUser");
@@ -117,9 +112,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (userData) => {
-    console.log("Login called with userData:", userData);
     const normalized = normalizeUserData(userData);
-    console.log("Setting user to:", normalized);
     setUser(normalized);
   };
 

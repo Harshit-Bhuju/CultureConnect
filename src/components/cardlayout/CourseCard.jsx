@@ -10,12 +10,7 @@ const CourseCard = ({ course, teacherId, teacherName }) => {
   const location = useLocation();
 
   const courseData = course;
-  console.log(courseData);
-  // Early return if no data
-  if (!courseData) {
-    console.error("CourseCard: No course/product data provided");
-    return null;
-  }
+
 
   // Handle various ID formats from API or mocks
   const instructorId = teacherId;

@@ -1,5 +1,6 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import ScrollToTop from "./components/Common/ScrollToTop";
 import { useAuth } from "./context/AuthContext";
 import Loading from "./components/Common/Loading";
 import ProtectedRoute from "./components/Auth/Route/ProtectedRoute";
@@ -85,15 +86,18 @@ const AdminProtectedRoute = lazy(
 );
 const AdminPanel = lazy(() => import("./AdminPage/AdminDashboard"));
 const ProtectedSellerRoute = lazy(
-  () => import("./components/Auth/Route/ProtectedSellerRoute"),
+  () => import("./components/Auth/Route/SellerRoute/ProtectedSellerRoute"),
 );
 const SellerRegistrationRoute = lazy(
-  () => import("./components/Auth/Route/SellerRegistrationRoute"),
+  () => import("./components/Auth/Route/SellerRoute/SellerRegistrationRoute"),
 );
 
 // Teacher pages
 const TeacherRegistration = lazy(
   () => import("./pages/Teacher/Teacher_Registration"),
+);
+const TeacherRegistrationRoute = lazy(
+  () => import("./components/Auth/Route/TeacherRoute/TeacherRegistrationRoute"),
 );
 const TeacherProfile = lazy(() => import("./pages/Teacher/Teacher_Profile"));
 const CustomizeTeacherProfile = lazy(
@@ -188,6 +192,7 @@ function HomeRoute() {
 function App() {
   return (
     <>
+      <ScrollToTop />
       <Toaster position="top-center" reverseOrder={false} />
       <Suspense fallback={<Loading message="Loading page..." />}>
         <Routes>
@@ -320,9 +325,9 @@ function App() {
           <Route
             path="/teacher-registration"
             element={
-              <ProtectedRoute>
+              <TeacherRegistrationRoute>
                 <TeacherRegistration />
-              </ProtectedRoute>
+              </TeacherRegistrationRoute>
             }
           />
 

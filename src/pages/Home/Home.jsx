@@ -6,7 +6,8 @@ import Footer from "../../components/Layout/Footer";
 import HeroSection from "../../components/Home/HeroSection";
 import CategorySection from "../../components/Home/CategorySection";
 import CulturalStorySection from "../../components/Home/CulturalStorySection";
-import TeacherSection from "../../components/Home/TeacherSection";
+import BecomeSellerSection from "../../components/Home/BecomeSellerSection";
+import BecomeExpertSection from "../../components/Home/BecomeExpertSection";
 
 const Home = () => {
   const scrollContainerRef = React.useRef(null);
@@ -27,7 +28,8 @@ const Home = () => {
           <HeroSection containerRef={scrollContainerRef} />
           <CategorySection />
           <CulturalStorySection />
-          <TeacherSection />
+          <BecomeSellerSection />
+          <BecomeExpertSection />
         </main>
 
         <Footer />

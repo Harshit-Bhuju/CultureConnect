@@ -29,7 +29,7 @@ const heroSlides = [
   {
     image: "/Home-Images/Hero_images/arts-hero.png",
     title: "Masterpieces of Craftsmanship",
-    subtitle: "Adorn your space with timeless art from master artisans.",
+    subtitle: "Adorn your space with timeless art from master sellers.",
     accent: "#3B82F6",
     gradient: "from-blue-500/20 via-indigo-500/10 to-transparent",
     redirect: "/marketplace/arts_decor",
@@ -240,7 +240,7 @@ const HeroSection = () => {
                       500+
                     </span>
                     <span className="text-gray-400 text-xs uppercase tracking-wider">
-                      Artisans
+                      Sellers
                     </span>
                   </div>
                   <p className="text-gray-300 text-sm leading-relaxed">
