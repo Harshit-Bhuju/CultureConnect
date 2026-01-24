@@ -18,6 +18,8 @@ const EnrolledCourseListRow = ({ course, onContinue }) => {
   const totalVideos = course.totalVideos || course.total_videos || 0;
   const completedVideos =
     course.completedVideos || course.completed_videos || 0;
+  const reviewsCount =
+    course.reviews || course.totalReviews || course.total_reviews || 0;
 
   // Image
   const courseImage = course.images?.[0] || course.thumbnail || course.image;
@@ -55,6 +57,7 @@ const EnrolledCourseListRow = ({ course, onContinue }) => {
             <Star size={12} fill="#f59e0b" className="text-amber-500" />
             {rating.toFixed(1)}
           </span>
+          <span className="text-gray-400">({reviewsCount} reviews)</span>
         </p>
       </div>
 
@@ -76,9 +79,8 @@ const EnrolledCourseListRow = ({ course, onContinue }) => {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className={`h-2 rounded-full transition-all duration-500 ${
-                progress === 100 ? "bg-green-500" : "bg-blue-500"
-              }`}
+              className={`h-2 rounded-full transition-all duration-500 ${progress === 100 ? "bg-green-500" : "bg-blue-500"
+                }`}
               style={{ width: `${progress}%` }}
             />
           </div>

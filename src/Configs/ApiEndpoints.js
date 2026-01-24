@@ -121,6 +121,7 @@ const API = {
   // Enrollment
   CHECK_ENROLLMENT: `${BASE_URL}/user/check_enrollment.php`,
   ENROLL_COURSE: `${BASE_URL}/course/enroll_course.php`,
+  GET_ENROLLED_COURSES: `${BASE_URL}/course/get_enrolled_courses.php`,
 
   // Course Orders & Payments
   CREATE_COURSE_ORDER: `${BASE_URL}/course/create_course_order.php`,
@@ -158,6 +159,7 @@ const API = {
   GET_STUDENT_PROGRESS: `${BASE_URL}/course/get_student_progress.php`,
   MARK_VIDEO_COMPLETED: `${BASE_URL}/course/mark_video_completed.php`,
   UPDATE_VIDEO_TIMESTAMP: `${BASE_URL}/course/update_video_timestamp.php`,
+  GET_STUDENT_TRANSACTIONS: `${BASE_URL}/course/get_student_transactions.php`,
 
   // Global Search Suggestions
   GET_SEARCH_SUGGESTIONS: `${BASE_URL}/search/get_suggestions.php`,

@@ -10,9 +10,12 @@ const Filters = ({
   setSortOption,
   stockFilter, // Keeping stockFilter to represent Seats/Availability
   setStockFilter,
+  priceFilter,
+  setPriceFilter,
   categories,
   sortOptions,
   stockOptions,
+  priceOptions,
   filteredCount,
   viewMode,
   setViewMode,
@@ -45,6 +48,19 @@ const Filters = ({
           </option>
         ))}
       </select>
+
+      {priceOptions && (
+        <select
+          value={priceFilter}
+          onChange={(e) => setPriceFilter(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+          {priceOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      )}
 
       <select
         value={sortOption}

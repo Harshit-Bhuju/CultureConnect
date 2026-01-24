@@ -23,11 +23,10 @@ export default function StudentCourseHeader({ course }) {
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`w-4 h-4 ${
-              star <= Math.round(rating)
+            className={`w-4 h-4 ${star <= Math.round(rating)
                 ? "fill-yellow-400 text-yellow-400"
                 : "text-gray-300"
-            }`}
+              }`}
           />
         ))}
       </div>
@@ -70,20 +69,18 @@ export default function StudentCourseHeader({ course }) {
           </h1>
 
           {/* Rating */}
-          {course.averageRating > 0 && (
-            <div className="flex items-center gap-3">
-              {renderStars(course.averageRating)}
-              <span className="text-sm font-medium text-gray-700">
-                {course.averageRating.toFixed(1)}
-              </span>
-              <span className="text-sm text-gray-500">
-                ({course.totalReviews} reviews)
-              </span>
-              <span className="text-sm text-gray-500">
-                • {course.enrolled_students} students enrolled
-              </span>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {renderStars(course.averageRating || 0)}
+            <span className="text-sm font-medium text-gray-700">
+              {(course.averageRating || 0).toFixed(1)}
+            </span>
+            <span className="text-sm text-gray-500">
+              ({course.totalReviews || 0} reviews)
+            </span>
+            <span className="text-sm text-gray-500">
+              • {course.enrolled_students || 0} students enrolled
+            </span>
+          </div>
 
           {/* Teacher Info */}
           {course.teacher && (

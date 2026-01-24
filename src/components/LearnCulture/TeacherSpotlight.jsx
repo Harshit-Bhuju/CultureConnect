@@ -94,7 +94,7 @@ const TeacherSpotlight = () => {
 
               <div className="flex items-center gap-2 text-xs">
                 <span className="flex items-center gap-0.5 text-yellow-500 font-medium">
-                  <Star size={12} fill="currentColor" /> {teacher.rating}
+                  <Star size={12} fill="currentColor" /> {teacher.rating} 
                 </span>
                 <span className="text-gray-300">|</span>
                 <span className="text-gray-500">{teacher.courses} Courses</span>
