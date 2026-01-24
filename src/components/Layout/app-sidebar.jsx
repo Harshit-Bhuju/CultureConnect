@@ -9,6 +9,7 @@ import {
   Store,
   TrendingUp,
   FileText,
+  LayoutDashboard,
 } from "lucide-react";
 
 import { NavMain } from "./nav-main";
@@ -98,6 +99,14 @@ export default function AppSidebar({ children, ...props }) {
         name: "Be an Expert",
         url: "/teacher-registration",
         icon: GraduationCap,
+      },
+    ];
+  } else if (userData.role === "admin") {
+    roleBasedProjects = [
+      {
+        name: "Admin Panel",
+        url: "/admin",
+        icon: LayoutDashboard,
       },
     ];
   }

@@ -10,6 +10,7 @@ import {
   ChevronsUpDown,
   LogOut,
   FileText,
+  Globe,
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import CultureConnectLogo from "../../assets/logo/cultureconnect__fav.png";
@@ -34,7 +35,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
     name: "Admin",
     email: "admin@cultureconnect.com",
     avatar: default_logo,
-    role: "admin"
+    role: "admin",
   };
 
   const menuItems = [
@@ -61,6 +62,12 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
       label: "Analytics",
       icon: BarChart3,
       path: "/admin/analytics",
+    },
+    {
+      id: "website",
+      label: "View Website",
+      icon: Globe,
+      path: "/",
     },
   ];
 
@@ -90,7 +97,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   // Keyboard shortcut for toggle (Ctrl/Cmd + B)
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+      if ((e.ctrlKey || e.metaKey) && e.key === "b") {
         e.preventDefault();
         if (!isMobile) {
           toggleCollapse();
@@ -98,8 +105,8 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isMobile, isCollapsed]);
 
   // Save collapsed state to localStorage
@@ -134,7 +141,6 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
           "--sidebar-width": "16rem",
           "--sidebar-width-icon": "3rem",
         }}>
-        
         {/* Sidebar Gap (for desktop layout) - creates space for fixed sidebar */}
         <div
           className="hidden md:block relative bg-transparent transition-[width] duration-200 ease-linear"
@@ -155,10 +161,8 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
           style={{
             width: isMobile ? "18rem" : isCollapsed ? "3rem" : "16rem",
           }}>
-          
           {/* Sidebar Inner */}
           <div className="bg-sidebar flex h-full w-full flex-col">
-            
             {/* COLLAPSED VIEW */}
             {isCollapsed && !isMobile && (
               <>
@@ -181,7 +185,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                   {menuItems.map((item) => {
                     const Icon = item.icon;
                     const active = isActive(item.path);
-                    
+
                     return (
                       <div key={item.id} className="group/menu-item relative">
                         <NavLink
@@ -195,7 +199,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                           title={item.label}>
                           <Icon className="w-4 h-4" />
                         </NavLink>
-                        
+
                         {/* Tooltip */}
                         <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded-md shadow-md border border-border whitespace-nowrap opacity-0 pointer-events-none group-hover/menu-item:opacity-100 transition-opacity duration-200 z-50">
                           {item.label}
@@ -221,14 +225,18 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
                     {/* Tooltip */}
                     <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-popover text-popover-foreground text-xs rounded-md shadow-md border border-border opacity-0 pointer-events-none group-hover/menu-item:opacity-100 transition-opacity duration-200 z-50 min-w-[180px]">
-                      <div className="font-medium">{userData.name || "Admin"}</div>
-                      <div className="text-muted-foreground">{userData.email || "admin@cultureconnect.com"}</div>
-                      <div className="text-[10px] text-muted-foreground mt-1">Click to expand</div>
+                      <div className="font-medium">
+                        {userData.name || "Admin"}
+                      </div>
+                      <div className="text-muted-foreground">
+                        {userData.email || "admin@cultureconnect.com"}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-1">
+                        Click to expand
+                      </div>
                     </div>
                   </div>
                 </div>
-
-
               </>
             )}
 
@@ -276,7 +284,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                 </div>
 
                 {/* Content */}
-                <div 
+                <div
                   className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden p-2"
                   style={{
                     scrollbarWidth: "none",
@@ -293,15 +301,17 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                     <div className="text-sidebar-foreground/70 ring-sidebar-ring flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0 mb-1">
                       Main Menu
                     </div>
-                    
+
                     {/* Menu Items */}
                     <ul className="flex w-full min-w-0 flex-col gap-1 mt-1">
                       {menuItems.map((item) => {
                         const Icon = item.icon;
                         const active = isActive(item.path);
-                        
+
                         return (
-                          <li key={item.id} className="group/menu-item relative">
+                          <li
+                            key={item.id}
+                            className="group/menu-item relative">
                             <NavLink
                               to={item.path}
                               onClick={() => {
@@ -321,7 +331,9 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                                 ${active ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground" : ""}
                               `}>
                               <Icon className="flex-shrink-0" />
-                              <span className="ml-2 truncate flex-1">{item.label}</span>
+                              <span className="ml-2 truncate flex-1">
+                                {item.label}
+                              </span>
                             </NavLink>
                           </li>
                         );
@@ -364,8 +376,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                               className="fixed inset-0 z-10"
                               onClick={() => setShowUserMenu(false)}
                             />
-                            <div
-                              className="absolute bottom-full left-0 mb-2 w-[280px] bg-popover text-popover-foreground rounded-lg shadow-md border border-border p-1 z-20 animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 duration-200">
+                            <div className="absolute bottom-full left-0 mb-2 w-[280px] bg-popover text-popover-foreground rounded-lg shadow-md border border-border p-1 z-20 animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 duration-200">
                               {/* Current User */}
                               <div className="p-0 font-normal">
                                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
@@ -381,13 +392,14 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                                       {userData.name || "Admin"}
                                     </span>
                                     <span className="truncate text-xs text-muted-foreground">
-                                      {userData.email || "admin@cultureconnect.com"}
+                                      {userData.email ||
+                                        "admin@cultureconnect.com"}
                                     </span>
                                   </div>
                                 </div>
                               </div>
                               <div className="h-px bg-border my-1" />
-                              
+
                               {/* Logout */}
                               <button
                                 onClick={handleLogout}
