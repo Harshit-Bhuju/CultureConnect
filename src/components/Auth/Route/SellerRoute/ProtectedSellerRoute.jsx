@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext";
 import Loading from "../../../Common/Loading";
 
@@ -16,6 +16,12 @@ const ProtectedSellerRoute = ({ children }) => {
 
   if (!user.seller_id) {
     return <Navigate to="/seller-registration" replace />;
+  }
+
+  const { sellerId } = useParams();
+
+  if (String(sellerId) !== String(user.seller_id)) {
+    return <Navigate to="/" replace />;
   }
 
   return children;

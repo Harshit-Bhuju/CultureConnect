@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import Loading from "../../../Common/Loading";
 import { useAuth } from "../../../../context/AuthContext";
 
@@ -18,6 +18,12 @@ const ProtectedTeacherRoute = ({ children }) => {
 
   if (!user.teacher_id) {
     return <Navigate to="/teacher-registration" replace />;
+  }
+
+  const { teacherId } = useParams();
+
+  if (teacherId && String(teacherId) !== String(user.teacher_id)) {
+    return <Navigate to="/" replace />;
   }
 
   return children;
