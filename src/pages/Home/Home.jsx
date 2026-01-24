@@ -1,11 +1,10 @@
 import React, { useEffect } from "react";
 import AppSidebar from "../../components/Layout/app-sidebar";
 import { SidebarProvider, SidebarInset } from "../../components/ui/sidebar";
-import Navbar from "../../components/Layout/Navbar";
+import Navbar from "../../components/Layout/NavBar";
 import Footer from "../../components/Layout/Footer";
 import HeroSection from "../../components/Home/HeroSection";
 import CategorySection from "../../components/Home/CategorySection";
-import FeaturedProducts from "../../components/Home/FeaturedProducts";
 import CulturalStorySection from "../../components/Home/CulturalStorySection";
 import TeacherSection from "../../components/Home/TeacherSection";
 
@@ -27,7 +26,6 @@ const Home = () => {
         <main className="relative flex-1 w-full">
           <HeroSection containerRef={scrollContainerRef} />
           <CategorySection />
-          <FeaturedProducts />
           <CulturalStorySection />
           <TeacherSection />
         </main>

@@ -4,7 +4,7 @@ import Facebook from "../../assets/brands-logo/facebook.svg";
 import Instagram from "../../assets/brands-logo/instagram.svg";
 import Twitter from "../../assets/brands-logo/twitter.svg";
 import Youtube from "../../assets/brands-logo/youtube.svg";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 const socialLinks = [
   { icon: Facebook },
@@ -15,41 +15,59 @@ const socialLinks = [
 
 const navLinks = [
   { name: "Home", href: "/" },
-  { name: "Marketplace", href: "/marketplace/traditional" },
-  { name: "Learn culture", href: "/learnculture/dances" },
-  { name: "Contact Us", href: "" },
-  { name: "Our Team", href: "" },
+  { name: "Marketplace", href: "/marketplace" },
+  { name: "Learn culture", href: "/learnculture" },
+  {
+    name: "Contact Us",
+    href: "https://mail.google.com/mail/?view=cm&fs=1&to=cultureconnect0701@gmail.com",
+  },
+  { name: "Our Team", href: "/our-team" },
 ];
 
 export default function Footer() {
   return (
     <div className=" bg-gray-50 ">
-          <footer className="bg-black text-white py-8 px-4">
+      <footer className="bg-black text-white py-8 px-4">
         <div className="max-w-6xl mx-auto">
-
           <nav className="flex justify-center gap-4 md:gap-8 mb-6 flex-wrap">
-            {navLinks.map((link, index) =>
-              link.href ? (
-                <NavLink
-                  key={index}
-                  to={link.href}
-                  className={({ isActive }) =>
-                    `text-sm transition-colors ${
-                      isActive
-                        ? "text-red-600 font-semibold"
-                        : "text-gray-300 hover:text-white"
-                    }`
-                  }>
+            {navLinks.map((link, index) => {
+              if (!link.href) {
+                return (
+                  <span
+                    key={index}
+                    className="text-gray-300 text-sm cursor-pointer">
+                    {link.name}
+                  </span>
+                );
+              }
+
+              const isContact = link.name === "Contact Us";
+              const className = ({ isActive }) =>
+                `text-sm transition-colors ${
+                  isActive && !isContact
+                    ? "text-red-600 font-semibold"
+                    : "text-gray-300 hover:text-white"
+                }`;
+
+              if (isContact) {
+                return (
+                  <a
+                    key={index}
+                    href={link.href}
+                    className={className({ isActive: false })}
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    {link.name}
+                  </a>
+                );
+              }
+
+              return (
+                <NavLink key={index} to={link.href} className={className}>
                   {link.name}
                 </NavLink>
-              ) : (
-                <span
-                  key={index}
-                  className="text-gray-300 text-sm cursor-pointer">
-                  {link.name}
-                </span>
-              )
-            )}
+              );
+            })}
           </nav>
 
           {/* Social Media Icons */}
@@ -69,8 +87,8 @@ export default function Footer() {
 
           {/* Copyright */}
           <div className="text-center text-gray-400 text-sm">
-            Copyright ©2025; Designed by{" "}
-            <span className="text-white">Uranus</span>
+            Copyright ©2026; Designed by{" "}
+            <span className="text-white">Harshit and Harman</span>
           </div>
         </div>
       </footer>

@@ -93,19 +93,6 @@ const TeacherSection = () => {
               preserving and teaching traditional arts.
             </p>
           </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}>
-            <motion.button
-              whileHover={{ x: 5 }}
-              className="hidden md:flex items-center gap-3 px-6 py-3 bg-red-600 text-white font-bold hover:bg-red-700 transition-colors duration-300 group">
-              Find Your Teacher
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
-          </motion.div>
         </div>
 
         {/* Teachers Grid */}

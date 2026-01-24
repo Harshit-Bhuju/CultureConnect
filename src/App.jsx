@@ -24,6 +24,7 @@ const ChangePassword = lazy(
 const SetPassword = lazy(() => import("./pages/SetPassword/SetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
 const Notification = lazy(() => import("./pages/Notification/Notification"));
+const OurTeam = lazy(() => import("./pages/OurTeam/OurTeam"));
 
 // Learn Culture pages
 const LearnCulture = lazy(() => import("./pages/LearnCulture/LearnCulture"));
@@ -151,7 +152,6 @@ const AdminAnalytics = lazy(
 const AdminHomepageContent = lazy(
   () => import("./AdminPage/components/AdminHomepageContent"),
 );
-
 
 // Home Route Wrapper
 function HomeRoute() {
@@ -515,6 +515,8 @@ function App() {
           </Route>
 
           {/* ==================== Public Routes ==================== */}
+          <Route path="/our-team" element={<OurTeam />} />
+
           <Route
             path="/login"
             element={

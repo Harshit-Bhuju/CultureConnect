@@ -44,21 +44,19 @@ const heroSlides = [
   },
 ];
 
-const HeroSection = ({ containerRef }) => {
+const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [loadedImages, setLoadedImages] = useState(new Set([0])); // Preload first image
+  const [loadedImages, setLoadedImages] = useState(new Set([0]));
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({
     target: ref,
-    container: containerRef,
     offset: ["start start", "end start"],
   });
 
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.05]);
 
-  // Preload next image when slide changes
   useEffect(() => {
     const nextSlide = (currentSlide + 1) % heroSlides.length;
     if (!loadedImages.has(nextSlide)) {
@@ -102,19 +100,16 @@ const HeroSection = ({ containerRef }) => {
             <div
               className={`absolute inset-0 bg-gradient-to-br ${heroSlides[currentSlide].gradient} z-10`}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)] z-10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20 z-10" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,black_100%)] z-10" />
 
-            {/* Optimized Image Loading */}
             <img
               src={heroSlides[currentSlide].image}
               alt={heroSlides[currentSlide].title}
               className="w-full h-full object-cover"
-              loading="eager" // Load hero images immediately
-              decoding="async" // Async decoding for better performance
-              fetchPriority="high" // Prioritize hero images
+              loading="eager"
+              decoding="async"
               style={{
-                // Add a blur effect while loading for better UX
                 filter: loadedImages.has(currentSlide) ? "none" : "blur(10px)",
                 transition: "filter 0.3s ease-in-out",
               }}
@@ -123,14 +118,14 @@ const HeroSection = ({ containerRef }) => {
         </AnimatePresence>
       </motion.div>
 
-      {/* Animated Grid Overlay */}
-      <div className="absolute inset-0 z-10 opacity-10">
+      {/* Subtle Grid Overlay */}
+      <div className="absolute inset-0 z-10 opacity-5">
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-                           linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`,
-            backgroundSize: "100px 100px",
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                           linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
+            backgroundSize: "80px 80px",
           }}
         />
       </div>
@@ -138,8 +133,8 @@ const HeroSection = ({ containerRef }) => {
       {/* Main Content Container */}
       <motion.div
         style={{ opacity }}
-        className="relative z-20 h-full flex items-center justify-center px-6 md:px-12">
-        <div className="max-w-7xl w-full">
+        className="relative z-20 h-full flex items-center px-4 sm:px-6 md:px-12 lg:px-16">
+        <div className="max-w-7xl w-full mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentSlide}
@@ -147,21 +142,21 @@ const HeroSection = ({ containerRef }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.8 }}
-              className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               {/* Left Side - Text Content */}
-              <div className="lg:col-span-7 space-y-8">
+              <div className="space-y-6 lg:space-y-8">
                 {/* Decorative Element */}
                 <motion.div
                   initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: "120px", opacity: 1 }}
+                  animate={{ width: "80px", opacity: 1 }}
                   transition={{ delay: 0.3, duration: 1 }}
-                  className="flex items-center gap-4">
+                  className="flex items-center gap-3">
                   <div
-                    className="h-[2px] w-full"
+                    className="h-[1.5px] w-full"
                     style={{ backgroundColor: heroSlides[currentSlide].accent }}
                   />
                   <Sparkles
-                    className="w-5 h-5"
+                    className="w-4 h-4 flex-shrink-0"
                     style={{ color: heroSlides[currentSlide].accent }}
                   />
                 </motion.div>
@@ -172,29 +167,29 @@ const HeroSection = ({ containerRef }) => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.8 }}>
                   <span
-                    className="text-sm md:text-base font-light tracking-[0.3em] uppercase"
+                    className="text-xs md:text-sm font-light tracking-[0.25em] uppercase"
                     style={{ color: heroSlides[currentSlide].accent }}>
                     Heritage • Culture • Tradition
                   </span>
                 </motion.div>
 
-                {/* Main Title - Staggered Animation */}
-                <div className="space-y-2">
+                {/* Main Title - Optimized Sizes */}
+                <div className="space-y-1">
                   <motion.h1
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5, duration: 0.8 }}
-                    className="text-5xl md:text-7xl lg:text-8xl font-extralight text-white tracking-tight leading-[0.95]">
+                    className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-white tracking-tight leading-[1.1]">
                     {firstPart}
                   </motion.h1>
                   <motion.h1
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.65, duration: 0.8 }}
-                    className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95]"
+                    className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1]"
                     style={{
                       color: heroSlides[currentSlide].accent,
-                      textShadow: `0 0 40px ${heroSlides[currentSlide].accent}40`,
+                      textShadow: `0 0 30px ${heroSlides[currentSlide].accent}30`,
                     }}>
                     {secondPart}
                   </motion.h1>
@@ -205,81 +200,72 @@ const HeroSection = ({ containerRef }) => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8, duration: 0.8 }}
-                  className="text-lg md:text-xl text-gray-300 font-light leading-relaxed max-w-xl">
+                  className="text-base md:text-lg text-gray-300 font-light leading-relaxed max-w-lg">
                   {heroSlides[currentSlide].subtitle}
                 </motion.p>
 
-                {/* CTA Buttons */}
+                {/* CTA Button */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1, duration: 0.8 }}
-                  className="flex flex-wrap gap-4 pt-4">
+                  className="pt-2">
                   <Link to={heroSlides[currentSlide].redirect}>
                     <motion.button
-                      whileHover={{ scale: 1.05, x: 5 }}
+                      whileHover={{ scale: 1.05, x: 3 }}
                       whileTap={{ scale: 0.95 }}
-                      className="group px-8 py-4 text-black font-semibold text-base rounded-full flex items-center gap-3 transition-all duration-300"
+                      className="group px-7 py-3 text-black font-semibold text-base rounded-full flex items-center gap-2 transition-all duration-300"
                       style={{
                         backgroundColor: heroSlides[currentSlide].accent,
-                        boxShadow: `0 10px 40px ${heroSlides[currentSlide].accent}40`,
+                        boxShadow: `0 8px 30px ${heroSlides[currentSlide].accent}30`,
                       }}>
                       Explore Collection
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </motion.button>
                   </Link>
-                  <Link to={heroSlides[currentSlide].redirect}>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-8 py-4 border-2 text-white font-semibold text-base rounded-full backdrop-blur-md hover:bg-white/10 transition-all duration-300"
-                      style={{ borderColor: heroSlides[currentSlide].accent }}>
-                      Learn More
-                    </motion.button>
-                  </Link>
                 </motion.div>
               </div>
 
-              {/* Right Side - Decorative Stats/Info */}
-              <div className="lg:col-span-5 hidden lg:flex flex-col gap-6 items-end">
+              {/* Right Side - Compact Stats */}
+              <div className="hidden lg:flex flex-col gap-5 items-end justify-center">
                 <motion.div
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 1.2, duration: 0.8 }}
-                  className="backdrop-blur-xl bg-white/5 border border-white/10 p-8 rounded-2xl max-w-sm">
-                  <div className="space-y-4">
-                    <div className="flex items-baseline gap-2">
-                      <span
-                        className="text-6xl font-bold"
-                        style={{ color: heroSlides[currentSlide].accent }}>
-                        500+
-                      </span>
-                      <span className="text-gray-400 text-sm">Artisans</span>
-                    </div>
-                    <p className="text-gray-300 text-sm leading-relaxed">
-                      Master craftspeople preserving centuries of tradition
-                    </p>
+                  className="backdrop-blur-xl bg-white/5 border border-white/10 p-6 rounded-xl w-full max-w-xs">
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span
+                      className="text-5xl font-bold"
+                      style={{ color: heroSlides[currentSlide].accent }}>
+                      500+
+                    </span>
+                    <span className="text-gray-400 text-xs uppercase tracking-wider">
+                      Artisans
+                    </span>
                   </div>
+                  <p className="text-gray-300 text-sm leading-relaxed">
+                    Master craftspeople preserving centuries of tradition
+                  </p>
                 </motion.div>
 
                 <motion.div
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 1.4, duration: 0.8 }}
-                  className="backdrop-blur-xl bg-white/5 border border-white/10 p-8 rounded-2xl max-w-xs">
-                  <div className="space-y-4">
-                    <div className="flex items-baseline gap-2">
-                      <span
-                        className="text-6xl font-bold"
-                        style={{ color: heroSlides[currentSlide].accent }}>
-                        15k+
-                      </span>
-                      <span className="text-gray-400 text-sm">Products</span>
-                    </div>
-                    <p className="text-gray-300 text-sm leading-relaxed">
-                      Curated authentic pieces from across cultures
-                    </p>
+                  className="backdrop-blur-xl bg-white/5 border border-white/10 p-6 rounded-xl w-full max-w-[280px]">
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span
+                      className="text-5xl font-bold"
+                      style={{ color: heroSlides[currentSlide].accent }}>
+                      15k+
+                    </span>
+                    <span className="text-gray-400 text-xs uppercase tracking-wider">
+                      Products
+                    </span>
                   </div>
+                  <p className="text-gray-300 text-sm leading-relaxed">
+                    Curated authentic pieces from cultures worldwide
+                  </p>
                 </motion.div>
               </div>
             </motion.div>
@@ -287,30 +273,31 @@ const HeroSection = ({ containerRef }) => {
         </div>
       </motion.div>
 
-      {/* Slide Indicators - Bottom Center */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-30 flex gap-3">
+      {/* Slide Indicators - Refined Design */}
+      <div className="absolute bottom-8 sm:bottom-10 left-1/2 -translate-x-1/2 z-30 flex gap-2">
         {heroSlides.map((slide, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
             className="group relative">
             <div
-              className={`h-1 rounded-full transition-all duration-500 ${
-                index === currentSlide ? "w-16" : "w-8"
+              className={`h-0.5 rounded-full transition-all duration-500 ${
+                index === currentSlide ? "w-12" : "w-6"
               }`}
               style={{
                 backgroundColor:
                   index === currentSlide
                     ? heroSlides[currentSlide].accent
-                    : "rgba(255,255,255,0.3)",
+                    : "rgba(255,255,255,0.25)",
               }}
             />
             {index === currentSlide && (
               <motion.div
                 layoutId="activeIndicator"
-                className="absolute inset-0 rounded-full"
+                className="absolute inset-0 rounded-full blur-sm"
                 style={{
-                  boxShadow: `0 0 20px ${heroSlides[currentSlide].accent}`,
+                  backgroundColor: heroSlides[currentSlide].accent,
+                  opacity: 0.4,
                 }}
               />
             )}
@@ -318,19 +305,19 @@ const HeroSection = ({ containerRef }) => {
         ))}
       </div>
 
-      {/* Scroll Indicator - Bottom Right */}
+      {/* Scroll Indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5 }}
-        className="absolute bottom-12 right-12 z-30 hidden md:flex flex-col items-center gap-3">
-        <span className="text-xs text-gray-500 uppercase tracking-widest writing-mode-vertical">
+        className="absolute bottom-8 sm:bottom-10 right-8 sm:right-12 z-30 hidden md:flex flex-col items-center gap-2">
+        <span className="text-[10px] text-gray-500 uppercase tracking-widest rotate-90 origin-center">
           Scroll
         </span>
         <motion.div
-          animate={{ y: [0, 8, 0] }}
+          animate={{ y: [0, 6, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="w-[1px] h-16 bg-gradient-to-b from-transparent via-white/50 to-transparent"
+          className="w-[1px] h-12 bg-gradient-to-b from-transparent via-white/40 to-transparent"
         />
       </motion.div>
     </div>

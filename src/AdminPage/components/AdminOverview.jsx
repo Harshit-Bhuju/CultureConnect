@@ -9,7 +9,6 @@ import {
   ArrowRight,
   ArrowUpRight,
   ArrowDownRight,
-
 } from "lucide-react";
 import API from "../../Configs/ApiEndpoints";
 import Loading from "../../components/Common/Loading";
@@ -78,24 +77,6 @@ const AdminOverview = () => {
       iconBg: "bg-gray-100",
       iconColor: "text-gray-700",
     },
-    {
-      title: "Revenue (Monthly)",
-      value: data?.totalRevenue || "Rs. 45,670",
-      change: "+23%",
-      changeType: "increase",
-      icon: DollarSign,
-      iconBg: "bg-gray-100",
-      iconColor: "text-gray-700",
-    },
-    {
-      title: "Growth Rate",
-      value: "24.5%",
-      change: "+4.3%",
-      changeType: "increase",
-      icon: TrendingUp,
-      iconBg: "bg-gray-100",
-      iconColor: "text-gray-700",
-    },
   ];
 
   if (loading) return <Loading message="Loading overview stats..." />;
@@ -103,7 +84,7 @@ const AdminOverview = () => {
   return (
     <div className="space-y-6">
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -150,7 +131,9 @@ const AdminOverview = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200 flex items-center justify-between">
             <h3 className="text-lg font-bold text-gray-900">Recent Activity</h3>
-            <button className="text-sm font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-1 transition-colors" onClick={() => navigate("/admin/activity")} >
+            <button
+              className="text-sm font-semibold text-gray-700 hover:text-gray-900 flex items-center gap-1 transition-colors"
+              onClick={() => navigate("/admin/activity")}>
               View All <ArrowRight size={14} />
             </button>
           </div>
@@ -210,7 +193,7 @@ const AdminOverview = () => {
                 <div className="text-xs opacity-80 mt-1">View all</div>
               </div>
             </button>
-           
+
             <button
               onClick={() => navigate("/admin/analytics")}
               className="p-5 bg-gray-600 text-white rounded-xl hover:bg-gray-500 transition-all shadow-sm hover:shadow-md">
