@@ -62,12 +62,6 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
       icon: BarChart3,
       path: "/admin/analytics",
     },
-    {
-      id: "homepage",
-      label: "Homepage Content",
-      icon: FileText,
-      path: "/admin/homepage",
-    },
   ];
 
   const handleLogout = async () => {
