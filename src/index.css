@@ -142,6 +142,7 @@ html,
 body {
   position: relative;
   background-color: #f3f4f6;
+  scroll-behavior: smooth;
 }
 
 /* ======================================

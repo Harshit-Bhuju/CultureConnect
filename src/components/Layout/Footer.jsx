@@ -205,7 +205,9 @@ export default function Footer() {
             <div className="flex items-center gap-2">
               <div className="w-1 h-1 rounded-full bg-red-600"></div>
               Developed and Designed by{" "}
-              <span className="text-gray-300">Harshit & Harman</span>
+              <Link to={"/documentation/team"}>
+                <span className="text-gray-300">Harshit & Harman</span>
+              </Link>
             </div>
           </div>
         </div>

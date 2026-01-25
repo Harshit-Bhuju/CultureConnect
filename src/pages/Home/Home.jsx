@@ -10,8 +10,6 @@ import BecomeSellerSection from "../../components/Home/BecomeSellerSection";
 import BecomeExpertSection from "../../components/Home/BecomeExpertSection";
 
 const Home = () => {
-  const scrollContainerRef = React.useRef(null);
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -19,13 +17,11 @@ const Home = () => {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset
-        ref={scrollContainerRef}
-        className="relative md:overflow-x-hidden h-screen overflow-y-auto bg-white scroll-smooth font-body text-gray-900 antialiased selection:bg-heritage-red selection:text-white">
+      <SidebarInset className="relative md:overflow-x-hidden h-screen overflow-y-auto bg-white scroll-smooth font-body text-gray-900 antialiased selection:bg-heritage-red selection:text-white">
         <Navbar />
 
         <main className="relative flex-1 w-full">
-          <HeroSection containerRef={scrollContainerRef} />
+          <HeroSection />
           <CategorySection />
           <CulturalStorySection />
           <BecomeSellerSection />

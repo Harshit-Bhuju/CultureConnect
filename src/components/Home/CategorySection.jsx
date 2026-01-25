@@ -8,11 +8,16 @@ const CategoryCard = ({ category, index }) => {
   return (
     <Link to={category.route}>
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: index * 0.1 }}
-        viewport={{ once: true }}
-        whileHover={{ y: -10 }}
+        initial={{ opacity: 0, scale: 0.8, y: 50 }}
+        whileInView={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{
+          duration: 0.6,
+          delay: index * 0.15,
+          type: "spring",
+          stiffness: 100,
+        }}
+        viewport={{ once: false, margin: "-100px" }}
+        whileHover={{ y: -12, scale: 1.02 }}
         className="group relative overflow-hidden h-[450px] cursor-pointer bg-gray-900 rounded-2xl">
         {/* Background Image */}
         <div className="absolute inset-0">
@@ -155,15 +160,16 @@ const CategorySection = () => {
   }, []);
 
   const getMappedCategories = () => {
-    return categories.map(cat => {
+    return categories.map((cat) => {
       let dbCategory = "";
       if (cat.id === "traditional-clothing") dbCategory = "cultural-clothes";
       else if (cat.id === "arts-decor") dbCategory = "handicraft-decors";
-      else if (cat.id === "musical-instruments") dbCategory = "musical-instruments";
+      else if (cat.id === "musical-instruments")
+        dbCategory = "musical-instruments";
 
       return {
         ...cat,
-        itemCount: counts[dbCategory] || 0
+        itemCount: counts[dbCategory] || 0,
       };
     });
   };
@@ -177,7 +183,7 @@ const CategorySection = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: false }}
           transition={{ duration: 0.6 }}
           className="text-center mb-16">
           <span className="inline-block text-sm font-bold tracking-wider uppercase text-red-600 mb-3">
@@ -195,20 +201,20 @@ const CategorySection = () => {
 
           {/* Decorative Line */}
           <motion.div
-            initial={{ width: 0 }}
-            whileInView={{ width: "80px" }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="h-1 bg-red-600 mx-auto mt-8"
+            initial={{ width: 0, opacity: 0 }}
+            whileInView={{ width: "100px", opacity: 1 }}
+            viewport={{ once: false }}
+            transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
+            className="h-1 bg-red-600 mx-auto mt-8 rounded-full"
           />
         </motion.div>
 
         {/* Category Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {dynamicCategories.map((category, index) => (
             <CategoryCard key={category.id} category={category} index={index} />
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -16,7 +16,8 @@ const CulturalStorySection = () => {
         const result = await response.json();
         if (result.status === "success") {
           setStatsData({
-            total_artisans: result.data.total_sellers + result.data.total_teachers,
+            total_artisans:
+              result.data.total_sellers + result.data.total_teachers,
             total_courses: result.data.total_courses,
             total_users: result.data.total_users,
           });
@@ -31,7 +32,10 @@ const CulturalStorySection = () => {
   const stats = [
     {
       icon: Users,
-      value: statsData.total_artisans >= 1000 ? `${(statsData.total_artisans / 1000).toFixed(1)}k+` : `${statsData.total_artisans}+`,
+      value:
+        statsData.total_artisans >= 1000
+          ? `${(statsData.total_artisans / 1000).toFixed(1)}k+`
+          : `${statsData.total_artisans}+`,
       label: "Artisans Supported",
     },
     {
@@ -46,11 +50,13 @@ const CulturalStorySection = () => {
     },
     {
       icon: Globe,
-      value: statsData.total_users >= 1000 ? `${(statsData.total_users / 1000).toFixed(1)}k+` : `${statsData.total_users}+`,
+      value:
+        statsData.total_users >= 1000
+          ? `${(statsData.total_users / 1000).toFixed(1)}k+`
+          : `${statsData.total_users}+`,
       label: "Community Reach",
     },
   ];
-
 
   return (
     <section className="py-24 bg-white relative overflow-hidden">
@@ -58,10 +64,14 @@ const CulturalStorySection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Side - Content */}
           <motion.div
-            initial={{ opacity: 0, x: -40 }}
+            initial={{ opacity: 0, x: -100 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            transition={{
+              duration: 0.8,
+              type: "spring",
+              bounce: 0.3,
+            }}
+            viewport={{ once: false, margin: "-100px" }}
             className="space-y-8">
             {/* Badge */}
             <motion.div
@@ -100,14 +110,19 @@ const CulturalStorySection = () => {
                 return (
                   <motion.div
                     key={index}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + index * 0.1 }}
-                    viewport={{ once: true }}
-                    whileHover={{ y: -5 }}
+                    transition={{
+                      delay: 0.3 + index * 0.1,
+                      type: "spring",
+                      stiffness: 150,
+                      damping: 12,
+                    }}
+                    viewport={{ once: false, amount: 0.2 }}
+                    whileHover={{ y: -8, scale: 1.02 }}
                     className="group relative bg-gray-50 border border-gray-200 p-6 hover:border-red-600 transition-all duration-300 rounded-2xl">
                     {/* Icon */}
-                    <div className="inline-flex items-center justify-center w-12 h-12 bg-red-600 text-white mb-4 group-hover:scale-110 transition-transform duration-300 rounded-full">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-red-600 text-white mb-4 group-hover:scale-110 group-hover:rotate-[360deg] transition-all duration-500 rounded-full">
                       <Icon className="w-6 h-6" />
                     </div>
 
@@ -125,10 +140,14 @@ const CulturalStorySection = () => {
 
           {/* Right Side - Image Gallery */}
           <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            initial={{ opacity: 0, x: 100, rotate: 5 }}
+            whileInView={{ opacity: 1, x: 0, rotate: 0 }}
+            transition={{
+              duration: 0.8,
+              type: "spring",
+              bounce: 0.3,
+            }}
+            viewport={{ once: false, margin: "-100px" }}
             className="relative">
             <div className="relative">
               {/* Large Image */}
@@ -136,7 +155,7 @@ const CulturalStorySection = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
-                viewport={{ once: true }}
+                viewport={{ once: false }}
                 whileHover={{ scale: 1.02 }}
                 className="relative overflow-hidden border-4 border-white shadow-2xl rounded-2xl">
                 <img
@@ -165,7 +184,7 @@ const CulturalStorySection = () => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.4, duration: 0.6 }}
-                viewport={{ once: true }}
+                viewport={{ once: false }}
                 whileHover={{ scale: 1.05 }}
                 className="absolute -bottom-8 -right-8 w-56 h-56 overflow-hidden border-8 border-white shadow-2xl rounded-2xl">
                 <img
