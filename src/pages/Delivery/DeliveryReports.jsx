@@ -2,10 +2,15 @@ import React, { useState, useEffect } from "react";
 import { AlertTriangle, Package, Calendar, User, DollarSign, RefreshCw } from "lucide-react";
 import API from "../../Configs/ApiEndpoints";
 import toast from "react-hot-toast";
+import ConfirmationModal from "../../components/Common/ConfirmationModal";
 
 const DeliveryReports = () => {
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Modal State
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedReport, setSelectedReport] = useState(null);
 
     const fetchReports = async () => {
         try {
@@ -23,6 +28,41 @@ const DeliveryReports = () => {
             toast.error("Error connecting to server");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const initiateResolve = (orderId, orderNo) => {
+        setSelectedReport({ orderId, orderNo });
+        setModalOpen(true);
+    };
+
+    const handleConfirmResolve = async () => {
+        setModalOpen(false);
+        if (!selectedReport) return;
+
+        const { orderId } = selectedReport;
+        const toastId = toast.loading("Resetting order status...");
+
+        try {
+            const formData = new FormData();
+            formData.append("order_id", orderId);
+
+            const response = await fetch(API.RESOLVE_DELIVERY_REPORT, {
+                method: "POST",
+                body: formData,
+                credentials: "include"
+            });
+            const data = await response.json();
+
+            if (data.status === "success") {
+                toast.success(data.message, { id: toastId });
+                fetchReports();
+            } else {
+                toast.error(data.message || "Failed to resolve report", { id: toastId });
+            }
+        } catch (error) {
+            console.error("Error resolving report:", error);
+            toast.error("Network error", { id: toastId });
         }
     };
 
@@ -74,6 +114,7 @@ const DeliveryReports = () => {
                                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Amount</th>
                                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reported Time</th>
                                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
@@ -107,6 +148,13 @@ const DeliveryReports = () => {
                                                 {report.status.replace('_', ' ')}
                                             </span>
                                         </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button
+                                                onClick={() => initiateResolve(report.order_id, report.order_no)}
+                                                className="px-3 py-1.5 bg-slate-800 text-white text-[10px] font-black uppercase rounded-lg hover:bg-slate-900 transition-all flex items-center gap-2 ml-auto">
+                                                <RefreshCw className="w-3 h-3" /> Reset to Pending
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -122,6 +170,15 @@ const DeliveryReports = () => {
                     <p className="text-xs text-red-700 mt-0.5">Please review these reports carefully. Frequent discrepancies may result in account review. Contact support if you believe a report is incorrect.</p>
                 </div>
             </div>
+
+            <ConfirmationModal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onConfirm={handleConfirmResolve}
+                title="Reset Order Status"
+                message={`Are you sure you want to reset ${selectedReport?.orderNo} back to 'Pending Confirmation'? This will delete the report and allow you to resend the confirmation link.`}
+                confirmText="Reset Status"
+            />
         </div>
     );
 };

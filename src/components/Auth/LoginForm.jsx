@@ -120,6 +120,14 @@ export default function LoginForm({ className, mode = "login", ...props }) {
           // Normal login flow
           await login(result.user);
           toast.success("Logged in successfully!");
+
+          // Check for redirect path in state
+          const from = location.state?.from;
+          if (from) {
+            navigate(from, { replace: true });
+            return;
+          }
+
           if (result.user.role === "admin") {
             navigate("/admin", { replace: true }); // admin panel
           } else if (result.user.role === "delivery") {

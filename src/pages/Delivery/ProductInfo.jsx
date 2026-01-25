@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Package, Smartphone, User, MapPin, Tag, Truck, Mail, CheckCircle } from "lucide-react";
 import API from "../../Configs/ApiEndpoints";
 import toast from "react-hot-toast";
 
 const ProductInfo = () => {
+  const navigate = useNavigate();
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,8 +47,8 @@ const ProductInfo = () => {
 
       if (data.status === "success") {
         toast.success(data.message, { id: toastId });
-        // Refresh list
-        fetchDeliveries();
+        // Automatically navigate to pending section as requested
+        navigate("/delivery/pending");
         if (data.demo_link) {
           console.log("Demo Confirmation Link:", data.demo_link);
         }

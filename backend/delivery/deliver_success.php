@@ -39,8 +39,16 @@ try {
     $product_name = $order['product_name'];
     $order_number = $order['order_number'];
 
-    // Confirmation Link
-    $confirm_link = "http://localhost:5173/confirm-delivery/" . $order_id;
+    // Generate a secure token (deterministic for now based on order_id and a secret)
+    // In a real app, this might be a random string stored in DB, but this works without schema changes.
+    $salt = "CultureConnect_Secret_2026";
+    $token = hash_hmac('sha256', $order_id . $email, $salt);
+
+    // Hardcoded frontend URL as requested
+    $frontend_url = "https://harmanbhuju.com.np";
+
+    // Confirmation Link with token
+    $confirm_link = "{$frontend_url}/confirm-delivery/{$order_id}?token={$token}";
 
     $subject = "Delivery Confirmation: " . $product_name;
     $body = "
@@ -70,14 +78,18 @@ try {
     </body>
     </html>";
 
-    if (isset($data['demo_link'])) {
-        // This logic is handled by sendResponseAndContinue in some setups, 
-        // but here we just want to send the payload and EXIT the script execution if we want true async or just flush.
-    }
+    // Send success response to client
+
+    // Update order status to 'delivered_pending' BEFORE response
+    $status_stmt = $conn->prepare("UPDATE orders SET order_status = 'delivered_pending' WHERE id = ?");
+    $status_stmt->bind_param("i", $order_id);
+    $status_stmt->execute();
+    $status_stmt->close();
 
     sendResponseAndContinue([
         "status" => "success",
-        "message" => "Confirmation email sent. Please ask the customer to check their inbox."
+        "message" => "Confirmation email sent. Please ask the customer to check their inbox.",
+        "order_id" => $order_id
     ]);
 
     // This code continues after the response is sent to the client
