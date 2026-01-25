@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import { Outlet, useLocation } from "react-router-dom";
 import AppSidebar from "../../components/Layout/app-sidebar";
 import { SidebarProvider, SidebarInset } from "../../components/ui/sidebar";
@@ -33,24 +34,45 @@ const LearnCulture = () => {
                 {/* Decorative Background Glow */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-teal-50/50 blur-[120px] rounded-full -z-10" />
 
-                <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 tracking-tight leading-tight">
+                <motion.h1
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false }}
+                  transition={{ duration: 0.7, type: "spring" }}
+                  className="text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 tracking-tight leading-tight">
                   Learn{" "}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-600">
                     Heritage
                   </span>
-                </h1>
-                <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-12 font-medium">
+                </motion.h1>
+                <motion.p
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false }}
+                  transition={{ delay: 0.2, duration: 0.7, type: "spring" }}
+                  className="text-xl text-gray-500 max-w-2xl mx-auto mb-12 font-medium">
                   Connect with your roots through master-led courses in
                   traditional arts, music, and dance.
-                </p>
+                </motion.p>
 
                 {/* Search Bar */}
-                <SearchBar variant="hero-learn" contextType="course" />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                  viewport={{ once: false }}
+                  transition={{ delay: 0.3, duration: 0.6 }}>
+                  <SearchBar variant="hero-learn" contextType="course" />
+                </motion.div>
               </div>
 
               {/* Category Navigation */}
               <div className="px-4 md:px-8">
-                <div className="mb-8 text-center">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false }}
+                  transition={{ duration: 1 }}
+                  className="mb-8 text-center">
                   <div className="inline-flex items-center gap-2 px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-xs font-bold mb-4">
                     <Sparkles size={14} /> EXPLORE PATHWAYS
                   </div>
@@ -60,8 +82,13 @@ const LearnCulture = () => {
                   <p className="text-gray-500">
                     Structured learning paths from verified cultural experts
                   </p>
+                </motion.div>
+
+                {/* LCCategoryNav has internal staggered animations, so we remove the outer animation wrapper */}
+                <div className="mt-8 text-center">
+                  <LCCategoryNav />
                 </div>
-                <LCCategoryNav />
+
                 <CourseSwiper />
               </div>
 

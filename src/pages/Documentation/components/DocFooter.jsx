@@ -27,6 +27,7 @@ const DocFooter = () => {
           </Link>
           <a
             href="https://mail.google.com/mail/?view=cm&fs=1&to=cultureconnect0701@gmail.com"
+            target="_blank"
             className="hover:text-royal-blue hover:underline">
             Contact Support
           </a>

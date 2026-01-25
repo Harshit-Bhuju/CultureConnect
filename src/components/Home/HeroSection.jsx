@@ -187,7 +187,8 @@ const HeroSection = () => {
                 {/* Eyebrow Text */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false }}
                   transition={{ delay: 0.4, duration: 0.8 }}>
                   <span
                     className="text-xs md:text-sm font-light tracking-[0.25em] uppercase"
@@ -197,18 +198,32 @@ const HeroSection = () => {
                 </motion.div>
 
                 {/* Main Title - Optimized Sizes */}
-                <div className="space-y-1">
+                <div className="space-y-1 overflow-hidden">
                   <motion.h1
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.8 }}
+                    key={`title1-${currentSlide}`}
+                    initial={{ opacity: 0, x: -100 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: false }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 100,
+                      damping: 20,
+                      delay: 0.2,
+                    }}
                     className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-white tracking-tight leading-[1.1]">
                     {firstPart}
                   </motion.h1>
                   <motion.h1
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.65, duration: 0.8 }}
+                    key={`title2-${currentSlide}`}
+                    initial={{ opacity: 0, x: 100 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: false }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 100,
+                      damping: 20,
+                      delay: 0.4,
+                    }}
                     className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1]"
                     style={{
                       color: heroSlides[currentSlide].accent,
@@ -220,18 +235,27 @@ const HeroSection = () => {
 
                 {/* Subtitle */}
                 <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8, duration: 0.8 }}
+                  key={`subtitle-${currentSlide}`}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: false }}
+                  transition={{ delay: 0.6, duration: 0.8 }}
                   className="text-base md:text-lg text-gray-300 font-light leading-relaxed max-w-lg">
                   {heroSlides[currentSlide].subtitle}
                 </motion.p>
 
                 {/* CTA Button */}
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1, duration: 0.8 }}
+                  key={`cta-${currentSlide}`}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 200,
+                    damping: 15,
+                    delay: 0.8,
+                  }}
                   className="pt-2">
                   <Link to={heroSlides[currentSlide].redirect}>
                     <motion.button
@@ -252,10 +276,11 @@ const HeroSection = () => {
               {/* Right Side - Compact Stats */}
               <div className="hidden lg:flex flex-col gap-5 items-end justify-center">
                 <motion.div
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 1.2, duration: 0.8 }}
-                  className="backdrop-blur-xl bg-white/5 border border-white/10 p-6 rounded-xl w-full max-w-xs">
+                  initial={{ opacity: 0, rotateY: 90, x: 50 }}
+                  whileInView={{ opacity: 1, rotateY: 0, x: 0 }}
+                  viewport={{ once: false }}
+                  transition={{ delay: 1, duration: 0.8 }}
+                  className="backdrop-blur-xl bg-white/5 border border-white/10 p-6 rounded-xl w-full max-w-xs [perspective:1000px]">
                   <div className="flex items-baseline gap-2 mb-2">
                     <span
                       className="text-5xl font-bold"
@@ -274,10 +299,11 @@ const HeroSection = () => {
                 </motion.div>
 
                 <motion.div
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 1.4, duration: 0.8 }}
-                  className="backdrop-blur-xl bg-white/5 border border-white/10 p-6 rounded-xl w-full max-w-[280px]">
+                  initial={{ opacity: 0, rotateY: -90, x: 50 }}
+                  whileInView={{ opacity: 1, rotateY: 0, x: 0 }}
+                  viewport={{ once: false }}
+                  transition={{ delay: 1.2, duration: 0.8 }}
+                  className="backdrop-blur-xl bg-white/5 border border-white/10 p-6 rounded-xl w-full max-w-[280px] [perspective:1000px]">
                   <div className="flex items-baseline gap-2 mb-2">
                     <span
                       className="text-5xl font-bold"
@@ -308,8 +334,9 @@ const HeroSection = () => {
             onClick={() => setCurrentSlide(index)}
             className="group relative">
             <div
-              className={`h-0.5 rounded-full transition-all duration-500 ${index === currentSlide ? "w-12" : "w-6"
-                }`}
+              className={`h-0.5 rounded-full transition-all duration-500 ${
+                index === currentSlide ? "w-12" : "w-6"
+              }`}
               style={{
                 backgroundColor:
                   index === currentSlide

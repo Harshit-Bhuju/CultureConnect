@@ -26,9 +26,10 @@ const BecomeExpertSection = () => {
             {/* Visual Grid of Experts */}
             <div className="grid grid-cols-2 grid-rows-[auto_1fr] gap-4 h-full min-h-[500px]">
               <motion.div
-                initial={{ opacity: 0, x: -20, scale: 0.9 }}
-                whileInView={{ opacity: 1, x: 0, scale: 1 }}
-                viewport={{ once: true }}
+                initial={{ opacity: 0, y: 50, scale: 0.8 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: false }}
+                transition={{ duration: 0.7, type: "spring" }}
                 className="col-span-2 rounded-2xl overflow-hidden shadow-2xl border border-white/20 group relative h-64 md:h-80">
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors z-10" />
                 <img
@@ -43,10 +44,10 @@ const BecomeExpertSection = () => {
                 </div>
               </motion.div>
               <motion.div
-                initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
+                initial={{ opacity: 0, x: -30, scale: 0.9 }}
+                whileInView={{ opacity: 1, x: 0, scale: 1 }}
+                viewport={{ once: false }}
+                transition={{ delay: 0.2, duration: 0.6 }}
                 className="rounded-2xl overflow-hidden shadow-xl border border-white/20 group relative h-full">
                 <img
                   src="/Home-Images/experts/expert 2.png"
@@ -60,10 +61,10 @@ const BecomeExpertSection = () => {
                 </div>
               </motion.div>
               <motion.div
-                initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
+                initial={{ opacity: 0, x: 30, scale: 0.9 }}
+                whileInView={{ opacity: 1, x: 0, scale: 1 }}
+                viewport={{ once: false }}
+                transition={{ delay: 0.4, duration: 0.6 }}
                 className="rounded-2xl overflow-hidden shadow-xl border border-white/20 group relative h-full">
                 <img
                   src="/Home-Images/experts/expert 3.png"
@@ -78,11 +79,21 @@ const BecomeExpertSection = () => {
               </motion.div>
             </div>
 
-            <div className="lg:order-2 space-y-8">
+            <motion.div
+              initial={{ opacity: 0, x: 100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{
+                duration: 0.8,
+                type: "spring",
+                bounce: 0.2,
+              }}
+              viewport={{ once: false, margin: "-100px" }}
+              className="lg:order-2 space-y-8">
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                viewport={{ once: false }}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 border border-white/30 rounded-full text-white text-sm font-bold uppercase tracking-wider backdrop-blur-sm">
                 <BookOpen size={16} />
                 Knowledge Exchange
@@ -91,8 +102,8 @@ const BecomeExpertSection = () => {
               <motion.h2
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
+                viewport={{ once: false }}
+                transition={{ delay: 0.3 }}
                 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
                 Share Your <br />
                 <span className="text-amber-400">Mastery</span>
@@ -101,8 +112,8 @@ const BecomeExpertSection = () => {
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
+                viewport={{ once: false }}
+                transition={{ delay: 0.4 }}
                 className="text-lg text-indigo-100 max-w-lg leading-relaxed">
                 Connect with passionate learners eager to master traditional
                 arts, music, and crafts – both online and in-person. Become a
@@ -111,10 +122,10 @@ const BecomeExpertSection = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.3 }}
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                  viewport={{ once: false }}
+                  transition={{ delay: 0.5 }}
                   className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white shrink-0">
                     <Globe size={20} />
@@ -129,10 +140,10 @@ const BecomeExpertSection = () => {
                   </div>
                 </motion.div>
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.4 }}
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                  viewport={{ once: false }}
+                  transition={{ delay: 0.6 }}
                   className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white shrink-0">
                     <Star size={20} />
@@ -147,18 +158,25 @@ const BecomeExpertSection = () => {
               </div>
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.5 }}>
-                <Link to={isExpert ? `/teacher/manageclasses/${user.teacher_id}` : "/teacher-registration"}>
+                viewport={{ once: false }}
+                transition={{ delay: 0.7, type: "spring" }}>
+                <Link
+                  to={
+                    isExpert
+                      ? `/teacher/manageclasses/${user.teacher_id}`
+                      : "/teacher-registration"
+                  }>
                   <button className="group px-8 py-4 bg-white text-royal-blue font-bold rounded-xl hover:bg-indigo-50 transition-all shadow-xl shadow-indigo-900/20 flex items-center gap-2">
-                    {isExpert ? "Go to Expert Dashboard" : "Become a Verified Expert"}
+                    {isExpert
+                      ? "Go to Expert Dashboard"
+                      : "Become a Verified Expert"}
                     <ArrowRight className="group-hover:translate-x-1 transition-transform" />
                   </button>
                 </Link>
               </motion.div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>

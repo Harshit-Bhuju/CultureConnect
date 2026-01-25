@@ -34,7 +34,6 @@ export default function ConfirmationPage({
   useEffect(() => {
     const fetchOrderDetails = async () => {
       if (!orderId) {
-        toast.error("Order not found");
         navigate(`/products/${sellerId}/${productId}`);
         return;
       }
@@ -59,7 +58,6 @@ export default function ConfirmationPage({
         }
       } catch (error) {
         console.error("Error fetching order details:", error);
-        toast.error("Network error. Please try again.");
         navigate(`/products/${sellerId}/${productId}`);
       } finally {
         setLoading(false);
