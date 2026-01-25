@@ -9,8 +9,16 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 }
 
 try {
-    // Fetch all orders with status 'shipped'
-    // For demonstration, we show all shipped orders regardless of delivery boy location as requested
+    // Capture status from query param, default to 'shipped'
+    $status_filter = isset($_GET['status']) ? $_GET['status'] : 'shipped';
+
+    // Ensure only valid statuses are used to prevent issues
+    $valid_statuses = ['shipped', 'delivered_pending', 'completed'];
+    if (!in_array($status_filter, $valid_statuses)) {
+        $status_filter = 'shipped';
+    }
+
+    // Fetch all orders with specific status
     $stmt = $conn->prepare("
         SELECT 
             o.id, 
@@ -26,14 +34,17 @@ try {
             o.delivery_ward,
             p.product_name,
             u.username as customer_name,
-            u.email as customer_email
+            u.email as customer_email,
+            IF(dr.id IS NOT NULL, 1, 0) as has_report
         FROM orders o
         JOIN products p ON o.product_id = p.id
         JOIN users u ON o.user_id = u.id
-        WHERE o.order_status = 'shipped'
+        LEFT JOIN delivery_reports dr ON o.id = dr.order_id
+        WHERE o.order_status = ?
         ORDER BY o.created_at DESC
     ");
 
+    $stmt->bind_param("s", $status_filter);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -50,7 +61,7 @@ try {
             'status' => ucfirst($row['status']),
             'price' => "Rs. " . number_format($row['price'], 2),
             'items' => "{$row['quantity']}x {$row['product_name']}",
-            // Using a mock for now as we don't have real distance tracking in this demo view
+            'has_report' => (bool)$row['has_report'],
             'estimatedTime' => "Processing"
         ];
     }

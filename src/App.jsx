@@ -180,6 +180,8 @@ const ProductInfo = lazy(() => import("./pages/Delivery/ProductInfo"));
 const DeliveryPersonalSettings = lazy(() => import("./pages/Delivery/DeliveryPersonalSettings"));
 const DeliveryPasswordSettings = lazy(() => import("./pages/Delivery/DeliveryPasswordSettings"));
 const DeliveryReports = lazy(() => import("./pages/Delivery/DeliveryReports"));
+const PendingConfirmations = lazy(() => import("./pages/Delivery/PendingConfirmations"));
+const CompletedDeliveries = lazy(() => import("./pages/Delivery/CompletedDeliveries"));
 const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
 
 // Home Route Wrapper
@@ -548,6 +550,8 @@ function App() {
             }>
             <Route index element={<Navigate to="orders" replace />} />
             <Route path="orders" element={<ProductInfo />} />
+            <Route path="pending" element={<PendingConfirmations />} />
+            <Route path="completed" element={<CompletedDeliveries />} />
             <Route path="settings/personal" element={<DeliveryPersonalSettings />} />
             <Route path="settings/security" element={<DeliveryPasswordSettings />} />
             <Route path="reports" element={<DeliveryReports />} />

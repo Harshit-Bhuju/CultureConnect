@@ -176,6 +176,7 @@ const API = {
   DELIVERY_SUCCESS_EMAIL: `${BASE_URL}/delivery/deliver_success.php`,
   CONFIRM_ORDER_DELIVERY: `${BASE_URL}/delivery/confirm_order_status.php`,
   GET_DELIVERY_REPORTS: `${BASE_URL}/delivery/get_delivery_reports.php`,
+  RESOLVE_DELIVERY_REPORT: `${BASE_URL}/delivery/resolve_delivery_report.php`,
 
   // Home Stats
   GET_HOME_STATS: `${BASE_URL}/home/get_home_stats.php`,

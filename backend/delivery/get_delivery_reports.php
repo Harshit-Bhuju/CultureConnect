@@ -15,6 +15,7 @@ try {
             dr.id as report_id,
             dr.reported_at,
             dr.status as report_status,
+            o.id as order_id,
             o.order_number,
             o.total_amount,
             p.product_name,
@@ -33,6 +34,7 @@ try {
     while ($row = $result->fetch_assoc()) {
         $reports[] = [
             'id' => $row['report_id'],
+            'order_id' => $row['order_id'],
             'order_no' => "#" . $row['order_number'],
             'product' => $row['product_name'],
             'customer' => $row['customer_name'],

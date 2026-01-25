@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Map, Info, LogOut, ChevronRight, Truck, User, AlertTriangle } from "lucide-react";
+import { Map, Info, LogOut, ChevronRight, Truck, User, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 
@@ -16,6 +16,8 @@ const DeliverySidebar = ({ closeSidebar }) => {
 
   const navItems = [
     { label: "My Deliveries", icon: Truck, path: "/delivery/orders" },
+    { label: "Pending Confirmation", icon: Clock, path: "/delivery/pending" },
+    { label: "Completed Deliveries", icon: CheckCircle, path: "/delivery/completed" },
     { label: "Personal Info", icon: User, path: "/delivery/settings/personal" },
     { label: "Security", icon: Info, path: "/delivery/settings/security" },
     { label: "Discrepancies", icon: AlertTriangle, path: "/delivery/reports" },
