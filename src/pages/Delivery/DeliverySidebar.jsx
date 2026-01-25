@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Map, Info, LogOut, ChevronRight, Truck } from "lucide-react";
+import { Map, Info, LogOut, ChevronRight, Truck, User, AlertTriangle } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 
@@ -16,6 +16,9 @@ const DeliverySidebar = ({ closeSidebar }) => {
 
   const navItems = [
     { label: "My Deliveries", icon: Truck, path: "/delivery/orders" },
+    { label: "Personal Info", icon: User, path: "/delivery/settings/personal" },
+    { label: "Security", icon: Info, path: "/delivery/settings/security" },
+    { label: "Discrepancies", icon: AlertTriangle, path: "/delivery/reports" },
   ];
 
   return (
@@ -27,8 +30,20 @@ const DeliverySidebar = ({ closeSidebar }) => {
           <span>CultureConnect</span>
         </div>
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold border border-blue-200 shadow-sm text-xs">
-            {user?.name?.charAt(0) || "D"}
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center text-blue-700 font-bold border border-blue-200 shadow-sm text-xs">
+            {user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt="Profile"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = ""; // Clear on error to show initials fallback
+                }}
+              />
+            ) : (
+              user?.name?.charAt(0) || "D"
+            )}
           </div>
           <div className="overflow-hidden">
             <p className="text-xs font-bold text-slate-800 truncate">
@@ -54,10 +69,9 @@ const DeliverySidebar = ({ closeSidebar }) => {
                   to={item.path}
                   onClick={closeSidebar}
                   className={({ isActive }) =>
-                    `group flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all ${
-                      isActive
-                        ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100/50"
-                        : "text-slate-600 hover:bg-slate-50/80 hover:text-slate-900"
+                    `group flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-all ${isActive
+                      ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100/50"
+                      : "text-slate-600 hover:bg-slate-50/80 hover:text-slate-900"
                     }`
                   }>
                   <div className="flex items-center gap-2.5">

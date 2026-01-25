@@ -16,7 +16,7 @@ const CourseList = ({
       <div className="col-span-1 text-xs font-semibold text-orange-900 uppercase tracking-wide">
         Image
       </div>
-      <div className="col-span-3 text-xs font-semibold text-orange-900 uppercase tracking-wide">
+      <div className="col-span-4 text-xs font-semibold text-orange-900 uppercase tracking-wide">
         Course Details
       </div>
       <div className="col-span-2 text-xs font-semibold text-orange-900 uppercase tracking-wide">
@@ -24,9 +24,6 @@ const CourseList = ({
       </div>
       <div className="col-span-1 text-xs font-semibold text-orange-900 uppercase tracking-wide">
         Price
-      </div>
-      <div className="col-span-1 text-xs font-semibold text-orange-900 uppercase tracking-wide">
-        Seats
       </div>
       <div className="col-span-2 text-xs font-semibold text-orange-900 uppercase tracking-wide">
         Rating

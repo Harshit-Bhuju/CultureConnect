@@ -46,9 +46,7 @@ const CourseListRow = ({
     course.total_reviews ||
     (course.rating || course.average_rating ? 1 : 0); // Fallback if we have a rating but no count
 
-  // Stock/Seats status
-  const isLowStock = course.stock <= 10 && course.stock > 0;
-  const isOutOfStock = course.stock === 0;
+  // Image
 
   // Image
   const courseImage = course.images?.[0] || course.thumbnail || course.image;
@@ -74,21 +72,10 @@ const CourseListRow = ({
             e.target.src = "/placeholder-image.png";
           }}
         />
-        {/* Seats badges */}
-        {isLowStock && (
-          <div className="absolute -top-1 -right-1 bg-orange-500 rounded-full p-1">
-            <AlertTriangle className="w-3 h-3 text-white" />
-          </div>
-        )}
-        {isOutOfStock && (
-          <div className="absolute -top-1 -right-1 bg-red-500 rounded-full p-1">
-            <AlertTriangle className="w-3 h-3 text-white" />
-          </div>
-        )}
       </div>
 
       {/* Course Details */}
-      <div className="col-span-3">
+      <div className="col-span-4">
         <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1 group-hover:text-orange-600 transition-colors">
           {courseTitle}
         </h3>
@@ -114,22 +101,6 @@ const CourseListRow = ({
         </span>
       </div>
 
-      {/* Seats */}
-      <div className="col-span-1">
-        <div className="flex items-center gap-1">
-          <span
-            className={`font-semibold ${isOutOfStock ? "text-red-600" : isLowStock ? "text-orange-600" : "text-gray-900"}`}>
-            {course.stock}
-          </span>
-          {isLowStock && (
-            <span className="text-xs text-orange-600 font-medium">Few</span>
-          )}
-          {isOutOfStock && (
-            <span className="text-xs text-red-600 font-medium">Full</span>
-          )}
-        </div>
-      </div>
-
       {/* Rating */}
       <div className="col-span-2">
         {reviewCount > 0 ? (
@@ -143,10 +114,10 @@ const CourseListRow = ({
       <div className="col-span-1">
         <span
           className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${course.status === "Active"
-              ? "bg-green-100 text-green-700"
-              : course.status === "Draft"
-                ? "bg-gray-100 text-gray-700"
-                : "bg-yellow-100 text-yellow-700"
+            ? "bg-green-100 text-green-700"
+            : course.status === "Draft"
+              ? "bg-gray-100 text-gray-700"
+              : "bg-yellow-100 text-yellow-700"
             }`}>
           {course.status}
         </span>

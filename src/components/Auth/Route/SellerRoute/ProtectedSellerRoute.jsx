@@ -14,6 +14,10 @@ const ProtectedSellerRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
+  if (user.role === "delivery") {
+    return <Navigate to="/delivery" replace />;
+  }
+
   if (!user.seller_id) {
     return <Navigate to="/seller-registration" replace />;
   }

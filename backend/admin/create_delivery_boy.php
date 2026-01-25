@@ -48,13 +48,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
 
     // Create delivery boy
+    require_once __DIR__ . '/../username_gen.php';
     $hash = password_hash($password, PASSWORD_ARGON2ID);
     $role = 'delivery';
-    $username = explode('@', $email)[0]; // Default username from email
+    $username = generateSignupUsername($email, $conn);
+    $default_profile_pic = 'default-image.jpg';
 
-    $insert_stmt = $conn->prepare("INSERT INTO users (email, password, role, username) VALUES (?, ?, ?, ?)");
-    $insert_stmt->bind_param("ssss", $email, $hash, $role, $username);
-    
+    $insert_stmt = $conn->prepare("INSERT INTO users (email, password, role, username, profile_pic) VALUES (?, ?, ?, ?, ?)");
+    $insert_stmt->bind_param("sssss", $email, $hash, $role, $username, $default_profile_pic);
+
     if ($insert_stmt->execute()) {
         echo json_encode(["status" => "success", "message" => "Delivery boy account created successfully."]);
     } else {

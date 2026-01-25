@@ -172,6 +172,10 @@ const API = {
   GET_OVERVIEW_STATS: `${BASE_URL}/admin/get_overview_stats.php`,
   GET_RECENT_ACTIVITY: `${BASE_URL}/admin/get_recent_activity.php`,
   CREATE_DELIVERY_BOY: `${BASE_URL}/admin/create_delivery_boy.php`,
+  GET_SHIPPED_ORDERS: `${BASE_URL}/delivery/get_shipped_orders.php`,
+  DELIVERY_SUCCESS_EMAIL: `${BASE_URL}/delivery/deliver_success.php`,
+  CONFIRM_ORDER_DELIVERY: `${BASE_URL}/delivery/confirm_order_status.php`,
+  GET_DELIVERY_REPORTS: `${BASE_URL}/delivery/get_delivery_reports.php`,
 
   // Home Stats
   GET_HOME_STATS: `${BASE_URL}/home/get_home_stats.php`,

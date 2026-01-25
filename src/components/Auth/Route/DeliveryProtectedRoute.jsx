@@ -7,9 +7,9 @@ export default function DeliveryProtectedRoute({ children }) {
 
   if (loading) return <Loading message="Verifying delivery access..." />;
 
-  // if (!user || user.role !== "delivery") {
-  //   return <Navigate to="/login" replace />;
-  // }
+  if (!user || user.role !== "delivery") {
+    return <Navigate to="/login" replace />;
+  }
 
   return children;
 }

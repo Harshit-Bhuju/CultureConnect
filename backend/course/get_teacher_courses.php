@@ -45,6 +45,7 @@ try {
             tc.total_sales as enrolled_students,
             tc.total_videos as video_count,
             tc.average_rating as rating,
+            tc.total_reviews,
             tc.status,
             tc.created_at as createdAt,
             tc.updated_at as updatedAt
@@ -73,6 +74,7 @@ try {
             'stock' => 100, // Conceptual seats (unlimited for now)
             'enrolled_students' => (int)$course['enrolled_students'],
             'rating' => (float)$course['rating'],
+            'total_reviews' => (int)$course['total_reviews'],
             'createdAt' => $course['createdAt'],
             'updatedAt' => $course['updatedAt'],
             'duration' => $duration_display,

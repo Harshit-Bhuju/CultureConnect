@@ -7,6 +7,7 @@ export default function ProtectedRoute({ children }) {
 
   if (loading) return <Loading message="Checking authentication..." />;
   if (!user) return <Navigate to="/login" replace />;
+  if (user.role === "delivery") return <Navigate to="/delivery" replace />;
 
   return children;
 }

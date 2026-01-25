@@ -13,11 +13,14 @@ export default function PublicRoute({ children }) {
   if (loading) return <Loading message="Checking authentication..." />;
 
   // Allow access to login if adding account, even when authenticated
-  if (user && !isAddingAccount){
+  if (user && !isAddingAccount) {
     if (user.role === "admin") {
       return <Navigate to="/admin" replace />;
     }
-  return <Navigate to="/" replace />;
+    if (user.role === "delivery") {
+      return <Navigate to="/delivery" replace />;
+    }
+    return <Navigate to="/" replace />;
   }
   return children;
 }

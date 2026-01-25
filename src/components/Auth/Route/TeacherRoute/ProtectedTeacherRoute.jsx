@@ -16,6 +16,10 @@ const ProtectedTeacherRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
+  if (user.role === "delivery") {
+    return <Navigate to="/delivery" replace />;
+  }
+
   if (!user.teacher_id) {
     return <Navigate to="/teacher-registration" replace />;
   }

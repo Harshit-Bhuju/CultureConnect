@@ -8,7 +8,8 @@ import {
   Mail,
   X,
   ShoppingBag,
-  GraduationCap
+  GraduationCap,
+  Filter
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import API, { BASE_URL } from "../../Configs/ApiEndpoints";
@@ -22,6 +23,7 @@ const AdminUserManagement = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [roleFilter, setRoleFilter] = useState("all");
 
   useEffect(() => {
     fetchUsers();
@@ -71,7 +73,11 @@ const AdminUserManagement = () => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
+
+    const matchesRole = roleFilter === "all" ||
+      (roleFilter === "seller_teacher" ? user.role === "Seller and Teacher" : user.role === roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1));
+
+    return matchesSearch && matchesRole;
   });
 
   const handleSendEmail = (email) => {
@@ -109,6 +115,26 @@ const AdminUserManagement = () => {
               className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 bg-white"
             />
           </div>
+
+          {/* Filter */}
+          <div className="w-full md:w-64 relative">
+            <Filter
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+              size={20}
+            />
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 bg-white appearance-none cursor-pointer text-gray-700 font-medium"
+            >
+              <option value="all">All Roles</option>
+              <option value="user">User Only</option>
+              <option value="seller">Seller Only</option>
+              <option value="teacher">Teacher Only</option>
+              <option value="seller_teacher">Seller & Teacher</option>
+              <option value="delivery">Delivery</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -127,9 +153,6 @@ const AdminUserManagement = () => {
 
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Join Date
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Activity
                 </th>
                 <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Actions
@@ -184,14 +207,6 @@ const AdminUserManagement = () => {
                     <div className="flex items-center gap-2">
                       <Calendar size={16} />
                       {user.joinDate}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm">
-                      <p className="text-gray-900 font-medium">
-                        {user.totalPurchases} purchases
-                      </p>
-                      <p className="text-gray-500">{user.totalSpent}</p>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">

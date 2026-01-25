@@ -123,7 +123,7 @@ export default function LoginForm({ className, mode = "login", ...props }) {
           if (result.user.role === "admin") {
             navigate("/admin", { replace: true }); // admin panel
           } else if (result.user.role === "delivery") {
-            navigate("/delivery", { replace: true }); // delivery dashboard
+            navigate("/delivery/orders", { replace: true }); // delivery dashboard shipments
           } else {
             navigate("/", { replace: true }); // normal user
           }

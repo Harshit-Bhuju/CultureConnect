@@ -28,11 +28,7 @@ const CourseCard = ({ course, onEdit, onDelete, onView }) => {
   const description = course.description || "";
   const rating = course.averageRating || course.average_rating || course.rating || 0;
   const students = course.enrolled_students || course.totalStudents || 0;
-  const stock = parseInt(course.stock || course.seats || 0);
-
-  // Status & Stock Logic
-  const isLowStock = stock <= 10 && stock > 0;
-  const isOutOfStock = stock === 0;
+  const reviews = course.total_reviews || course.totalReviews || 0;
 
   // Image handling
   const getFirstImage = () => {
@@ -68,25 +64,13 @@ const CourseCard = ({ course, onEdit, onDelete, onView }) => {
         {/* Status Badge */}
         <span
           className={`px-2 py-1 text-xs font-semibold rounded shadow-sm backdrop-blur-md ${course.status === "Active" || course.status === "published"
-              ? "bg-green-100/90 text-green-700"
-              : course.status === "Draft" || course.status === "draft"
-                ? "bg-gray-100/90 text-gray-700"
-                : "bg-yellow-100/90 text-yellow-700"
+            ? "bg-green-100/90 text-green-700"
+            : course.status === "Draft" || course.status === "draft"
+              ? "bg-gray-100/90 text-gray-700"
+              : "bg-yellow-100/90 text-yellow-700"
             }`}>
           {course.status || "Draft"}
         </span>
-        {isLowStock && (
-          <span className="px-2 py-1 text-xs font-semibold rounded bg-orange-100/90 text-orange-700 shadow-sm flex items-center gap-1 backdrop-blur-md">
-            <AlertTriangle size={10} />
-            Few Seats
-          </span>
-        )}
-        {isOutOfStock && (
-          <span className="px-2 py-1 text-xs font-semibold rounded bg-red-100/90 text-red-700 shadow-sm flex items-center gap-1 backdrop-blur-md">
-            <AlertTriangle size={10} />
-            Full
-          </span>
-        )}
       </div>
 
       {/* Edit/Delete Actions */}
@@ -151,14 +135,8 @@ const CourseCard = ({ course, onEdit, onDelete, onView }) => {
                 />
               ))}
             </div>
-            <span className="text-gray-400 text-sm">({students})</span>
+            <span className="text-gray-400 text-sm">({reviews} reviews)</span>
           </div>
-
-          {/* Stock display for manager */}
-          <span
-            className={`text-xs font-semibold ${isLowStock ? "text-orange-600" : isOutOfStock ? "text-red-600" : "text-gray-500"}`}>
-            {stock} seats
-          </span>
         </div>
 
         {/* Price */}

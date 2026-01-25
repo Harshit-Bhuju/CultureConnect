@@ -80,6 +80,7 @@ $courses_stmt = $conn->prepare("
         total_sales,
         total_videos,
         average_rating,
+        total_reviews,
         created_at,
         status
     FROM teacher_courses
@@ -105,6 +106,7 @@ while ($course = $courses_result->fetch_assoc()) {
         'duration' => $duration_display,
         'enrolled_students' => (int)$course['total_sales'],
         'average_rating' => (float)$course['average_rating'],
+        'total_reviews' => (int)$course['total_reviews'],
         'description' => $course['description'],
         'category' => $course['category'],
         'status' => $course['status'] === 'published' ? 'Active' : 'Draft'
