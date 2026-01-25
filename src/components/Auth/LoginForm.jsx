@@ -11,7 +11,7 @@ import {
   FieldSeparator,
 } from "../ui/Field";
 import { Input } from "../ui/input";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Rive from "../../Rive";
 import { toast } from "react-hot-toast";
@@ -336,6 +336,11 @@ export default function LoginForm({ className, mode = "login", ...props }) {
           </div>
         </CardContent>
       </Card>
+      <FieldDescription className="px-6 text-center">
+        By clicking continue, you agree to our{" "}
+        <Link to="/documentation/terms">Terms of Service</Link> and{" "}
+        <Link to="/documentation/privacy">Privacy Policy</Link>.
+      </FieldDescription>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import TeamMemberCard from "./TeamMemberCard";
-import HarshitImg from "../../../assets/team/harshit_portrait.png";
-import HarmanImg from "../../../assets/team/harman_portrait.png";
+import HarshitImg from "../../../assets/team/harshit_portrait.jpg";
+import HarmanImg from "../../../assets/team/harman_portrait.jpg";
 
 const DocTeam = () => {
   return (
