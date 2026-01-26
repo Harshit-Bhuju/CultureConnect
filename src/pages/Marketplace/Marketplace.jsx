@@ -72,7 +72,7 @@ const Marketplace = () => {
                   viewport={{ once: false }}
                   transition={{ duration: 0.6 }}
                   className="mb-8 text-center px-2">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 italic sm:not-italic">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 ">
                     Explore by Category
                   </h2>
                   <p className="text-sm sm:text-base text-gray-500">

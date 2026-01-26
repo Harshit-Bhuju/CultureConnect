@@ -109,7 +109,7 @@ const HeroSection = () => {
   return (
     <div
       ref={ref}
-      className="relative min-h-[100svh] lg:min-h-screen w-full overflow-hidden bg-black flex flex-col">
+      className="relative min-h-[75svh] md:min-h-[80svh] lg:min-h-screen w-full overflow-hidden bg-black flex flex-col">
       {/* Background with Parallax */}
       <motion.div style={{ scale }} className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
@@ -154,9 +154,10 @@ const HeroSection = () => {
       </div>
 
       {/* Main Content Container */}
+
       <motion.div
         style={{ opacity }}
-        className="relative z-20 flex-1 flex items-center justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-20 sm:py-24 md:py-28 lg:py-0">
+        className="relative z-20 flex-1 flex items-center justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-8 sm:py-12 md:py-16 lg:py-0">
         <div className="max-w-7xl w-full mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
@@ -167,7 +168,7 @@ const HeroSection = () => {
               transition={{ duration: 0.8 }}
               className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-center">
               {/* Left Side - Text Content */}
-              <div className="space-y-4 sm:space-y-5 md:space-y-6 lg:space-y-8 text-center lg:text-left">
+              <div className="space-y-6 sm:space-y-7 md:space-y-8 lg:space-y-8 text-center lg:text-left">
                 {/* Decorative Element */}
                 <motion.div
                   initial={{ width: 0, opacity: 0 }}
@@ -196,119 +197,123 @@ const HeroSection = () => {
                     Heritage • Culture • Tradition
                   </span>
                 </motion.div>
+                <div className="flex flex-col gap-16 justify-end">
+                  <div>
+                    {/* Main Title - Fully Responsive */}
+                    <div className="space-y-2 sm:space-y-2 md:space-y-3 overflow-hidden">
+                      <motion.h1
+                        key={`title1-${currentSlide}`}
+                        initial={{ opacity: 0, x: -100 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: false }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 100,
+                          damping: 20,
+                          delay: 0.2,
+                        }}
+                        className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-6xl xl:text-7xl font-light text-white tracking-tight leading-[1.1] sm:leading-[1.15]">
+                        {firstPart}
+                      </motion.h1>
+                      <motion.h1
+                        key={`title2-${currentSlide}`}
+                        initial={{ opacity: 0, x: 100 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: false }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 100,
+                          damping: 20,
+                          delay: 0.4,
+                        }}
+                        className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1] sm:leading-[1.15]"
+                        style={{
+                          color: heroSlides[currentSlide].accent,
+                          textShadow: `0 0 30px ${heroSlides[currentSlide].accent}30`,
+                        }}>
+                        {secondPart}
+                      </motion.h1>
+                    </div>
 
-                {/* Main Title - Fully Responsive */}
-                <div className="space-y-1 sm:space-y-2 overflow-hidden">
-                  <motion.h1
-                    key={`title1-${currentSlide}`}
-                    initial={{ opacity: 0, x: -100 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: false }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 100,
-                      damping: 20,
-                      delay: 0.2,
-                    }}
-                    className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-light text-white tracking-tight leading-[1.1] sm:leading-[1.15]">
-                    {firstPart}
-                  </motion.h1>
-                  <motion.h1
-                    key={`title2-${currentSlide}`}
-                    initial={{ opacity: 0, x: 100 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: false }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 100,
-                      damping: 20,
-                      delay: 0.4,
-                    }}
-                    className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1] sm:leading-[1.15]"
-                    style={{
-                      color: heroSlides[currentSlide].accent,
-                      textShadow: `0 0 30px ${heroSlides[currentSlide].accent}30`,
-                    }}>
-                    {secondPart}
-                  </motion.h1>
+                    {/* Subtitle */}
+                    <motion.p
+                      key={`subtitle-${currentSlide}`}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: false }}
+                      transition={{ delay: 0.6, duration: 0.8 }}
+                      className="text-[10px] xs:text-xs sm:text-sm md:text-base text-gray-300 font-light leading-relaxed max-w-lg mx-auto lg:mx-0 px-4 sm:px-0">
+                      {heroSlides[currentSlide].subtitle}
+                    </motion.p>
+                  </div>
+                  {/* Mobile Stats - Improved Layout */}
+                  <div className="flex flex-col gap-4">
+                    <div className="flex lg:hidden flex-wrap gap-4 sm:gap-5 md:gap-6 justify-center lg:justify-start pt-4 md:pt-6">
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false }}
+                        transition={{ delay: 0.5, duration: 0.5 }}
+                        className="backdrop-blur-xl bg-white/5 border border-white/10 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl flex items-center gap-2">
+                        <span
+                          className="text-lg sm:text-xl md:text-2xl font-bold"
+                          style={{ color: heroSlides[currentSlide].accent }}>
+                          {stats.total_sellers >= 1000
+                            ? `${(stats.total_sellers / 1000).toFixed(1)}k+`
+                            : `${stats.total_sellers}+`}
+                        </span>
+                        <span className="text-gray-400 text-[10px] sm:text-xs uppercase tracking-wider whitespace-nowrap">
+                          Sellers
+                        </span>
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false }}
+                        transition={{ delay: 0.6, duration: 0.5 }}
+                        className="backdrop-blur-xl bg-white/5 border border-white/10 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl flex items-center gap-2">
+                        <span
+                          className="text-lg sm:text-xl md:text-2xl font-bold"
+                          style={{ color: heroSlides[currentSlide].accent }}>
+                          {stats.total_products >= 1000
+                            ? `${(stats.total_products / 1000).toFixed(1)}k+`
+                            : `${stats.total_products}+`}
+                        </span>
+                        <span className="text-gray-400 text-[10px] sm:text-xs uppercase tracking-wider whitespace-nowrap">
+                          Products
+                        </span>
+                      </motion.div>
+                    </div>
+
+                    {/* CTA Button */}
+                    <motion.div
+                      key={`cta-${currentSlide}`}
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: false }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 200,
+                        damping: 15,
+                        delay: 0.8,
+                      }}
+                      className="pt-2 flex justify-center lg:justify-start">
+                      <Link to={heroSlides[currentSlide].redirect}>
+                        <motion.button
+                          whileHover={{ scale: 1.05, x: 3 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="group px-5 sm:px-6 md:px-7 py-2.5 sm:py-3 md:py-3.5 text-black font-bold text-xs sm:text-sm md:text-base rounded-full flex items-center gap-2 transition-all duration-300 whitespace-nowrap"
+                          style={{
+                            backgroundColor: heroSlides[currentSlide].accent,
+                            boxShadow: `0 8px 30px ${heroSlides[currentSlide].accent}30`,
+                          }}>
+                          Explore Collection
+                          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+                        </motion.button>
+                      </Link>
+                    </motion.div>
+                  </div>
                 </div>
-
-                {/* Subtitle */}
-                <motion.p
-                  key={`subtitle-${currentSlide}`}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: false }}
-                  transition={{ delay: 0.6, duration: 0.8 }}
-                  className="text-xs xs:text-sm sm:text-base md:text-lg text-gray-300 font-light leading-relaxed max-w-lg mx-auto lg:mx-0 px-4 sm:px-0">
-                  {heroSlides[currentSlide].subtitle}
-                </motion.p>
-
-                {/* Mobile Stats - Improved Layout */}
-                <div className="flex lg:hidden flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start pt-2 ">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false }}
-                    transition={{ delay: 0.5, duration: 0.5 }}
-                    className="backdrop-blur-xl bg-white/5 border border-white/10 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl flex items-center gap-2">
-                    <span
-                      className="text-lg sm:text-xl md:text-2xl font-bold"
-                      style={{ color: heroSlides[currentSlide].accent }}>
-                      {stats.total_sellers >= 1000
-                        ? `${(stats.total_sellers / 1000).toFixed(1)}k+`
-                        : `${stats.total_sellers}+`}
-                    </span>
-                    <span className="text-gray-400 text-[10px] sm:text-xs uppercase tracking-wider whitespace-nowrap">
-                      Sellers
-                    </span>
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false }}
-                    transition={{ delay: 0.6, duration: 0.5 }}
-                    className="backdrop-blur-xl bg-white/5 border border-white/10 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl flex items-center gap-2">
-                    <span
-                      className="text-lg sm:text-xl md:text-2xl font-bold"
-                      style={{ color: heroSlides[currentSlide].accent }}>
-                      {stats.total_products >= 1000
-                        ? `${(stats.total_products / 1000).toFixed(1)}k+`
-                        : `${stats.total_products}+`}
-                    </span>
-                    <span className="text-gray-400 text-[10px] sm:text-xs uppercase tracking-wider whitespace-nowrap">
-                      Products
-                    </span>
-                  </motion.div>
-                </div>
-
-                {/* CTA Button */}
-                <motion.div
-                  key={`cta-${currentSlide}`}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 200,
-                    damping: 15,
-                    delay: 0.8,
-                  }}
-                  className="pt-2 flex justify-center lg:justify-start">
-                  <Link to={heroSlides[currentSlide].redirect}>
-                    <motion.button
-                      whileHover={{ scale: 1.05, x: 3 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="group px-5 sm:px-6 md:px-7 py-2.5 sm:py-3 md:py-3.5 text-black font-bold text-xs sm:text-sm md:text-base rounded-full flex items-center gap-2 transition-all duration-300 whitespace-nowrap"
-                      style={{
-                        backgroundColor: heroSlides[currentSlide].accent,
-                        boxShadow: `0 8px 30px ${heroSlides[currentSlide].accent}30`,
-                      }}>
-                      Explore Collection
-                      <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
-                    </motion.button>
-                  </Link>
-                </motion.div>
               </div>
 
               {/* Desktop Stats */}
